@@ -1,0 +1,117 @@
+site_name: DevOps Lite
+site_description: IT-infrastruktuuri automatiseerimine täiskasvanutele - 5 kohtumist
+site_author: Maria Talvik
+site_url: https://hkhk-automation.github.io/devops-lite
+copyright: Maria Talvik &middot; CC BY-SA 4.0
+
+exclude_docs: |
+  _archive/
+
+repo_name: hkhk-automation/devops-lite
+repo_url: https://github.com/hkhk-automation/devops-lite
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: et
+  features:
+  - content.action.edit
+  - content.action.view
+  - content.code.annotate
+  - content.code.copy
+  - content.code.select
+  - content.tabs.link
+  - content.tooltips
+  - navigation.footer
+  - navigation.instant
+  - navigation.instant.progress
+  - navigation.prune
+  - navigation.sections
+  - navigation.tabs
+  - navigation.tabs.sticky
+  - navigation.top
+  - navigation.tracking
+  - search.highlight
+  - search.suggest
+  - toc.follow
+  palette:
+  - media: "(prefers-color-scheme)"
+    scheme: default
+    primary: deep purple
+    accent: pink
+    toggle:
+      icon: material/brightness-auto
+      name: Vaheta tumele režiimile
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: deep purple
+    accent: pink
+    toggle:
+      icon: material/brightness-7
+      name: Vaheta tumele režiimile
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: deep purple
+    accent: pink
+    toggle:
+      icon: material/brightness-4
+      name: Vaheta heledasse režiimi
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+    logo: material/server-network
+
+plugins:
+- search:
+    separator: '[\s\u200b\-_,:!=\[\]()`"/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+    lang: et
+
+nav:
+- Kursus:
+  - Avaleht: index.md
+- Kohtumised:
+  - K1 · Idempotentsus ja esimene playbook:
+    - Teooria: k01/teooria.md
+    - Labor: k01/labor.md
+
+markdown_extensions:
+- abbr
+- admonition
+- attr_list
+- def_list
+- footnotes
+- md_in_html
+- tables
+- toc:
+    permalink: false
+    title: Sisukord
+    toc_depth: 3
+- pymdownx.betterem:
+    smart_enable: all
+- pymdownx.details
+- pymdownx.highlight:
+    anchor_linenums: true
+    line_spans: __span
+    pygments_lang_class: true
+- pymdownx.inlinehilite
+- pymdownx.keys
+- pymdownx.mark
+- pymdownx.smartsymbols
+- pymdownx.superfences:
+    custom_fences:
+    - name: mermaid
+      class: mermaid
+      format: !!python/name:pymdownx.superfences.fence_code_format ""
+- pymdownx.tabbed:
+    alternate_style: true
+- pymdownx.tasklist:
+    custom_checkbox: true
+
+extra:
+  social:
+  - icon: fontawesome/brands/github
+    link: https://github.com/hkhk-automation
