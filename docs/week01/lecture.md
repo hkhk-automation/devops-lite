@@ -1,6 +1,6 @@
 # K1 · Automatiseerimise mudel, deklaratiivsus ja idempotentsus
 
-**Klassis:** ~25 min kahes plokis (§1 + §3, siis §4). §2, §5 ja §6 loe kodus.
+**Klassis:** kuni 30 min kahes plokis (§1 + §3, siis §4 + §5). §2 ja §6 loe kodus.
 
 ---
 

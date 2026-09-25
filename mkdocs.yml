@@ -75,8 +75,8 @@ nav:
   - Avaleht: index.md
 - Kohtumised:
   - K1 · Idempotentsus ja esimene playbook:
-    - Teooria: k01/teooria.md
-    - Labor: k01/labor.md
+    - Loeng: week01/lecture.md
+    - Praktikum: week01/lab.md
 
 markdown_extensions:
 - abbr
