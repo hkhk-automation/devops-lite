@@ -111,7 +111,9 @@ ULESANNE.md
 logid/
 ```
 
-Kõik tänased failid lähevad selle repo juurkausta. Lõpuks on struktuur selline:
+Kõik tänased failid lähevad selle repo juurkausta.
+
+**Kontrollnimekiri:** ava oma repo GitHubis → **Actions** → **Ava ülesanded** → **Run workflow**. Repo **Issues** alla tekib iga praktikumi ja kodutöö osa kohta issue. Sule issue, kui osa on tehtud. Kui jääd kinni, ava uus issue mallist **Vajan abi**. Lõpuks on struktuur selline:
 
 ```
 <sinu-repo>/
