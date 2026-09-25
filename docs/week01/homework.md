@@ -1,6 +1,6 @@
 # K1 · Kodune õpe ja kodutöö
 
-**Maht:** ~11 tundi kahe kohtumise vahel. **Tähtaeg:** kirjas Classroom 50-s.
+**Maht:** ~8,5 tundi kahe kohtumise vahel. **Tähtaeg:** kirjas Classroom 50-s.
 **Kuhu:** samasse reposse, kuhu klassitöö. Iga ülesande juures on kirjas, mis fail kuhu läheb ja mida automaatne kontroll vaatab.
 
 Kodutöö on klassitööst raskem. Juhiseid on vähem: parameetrid otsid `ansible-doc`-ist ja dokumentatsioonist ise, nagu tööl. Kui jääd kinni kauemaks kui 30 minutiks, kirjuta Classroom 50 repo Issues alla, mis käsu jooksutasid ja mis veateate said.
@@ -9,14 +9,14 @@ Kõik ülesanded käivad grupi `veeb` (kolm VM-i) vastu. Iga playbooki puhul keh
 
 | Osa | Sisu | Aeg |
 |---|---|---|
-| I | Kodune õpe: lugemine ja kordamisküsimused | ~3 h |
-| II | Harjutused H1–H6 | ~6 h |
-| III | Oma töö playbook | ~1,5 h |
-| IV | Boonus ja eneseanalüüs | ~0,5 h |
+| I | Kodune õpe: lugemine ja kordamisküsimused | ~2,3 h |
+| II | Harjutused H1–H6 | ~4,5 h |
+| III | Oma töö playbook | ~1,3 h |
+| IV | Eneseanalüüs (+ vabatahtlik boonus) | ~0,2 h |
 
 ---
 
-## I · Kodune õpe (~3 h)
+## I · Kodune õpe (~2,3 h)
 
 ### Loe
 
@@ -24,13 +24,12 @@ Kõik ülesanded käivad grupi `veeb` (kolm VM-i) vastu. Iga playbooki puhul keh
 |---|---|---|
 | Loeng: klassis käsitlemata osad §2–§3, §6–§7, §9–§17 | [K1 loeng](lecture.md) | 1,5 h |
 | Getting started: sissejuhatus, inventari loomine, esimene playbook | <https://docs.ansible.com/ansible/latest/getting_started/> | 45 min |
-| Inventory: grupid, `all`, mustrid (patterns) | <https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html> | 30 min |
 | Check mode ja diff | <https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html> | 20 min |
 | Faktid | <https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html> | 20 min |
 
 ### Tööta dokumentatsiooniga
 
-Ava `ansible-doc` abil need viis moodulit: `user`, `package`, `copy`, `lineinfile`, `service`. Kirjuta iga kohta faili `markmed.md` kolm parameetrit, mida sa klassis ei kasutanud, ja ühe lausega, milleks need on. Näiteks `user`: `shell`, `groups` + `append`, `state: absent` + `remove`.
+Ava `ansible-doc` abil need kolm moodulit: `user`, `lineinfile`, `service`. Kirjuta iga kohta faili `markmed.md` kolm parameetrit, mida sa klassis ei kasutanud, ja ühe lausega, milleks need on. Näiteks `user`: `shell`, `groups` + `append`, `state: absent` + `remove`.
 
 ### Kordamisküsimused
 
@@ -47,7 +46,7 @@ Vasta failis `vastused.md`, iga vastus 3–6 lauset oma sõnadega. Koopia dokume
 
 ---
 
-## II · Harjutused (~6 h)
+## II · Harjutused (~4,5 h)
 
 Iga harjutuse lõpus salvesta teine jooks: `ansible-playbook -i inventory.ini <fail>.yml | tee logid/<fail>_teine_jooks.txt`.
 
@@ -114,7 +113,7 @@ Käivita skript korra käsitsi (`ssh vm1 sudo /usr/local/bin/varunda.sh`) ja kon
 
 ---
 
-## III · Oma töö (~1,5 h)
+## III · Oma töö (~1,3 h)
 
 Vali oma töökohast või kodulaborist üks korduv käsitsi tegevus: kasutajate lisamine, pakettide uuendamine, konfifaili muutmine, logikausta seadistamine, monitooringuagendi paigaldamine. Kirjuta sellele idempotentne playbook kausta `oma/`.
 
@@ -129,13 +128,15 @@ Kui töökoha süsteemi kasutada ei saa, tee sama oma VM-ides ja kirjelda, kuida
 
 ---
 
-## IV · Boonus ja eneseanalüüs (~30 min)
+## IV · Eneseanalüüs ja vabatahtlik boonus (~10 min)
+
+**Eneseanalüüs** (`vastused.md` lõpus, 5–10 lauset): mis oli kõige raskem, kus ennustus läks mööda, mida teed tööl nüüd teisiti, mis jäi segaseks ja mida tahad järgmisel kohtumisel küsida.
+
+**Vabatahtlik, kui aega jääb:**
 
 **Boonus:** kirjuta `boonus.yml`, mis üritab paigaldada paketti, mida pole olemas, ja püüab vea kinni `block`/`rescue`-ga nii, et playbook kirjutab veast teate ega kuku. Selgita `vastused.md`-s, millal on selline vea püüdmine mõistlik ja millal ohtlik.
 
 **Lint:** jooksuta `ansible-lint *.yml` ja paranda, mis parandada saad. Mida ei parandanud, selgita `vastused.md`-s.
-
-**Eneseanalüüs** (`vastused.md` lõpus, 5–10 lauset): mis oli kõige raskem, kus ennustus läks mööda, mida teed tööl nüüd teisiti, mis jäi segaseks ja mida tahad järgmisel kohtumisel küsida.
 
 ---
 

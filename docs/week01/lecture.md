@@ -32,6 +32,39 @@ Kolleeg lahendaks sama ülesande teisiti. Ta kirjutab ühe faili, mis ütleb: "n
 
 Sellel kursusel õpime seda teist töökäiku: süsteemi olek on kirjas koodis, kood on Gitis, ja iga muutus käib läbi koodi. Ansible on esimene tööriist, millega seda teeme, sest selle eeldused on kõige väiksemad. Sihtmasinas on vaja ainult SSH-d ja Pythonit, mis tavalises Linuxi serveris on juba olemas.
 
+### Mis on Ansible
+
+**Ansible** on avatud lähtekoodiga automatiseerimistööriist, millega kirjeldad serverite soovitud olekut tekstifailides ja rakendad seda paljudele masinatele korraga. Selle lõi Michael DeHaan 2012. aastal, 2015. aastast arendab seda Red Hat. Ansible on kirjutatud Pythonis, kirjeldused on YAML-failid, ja masinatega ühendub ta üle SSH (Windowsi masinatega üle WinRM-i või SSH).
+
+Ansible'it kasutatakse neljaks asjaks:
+
+| Kasutus | Näide |
+|---|---|
+| konfiguratsioonihaldus | 50 serveris on samad kasutajad, paketid, SSH-seaded ja NTP |
+| rakenduse paigaldus | uus versioon kopeeritakse serveritesse ja teenus taaskäivitatakse |
+| mitmesammuline muudatus (orkestreerimine) | võta server koormusjaoturist välja, uuenda, kontrolli, pane tagasi, järgmine |
+| ühekordsed toimingud paljudes masinates | kontrolli kõigis serverites kettaruumi või taaskäivita teenus |
+
+Ansible töötab juba olemasolevate masinatega. Masinate loomine (virtuaalmasinad, pilveressursid) on Terraformi töö, mis tuleb viiendal kohtumisel. Rakenduse pakkimine konteinerisse on Dockeri töö, mis tuleb kolmandal. Tavaline tööjaotus on: Terraform loob masina, Ansible seadistab selle, ja rakendus jookseb kas otse masinas või konteineris.
+
+Ansible'i sõnavara, mida täna kasutame:
+
+| Mõiste | Tähendus | Kus täna näed |
+|---|---|---|
+| control node | masin, kus Ansible on paigaldatud ja kust käivitad | sinu WSL või Linux |
+| managed node | masin, mida hallatakse | `localhost`, siis `vm1`–`vm3` |
+| inventar | nimekiri hallatavatest masinatest ja gruppidest | `inventory.ini` |
+| moodul | programm, mis haldab üht liiki ressurssi ja kontrollib olekut | `user`, `package`, `copy`, `service` |
+| task | üks moodul koos parameetritega: üks soovitud oleku rida | "nginx on paigaldatud" |
+| play | task'ide jada, mis rakendub kindlatele masinatele | `hosts: veeb` + `tasks:` |
+| playbook | YAML-fail ühe või mitme play'ga | `bootstrap.yml` |
+| fakt | info masina kohta, mille Ansible kogub enne task'e | `ansible_os_family` |
+| ad-hoc käsk | üks moodul üks kord, ilma playbookita | `ansible veeb -m ping` |
+
+Järgmisel kohtumisel lisanduvad **roll** (taaskasutatav task'ide, mallide ja muutujate kogum) ja **Vault** (krüptitud saladused).
+
+Ansible pole ainus tööriist sellele tööle. Puppet, Chef ja SaltStack lahendavad sama probleemi, aga vajavad üldjuhul igasse masinasse agenti ja keskserverit. Ansible'i eelis on väike alguskulu: paigaldad ühe masinasse ja saad kohe hallata kõiki, kuhu SSH-ga ligi pääsed. Sellest, mida see agentless-lähenemine tähendab, räägime §6-s.
+
 ---
 
 ## 2. Konfiguratsiooni triiv

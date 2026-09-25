@@ -4,7 +4,7 @@ IT-infrastruktuuri automatiseerimine täiskasvanud õppijale: käsitsi tööst k
 
 Tempo on kiire: klassis tehakse põhiosa, kodus lõpetatakse ja süvendatakse.
 
-**Maht:** 5 kohtumist × 4 akadeemilist tundi, kohtumised üle nädala (loeng kuni 30 min, ülejäänu praktikum) + 58 h iseseisvat tööd kohtumiste vahel.
+**Maht:** 5 kohtumist × 4 akadeemilist tundi, kohtumised üle nädala (loeng kuni 30 min, ülejäänu praktikum) + 58 akadeemilist tundi (~43,5 h) iseseisvat tööd, ~8,5 h iga kohtumise järel.
 **Eeldused:** Linuxi käsurida, SSH, tekstiredaktor, Git baas, GitHubi konto. Bash ja Git on eeldused, mitte teemad.
 
 ---
@@ -82,9 +82,9 @@ Kasutame OpenTofut (`tofu`), mis on Terraformi avatud lähtekoodiga haru: sama H
 - ConfigMap ja Secret
 - K3 Compose-stack Kubernetes'i manifestideks
 
-**Kodus:** Terraformi moodulid ja Terraform loob → Ansible seadistab (outputs → inventar); K4 image Kubernetes'i Deployment'iks; lõputöö plaan ja algus.
+**Kodus:** lõputöö (vt allpool). Terraformi moodulid ja Terraform loob → Ansible seadistab on lõputöös valikuline kiht.
 
-## Lõputöö (~18 h, iseseisev)
+## Lõputöö (K5 kodutöö, ~8,5 h)
 
 Probleem sinu töökohast või kodulaborist. Vähemalt kolm kursuse kihti koos (nt Terraform → Ansible roll → Compose-stack või Kubernetes, pipeline kontrollib). Saladused krüptitud, README-s käivitusjuhis, tõend, et teine jooks ei muuda midagi.
 

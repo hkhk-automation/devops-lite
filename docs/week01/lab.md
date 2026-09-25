@@ -118,7 +118,6 @@ Kõik tänased failid lähevad selle repo juurkausta. Lõpuks on struktuur selli
 ├── inventory.ini
 ├── bootstrap.yml
 ├── halb.sh
-├── parem.sh
 ├── README.md
 └── logid/
     ├── teine_jooks.txt
@@ -171,9 +170,11 @@ curl -s localhost
 
 ---
 
-### A2 · Halb skript ja parem skript
+### A2 · Miks mitte lihtsalt skript?
 
 *Loeng §5*
+
+Enne Ansible'it vaata korra, mis juhtub, kui sama töö teeb tavaline shelli skript. See on lühike demo, mitte skriptimise harjutus: Bash on sellel kursusel eeldus.
 
 **Tegevus:** loo repo juurkausta fail `halb.sh`:
 
@@ -201,31 +202,18 @@ seade=1
 seade=1
 ```
 
-**Miks:** skript andis kahest veast teada, aga duplikaatrida failis tekkis vaikselt. Kui rakendus loeb seda konfi, on viga olemas, aga ükski logi seda ei näita.
+**Miks:** skript andis kahest veast teada, aga duplikaatrida tekkis vaikselt. Skripti ohutuks tegemiseks peaks iga rea ette kirjutama kontrolli (`id … ||`, `mkdir -p`, `grep -qx … ||`), ja iga uus erijuht tähendab uut `if`-i. Ansible'i moodulid teevad need kontrollid ise. A4-s kirjutad sama asja playbookina ja näed vahet.
 
-**Tegevus:** kirjuta `parem.sh`, mis annab sama tulemuse, aga ei anna teisel jooksul vigu ega duplikaati. Enne alustamist korista eelmise skripti jäljed:
+**Tõend:** `halb.sh` repos.
+
+💭 Kui see skript jookseks igal ööl cronist, mitu rida `seade=1` oleks failis kuu aja pärast? Kas keegi märkaks?
+
+Korista jäljed, et need ei segaks edasist tööd:
 
 ```bash
 sudo userdel -r raporteerija
 sudo rm -rf /srv/raport
 ```
-
-Vihjed: `id <kasutaja>` lõpetab veakoodiga, kui kasutajat pole. `mkdir -p` ei anna viga, kui kaust on olemas. `grep -qx '<rida>' <fail>` kontrollib, kas täpselt selline rida on failis. `set -euo pipefail` skripti alguses peatab skripti esimese vea juures.
-
-```bash
-sudo bash parem.sh
-sudo bash parem.sh
-sudo bash parem.sh
-cat /srv/raport/conf
-```
-
-**Oodatav tulemus:** kolm jooksu, mitte ühtegi veateadet, failis üks rida `seade=1`.
-
-**Miks:** loe kokku, mitu rida kontrolli pidid lisama. Seda tööd teevad Ansible'i moodulid sinu eest, iga task'i juures.
-
-**Tõend:** `halb.sh` ja `parem.sh` repos.
-
-💭 Mis juhtub `parem.sh`-ga, kui keegi on failis muutnud rea `seade=1` kujule `seade=2`? Kas su skript tuvastab selle? Kas peaks?
 
 ---
 
@@ -816,7 +804,7 @@ Ava GitHubis oma repo → **Actions**. Viimase push'i juures jookseb kontroll. K
 
 | Kontroll | Mida vaatab |
 |---|---|
-| K1 | failid `halb.sh`, `parem.sh`, `inventory.ini`, `bootstrap.yml`, `logid/teine_jooks.txt`, `README.md` olemas |
+| K1 | failid `halb.sh`, `inventory.ini`, `bootstrap.yml`, `logid/teine_jooks.txt`, `README.md` olemas |
 | K2 | `bootstrap.yml` süntaks |
 | K3 | päris moodulid, `command`/`shell` puudub |
 | K4 | `logid/teine_jooks.txt` sisaldab `changed=0` |
