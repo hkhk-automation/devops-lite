@@ -77,6 +77,7 @@ nav:
   - K1 · Idempotentsus ja esimene playbook:
     - Loeng: week01/lecture.md
     - Praktikum: week01/lab.md
+    - Kodune õpe ja kodutöö: week01/homework.md
 
 markdown_extensions:
 - abbr
