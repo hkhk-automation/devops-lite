@@ -2,58 +2,91 @@
 
 IT-infrastruktuuri automatiseerimine täiskasvanud õppijale: käsitsi tööst korratava, versioonihallatud ja kontrollitud muutuseni.
 
-See on [IT automatiseerimise kursuse](https://hkhk-automation.github.io/devops/) (13 nädalat) kokkusurutud versioon. Iga kohtumine katab 2–3 sealset nädalat. Pikemad selgitused ja lisaharjutused on viidatud iga kohtumise juures.
+Tempo on kiire: klassis tehakse põhiosa, kodus lõpetatakse ja süvendatakse.
 
-**Maht:** 5 kohtumist × 4 akadeemilist tundi (loeng kuni 30 min, ülejäänu praktikum) + iseseisev töö.
+**Maht:** 5 kohtumist × 4 akadeemilist tundi, kohtumised üle nädala (loeng kuni 30 min, ülejäänu praktikum) + 58 h iseseisvat tööd kohtumiste vahel.
 **Eeldused:** Linuxi käsurida, SSH, tekstiredaktor, Git baas, GitHubi konto. Bash ja Git on eeldused, mitte teemad.
 
 ---
 
-## K1 · Idempotentsus ja esimene playbook
+## K1 · Ansible alused: idempotentsus ja esimene playbook
 
-**Õpid:** miks käsitsi seadistus triivib; käsk vs soovitud olek; idempotentsus ja `changed=0` kui tõend; inventar, ad-hoc käsud, moodulid ja faktid; esimene playbook; `--check --diff`; drift; SSH-võtmed; sama playbook mitmele masinale; blast radius (`--limit`).
+- Miks käsitsi seadistus triivib; käsk vs soovitud olek; imperatiivne vs deklaratiivne
+- Halb skript vs idempotentne skript
+- Inventar, ad-hoc käsud, moodulid vs `command`/`shell`, faktid (`setup`)
+- Esimene playbook: `user`, `package`, `copy`, `service`; `become`
+- Idempotentsus ja `changed=0` kui tõend
+- Dry run: `--check --diff`
+- Drift ja selle parandamine
+- SSH-võtmed, `ssh-copy-id`, `~/.ssh/config`
+- Sama playbook mitmele masinale, fakti järgi valitud väärtused, blast radius (`--limit`)
 
-- **Klassis:** käsitsi → halb skript → playbook `localhost`-il → teine jooks `changed=0` → dry run → drift → SSH-võtmed → sama playbook kolmele VM-ile.
-- **Kodus:** `admin.yml` kolmele masinale; playbook ühele oma töö korduvale tegevusele; teooria küsimused.
-- **Pikemalt:** [N1](https://hkhk-automation.github.io/devops/week01/lecture/), [N3](https://hkhk-automation.github.io/devops/week03/lecture/)
+**Kodus:** `admin.yml` kolmele masinale; playbook ühele oma töö korduvale tegevusele; teooria küsimused.
 
-## K2 · Serveripark
+## K2 · Ansible sügavamalt: serveripark, mallid, saladused, rollid
 
-**Õpid:** inventari grupid ja pesastatud grupid; `group_vars` ja `host_vars`; muutujate eelistusjärjekord; Jinja2 mall (`template`-moodul); handler; üks kood, kaks keskkonda (test/prod).
+- Inventari grupid ja pesastatud grupid, `ansible-inventory --graph`
+- `group_vars` ja `host_vars`; muutujate eelistusjärjekord; üks kood, kaks keskkonda (test/prod)
+- Jinja2 mallid (`template`): muutujad, tingimused, tsüklid
+- Handlerid: taaskäivitus ainult muutuse korral
+- `loop`, `when`, `register`
+- Ansible Vault: krüptitud muutujad, `--ask-vault-pass`, parool väljaspool Giti
+- Rollid: `ansible-galaxy init`, `tasks`, `handlers`, `templates`, `defaults`; `site.yml`
+- Tagid ja `--tags`
 
-- **Klassis:** grupid ja sihtimine → grupimuutujad → mall, mis näitab hosti ja keskkonda → handler, mis taaskäivitab teenuse ainult muutuse korral → dry run enne päris muutust.
-- **Kodus:** drift hunt (leia ja paranda istutatud vead), peer attack paarilisega, väljakutse.
-- **Pikemalt:** [N4](https://hkhk-automation.github.io/devops/week04/lecture/), [N12](https://hkhk-automation.github.io/devops/week12/lecture/)
+**Kodus:** teine roll (kasutajad või `chrony`), mõlemad rollid kolmel masinal test/prod muutujatega; drift hunt (istutatud vead).
 
-## K3 · Rollid ja saladused
+## K3 · Konteinerid: Docker ja Compose
 
-**Õpid:** rolli struktuur (`tasks`, `handlers`, `templates`, `defaults`); `site.yml`; `defaults` vs `vars`; Ansible Vault; saladused Gitis krüptituna; tagid.
+- Image vs konteiner; `run`, `ps`, `logs`, `exec`, `inspect`
+- Dockerfile: `FROM`, `COPY`, `RUN`, `EXPOSE`, `CMD`; kihid ja cache; `.dockerignore`
+- Pordid, keskkonnamuutujad, image'i versioonid (tag'id)
+- Volume ja bind mount: andmete püsivus
+- Võrgud: konteinerid nime järgi
+- Compose: mitu teenust, `depends_on`, healthcheck, `.env`, volume'id
+- Konteiner vs Ansible'iga seadistatud VM: millal kumb
+- Ansible paigaldab Dockeri ja käivitab Compose-stacki sihtserveris
 
-- **Klassis:** K2 playbook rolliks → `defaults/main.yml` → Vaultis parool → `site.yml`, mis kasutab mitut rolli.
-- **Kodus:** teine roll (nt `chrony` või kasutajad) ja mõlemad rollid kolmel masinal.
-- **Pikemalt:** [N4](https://hkhk-automation.github.io/devops/week04/lecture/), [N11](https://hkhk-automation.github.io/devops/week11/lecture_ansible_roles/)
+**Kodus:** kolme teenusega stack (rakendus + andmebaas + reverse proxy), mille Ansible roll paigaldab VM-ile; teine jooks `changed=0`.
 
-## K4 · Konteinerid
+## K4 · CI/CD: automaatne kontroll, ehitus ja tarne
 
-**Õpid:** image vs konteiner; Dockerfile ja kihid; cache; portide avamine; volume ja andmete püsivus; Compose: mitu teenust, nimega võrk, healthcheck, `depends_on`; konteiner vs Ansible'iga seadistatud VM.
+- Pipeline'i mõte: iga muutus kontrollitakse enne, kui see jõuab serverisse
+- GitHub Actions: workflow, trigger (`push`, `pull_request`), job, step, runner
+- Kontrollid: `ansible-lint`, `yamllint`, `--syntax-check`, saladuste otsing
+- Punane pipeline: logi lugemine, vea leidmine, parandus; revert kui rollback
+- Image'i ehitamine pipeline'is ja push registrisse (GHCR), `GITHUB_TOKEN`
+- Secrets GitHubis; `needs`: ehitus ainult siis, kui testid läbisid
+- Branch protection: `main`-i ei jõua ilma rohelise kontrollita
 
-- **Klassis:** valmis image → oma image → volume'iga andmebaas → Compose kahe teenusega.
-- **Kodus:** Ansible paigaldab Dockeri ja käivitab Compose-stacki sihtserveris, teine jooks `changed=0`.
-- **Pikemalt:** [N5](https://hkhk-automation.github.io/devops/week05/lecture/), [N6](https://hkhk-automation.github.io/devops/week06/lecture/)
+**Kodus:** pipeline K3 stackile: lint → ehitus → push GHCR-i; tarne VM-ile käib Ansible'iga uue image'i tag'iga.
 
-## K5 · Infrastruktuur koodina ja CI
+## K5 · Terraform ja Kubernetes
 
-**Õpid:** deklaratiivne vs imperatiivne infra; OpenTofu provider, resource, state; `plan` → `apply` → muutus (`~` vs `-/+`) → drift → `destroy`; mis läheb Giti ja mis mitte; CI pipeline, mis kontrollib koodi igal pushil.
+Kasutame OpenTofut (`tofu`), mis on Terraformi avatud lähtekoodiga haru: sama HCL-keel, samad provider'id, samad käsud (`terraform plan` = `tofu plan`). Mida siin õpid, töötab tööl ka Terraformiga.
 
-- **Klassis:** OpenTofu elutsükkel Dockeri provideriga; lühidemo GitHub Actionsist.
-- **Kodus:** pipeline, mis jooksutab `ansible-lint` ja `tofu validate`; lõputöö plaan.
-- **Pikemalt:** [N7](https://hkhk-automation.github.io/devops/week07/lecture/), [N9](https://hkhk-automation.github.io/devops/week09/async_task/), [N10](https://hkhk-automation.github.io/devops/week10/lecture/)
+**Terraform (esimene pool)**
+
+- Deklaratiivne infra: provider, resource
+- Elutsükkel: `init` → `plan` → `apply` → `destroy`; plaani lugemine (`+`, `~`, `-/+`)
+- State: mis see on, miks see Giti ei käi, `state list`
+- Drift: käsitsi muudatus ja selle tuvastamine plaanis
+- Muutujad, outputs, viited ressursside vahel
+
+**Kubernetes (teine pool)**
+
+- Miks orkestreerimine: mis juhtub, kui Compose-stack peab jooksma mitmel masinal
+- Klaster (k3s), `kubectl`; Pod, Deployment, Service
+- Soovitud olek Kubernetes'is: kustutatud Pod tuleb ise tagasi
+- Skaleerimine (`replicas`) ja rolling update uue image'i tag'iga
+- ConfigMap ja Secret
+- K3 Compose-stack Kubernetes'i manifestideks
+
+**Kodus:** Terraformi moodulid ja Terraform loob → Ansible seadistab (outputs → inventar); K4 image Kubernetes'i Deployment'iks; lõputöö plaan ja algus.
 
 ## Lõputöö (~18 h, iseseisev)
 
-Probleem sinu töökohast või kodulaborist. Vähemalt kaks kursuse kihti koos (nt Ansible roll + Compose, või OpenTofu + Ansible), saladused krüptitud, README-s käivitusjuhis ja tõend, et teine jooks ei muuda midagi.
-
-**Välja jäetud** võrreldes pika kursusega: automaatne image'i ehitamine ja registry (N8), OpenTofu moodulid (N11 valik 1), Kubernetes.
+Probleem sinu töökohast või kodulaborist. Vähemalt kolm kursuse kihti koos (nt Terraform → Ansible roll → Compose-stack või Kubernetes, pipeline kontrollib). Saladused krüptitud, README-s käivitusjuhis, tõend, et teine jooks ei muuda midagi.
 
 ---
 
@@ -63,11 +96,11 @@ Probleem sinu töökohast või kodulaborist. Vähemalt kaks kursuse kihti koos (
 
 **Ennusta, siis kontrolli.** Enne olulist käsku kirjuta üles, mida ootad. Kui tulemus erineb, oled midagi valesti mõistnud, ja just see on kõige kasulikum koht õppimiseks.
 
-**Viga on samm.** Mõnes labis on koht, kus midagi teadlikult ei tööta, et näha, kuidas tööriist selle lahendab.
+**Viga on samm.** Igas praktikumis on koht, kus midagi teadlikult ei tööta, et näha, kuidas tööriist selle lahendab.
 
 ## Keskkond
 
-- **Control node:** sinu masin (WSL2, oma VM või Linux), kus on Ansible ja Git.
+- **Control node:** sinu masin (WSL2, oma VM või Linux), kus on Ansible, Docker, OpenTofu, `kubectl` ja Git.
 - **Sihtmasinad:** alguses `localhost`, seejärel klastri VM-id, mille aadressid annab juhendaja.
 
 ## Esitamine

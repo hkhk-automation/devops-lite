@@ -1,69 +1,59 @@
-# K1 · Labor: esimene playbook
+# K1 · Praktikum: esimene playbook
 
-**Klassis:** Osad 1–10. **Kodus:** Kodutöö.
-**Töövahend:** control node = sinu masin (WSL2, VM või Linux) Ansible'i ja Gitiga. Sihtmasinad: Osad 1–7 `localhost`, Osad 8–10 klastri VM-id, mille aadressid annab juhendaja.
+## Eesmärk
 
-Iga osa algab lühikese selgitusega, mida ja miks teed. Loe, tee, vaata tulemust.
+Tänase lõpuks on sul playbook, mis viib kolm serverit samasse olekusse: kasutaja olemas, nginx paigaldatud ja käimas, avaleht näitab serveri nime. Teine jooks ei muuda midagi (`changed=0`), ja see on tõend, et kirjeldus on idempotentne.
 
----
+Praktikumil on kaks osa:
 
-## 🎯 Õpiväljundid
+- **A · Juhendatud:** kõik ühel masinal (`localhost`), samm-sammult.
+- **B · Iseseisev:** sama oskus kolmel VM-il. Antud on eesmärk ja piirangud, lahenduse leiad ise.
 
-1. Selgitad, miks käsitsi seadistus triivib.
-2. Näitad, miks toores käsk pole idempotentne.
-3. Kirjutad playbooki, mis viib masina soovitud olekusse.
-4. Tõestad idempotentsust `changed`/`ok` väljundist.
-5. Tuvastad ja parandad drift'i.
-6. Seadistad võtmepõhise SSH-ligipääsu ja rakendad sama playbooki mitmele masinale.
-7. Kasutad fakte, et sama playbook töötaks eri distributsioonidel.
+Iga samm on kujul **Tegevus → Oodatav tulemus → Miks → Tõend**.
 
 ---
 
-## Eeltöö
-
-Kontrolli tööriistu:
+## 0 · Valmisolek
 
 ```bash
 git --version && ansible --version | head -1
 systemctl is-system-running
 ```
 
-Kui Ansible puudub: `sudo apt update && sudo apt install -y ansible`. WSL-is peab `systemctl` vastama (`running` või `degraded`); kui ei vasta, ütle juhendajale.
+- **Oodatav tulemus:** mõlemad versioonid on näha; `systemctl` vastab `running` või `degraded`.
+- Ansible puudub: `sudo apt update && sudo apt install -y ansible`. `systemctl` ei vasta (WSL): ütle juhendajale.
 
-Ava Classroom 50 link, mille juhendaja jagas, ja nõustu ülesandega. Sulle tekib oma repo. Klooni see:
+Ava Classroom 50 link ja nõustu ülesandega. Klooni oma repo:
 
 ```bash
 git clone https://github.com/hkhk-automation/<sinu-repo>.git
 cd <sinu-repo>
 ```
 
-Kõik failid lähevad selle repo juurkausta.
+Kõik failid lähevad repo juurkausta.
 
 ---
 
-## Osa 1 · Käsitsi töö
+## A · Juhendatud osa
 
-Enne kui automatiseerid, tee asi üks kord käsitsi. Nii tead täpselt, mida hiljem masinale usaldad. Seadista `localhost` veebiserveriks ja täida kõrvale kontrolltabel kahe veeruga: **käsk** ja **tulemus, mis pidi tekkima**. Playbook, mille hiljem kirjutad, teeb täpselt need read.
+### A1 · Käsitsi seadistus
+
+**Tegevus:** seadista `localhost` käsitsi veebiserveriks. Kirjuta kõrvale kontrolltabel: käsk | tulemus, mis pidi tekkima.
 
 ```bash
 sudo useradd -m saidi
 sudo apt install -y nginx
 echo "<h1>Tere käsitsi</h1>" | sudo tee /var/www/html/index.html
-sudo systemctl start nginx
-sudo systemctl enable nginx
+sudo systemctl enable --now nginx
 ```
 
-**Kontroll:** `curl -s localhost` vastab `<h1>Tere käsitsi</h1>`. Kontrolltabelis on 5 rida. Kui `curl` ei vasta, ütleb `systemctl status nginx`, kas teenus seisab või on paigaldamata.
+**Oodatav tulemus:** `curl -s localhost` vastab `<h1>Tere käsitsi</h1>`.
+**Miks:** enne automatiseerimist pead teadma, mida masin peab tegema. Kontrolltabeli read muutuvad hiljem playbooki task'ideks.
+**Tõend:** kontrolltabel (4 rida) vihikus.
 
-💭 Kui peaksid sama tegema kümnele masinale, mitmendal ununeks esimene samm?
+### A2 · Halb skript ja parem skript
 
----
-
-## Osa 2 · Halb automaatika
-
-Skript võib olla kiire ja ikka vale, kui seda ei saa ohutult korrata. Kirjutad tahtlikult halva skripti ja jooksutad seda kaks korda. Pane tähele kolme asja: `useradd` eeldab, et kasutajat pole; `mkdir` eeldab, et kausta pole; `echo >>` lisab rea, kontrollimata, kas see on juba olemas.
-
-Loo `halb.sh`:
+**Tegevus:** loo `halb.sh` ja jooksuta seda kaks korda.
 
 ```bash
 #!/usr/bin/env bash
@@ -72,26 +62,21 @@ mkdir /srv/raport
 echo "seade=1" >> /srv/raport/conf
 ```
 
-Jooksuta kaks korda:
-
 ```bash
-sudo bash halb.sh; sudo bash halb.sh
-cat /srv/raport/conf
+sudo bash halb.sh; sudo bash halb.sh; cat /srv/raport/conf
 ```
 
-**Kontroll:** teine jooks annab `useradd`-ilt "already exists" ja `mkdir`-ilt "File exists". Failis `conf` on rida `seade=1` kaks korda. Skript andis vigadest teada, aga duplikaadist mitte, ja just see on ohtlik.
+**Oodatav tulemus:** teisel jooksul vead "already exists" ja "File exists"; failis `conf` on `seade=1` kaks korda.
+**Miks:** skript andis vigadest teada, aga duplikaadist mitte. Vaikne duplikaat on tootmises kõige ohtlikum.
 
-**Paranda skript** nii, et teine jooks ei annaks vigu ega duplikaati. Vihje: `id raporteerija`, `mkdir -p`, `grep -qx`. Salvesta see `parem.sh`-na ja jooksuta kaks korda. Kui palju ridu tuli juurde? Seda tööd teeb Ansible'i moodul sinu eest.
+**Tegevus:** kirjuta `parem.sh`, mis ei anna teisel jooksul vigu ega duplikaati (vihje: `id`, `mkdir -p`, `grep -qx`).
+**Oodatav tulemus:** kaks jooksu järjest ilma vigadeta, `conf`-is üks rida.
+**Miks:** loe kokku, mitu rida kontrolli pidid lisama. Seda tööd teeb Ansible'i moodul sinu eest.
+**Tõend:** `halb.sh` ja `parem.sh` repos.
 
-💭 Milline kolmest käitumisest teeks tootmises kõige suuremat kahju?
+### A3 · Inventar ja ad-hoc käsud
 
----
-
-## Osa 3 · Inventar ja ad-hoc käsud
-
-Iga Ansible-töö algab **inventarist**: nimekirjast masinatest, mida haldad. Praegu on seal üks masin, sinu enda oma. Ad-hoc käsk jookseb ühe korra ja näitab olulist vahet: **moodul** (`ping`, `setup`) mõistab olekut ja tagastab struktureeritud infot, **toores käsk** (`command`) ainult käivitab midagi.
-
-Loo `inventory.ini`:
+**Tegevus:** loo `inventory.ini`:
 
 ```ini
 [kohalik]
@@ -100,22 +85,17 @@ localhost ansible_connection=local
 
 ```bash
 ansible -i inventory.ini kohalik -m ping
-ansible -i inventory.ini kohalik -m setup -a "filter=ansible_distribution*"
 ansible -i inventory.ini kohalik -m setup -a "filter=ansible_os_family"
 ansible -i inventory.ini kohalik -m command -a "uptime"
 ```
 
-**Kontroll:** `ping` vastab `pong`. `setup` tagastab fakte, näiteks `ansible_distribution: Ubuntu` ja `ansible_os_family: Debian`. `command` tagastab ainult teksti. `ansible_os_family` läheb vaja Osa 10-s.
+**Oodatav tulemus:** `pong`; `ansible_os_family: Debian`; `uptime` väljund tekstina.
+**Miks:** moodul (`ping`, `setup`) tagastab struktureeritud info, mida playbook saab kasutada. `command` tagastab ainult teksti. `ansible_os_family` läheb vaja osas B.
+**Tõend:** `inventory.ini` repos.
 
-💭 Kui tahad playbookis öelda "kui masin on Debian-pere, tee X", kumb annab selleks info?
+### A4 · Esimene playbook
 
----
-
-## Osa 4 · Esimene playbook
-
-Nüüd paned Osa 1 käsitsitöö kirja **soovitud olekuna**: kasutaja on olemas, pakk paigaldatud, avaleht paigas, teenus käib. Ehita **üks task korraga** ja jooksuta iga lisanduse järel, siis tead alati, milline task vea tekitas.
-
-Loo `bootstrap.yml`:
+**Tegevus:** loo `bootstrap.yml`. Alusta ühest task'ist ja jooksuta iga lisanduse järel.
 
 ```yaml
 - name: Bootstrap veebiserver
@@ -127,216 +107,166 @@ Loo `bootstrap.yml`:
         name: saidi
 ```
 
-`become: true` annab sudo-õigused. Lisa ise ülejäänud task'id, parameetrid leiad `ansible-doc <moodul>` abil:
+Lisa ise (`ansible-doc <moodul>`):
 
-1. pakett `nginx` paigaldatud (`package`, `state: present`);
-2. fail `/var/www/html/index.html` sisuga `<h1>Hallatud Ansible'iga</h1>` (`copy`, `content:`);
-3. teenus `nginx` käib ja käivitub buutimisel (`service`, `state: started`, `enabled: true`).
+1. `package`: `nginx`, `state: present`
+2. `copy`: `/var/www/html/index.html`, `content: "<h1>Hallatud Ansible'iga</h1>\n"`
+3. `service`: `nginx`, `state: started`, `enabled: true`
 
-**Enne esimest jooksu ennusta:** Osa 1 käsitsitöö on masinas juba olemas. Mitu `changed`-i tuleb ja millistel task'idel? Kirjuta vastus üles.
+Enne esimest jooksu **kirjuta üles ennustus**: mitu `changed`-i tuleb ja millistel task'idel? A1 käsitsitöö on masinas juba olemas.
 
 ```bash
 ansible-playbook -i inventory.ini bootstrap.yml
 curl -s localhost
 ```
 
-**Kontroll:** 4 task'i, iga task on päris moodul. `curl` näitab uut lehte. Võrdle `PLAY RECAP`-i oma ennustusega. Muutuma pidi ainult avaleht, sest ainult selle sisu erines käsitsi tehtust.
+**Oodatav tulemus:** `changed=1` (ainult avaleht), `curl` näitab uut lehte.
+**Miks:** moodul võrdleb soovitud olekut praegusega ja muudab ainult erinevuse.
+**Tõend:** ennustus vihikus, `bootstrap.yml` repos.
 
-💡 `Permission denied` tähendab, et `become: true` on puudu. `apt` "Could not get lock" tähendab, et taustal käib teine apt: oota ja korda.
+### A5 · Teine jooks
 
----
-
-## Osa 5 · Teine jooks
-
-Korralik deklaratiivne kirjeldus ei tee teisel jooksul midagi, sest masin on juba soovitud olekus. Kui mõni task näitab igal jooksul `changed`, siis ta teeb tegevust, mitte ei kirjelda olekut. Tavaliselt on põhjus `command`/`shell` seal, kus oleks pidanud olema päris moodul.
-
-Jooksuta kohe uuesti ja salvesta väljund:
+**Tegevus:**
 
 ```bash
 ansible-playbook -i inventory.ini bootstrap.yml | tee logid/teine_jooks.txt
 ```
 
-**Kontroll:** `PLAY RECAP` näitab `changed=0`.
+**Oodatav tulemus:** `changed=0`.
+**Miks:** see on idempotentsuse tõend: masin on juba soovitud olekus.
 
-**Katse:** lisa playbooki task `ansible.builtin.command: echo tere` ja jooksuta kaks korda. Mida näitab `PLAY RECAP` teisel korral? Eemalda task ja jooksuta uuesti, kuni on jälle `changed=0`.
+**Tegevus:** lisa ajutiselt task `ansible.builtin.command: echo tere` ja jooksuta kaks korda. Eemalda see siis.
+**Oodatav tulemus:** `command` on igal jooksul `changed`.
+**Miks:** toores käsk ei tea olekut, seega pole ta idempotentne.
+**Tõend:** `logid/teine_jooks.txt` (ilma `command`-task'ita).
 
-💭 Osa 2 skript andis teisel jooksul vea ja duplikaadi. Miks `bootstrap.yml` seda ei tee, kuigi teeb sama tööd?
+### A6 · Dry run
 
----
-
-## Osa 6 · Dry run
-
-Enne muutust tasub vaadata, mida Ansible teeks, ilma et ta midagi muudaks. Muuda `bootstrap.yml`-is avalehe tekst ja jooksuta:
+**Tegevus:** muuda playbookis avalehe teksti ja jooksuta:
 
 ```bash
 ansible-playbook -i inventory.ini bootstrap.yml --check --diff
 curl -s localhost
 ```
 
-**Kontroll:** väljundis on `---`/`+++` diff vana ja uue sisu vahel, `changed=1`, aga `curl` näitab ikka vana lehte. Alles päris jooks (ilma `--check`) muudab lehe.
+**Oodatav tulemus:** diff näitab vana ja uut sisu, `changed=1`, aga `curl` näitab ikka vana lehte.
+**Miks:** enne muutust tootmises vaatad, mida see teeks. Päris jooks (ilma `--check`) muudab lehe.
 
----
+### A7 · Drift
 
-## Osa 7 · Drift
-
-Automaatika päris väärtus on kõrvalekalde parandamine. Tekita kolm kõrvalekallet:
+**Tegevus:** tekita kolm kõrvalekallet. **Ennusta**, mitu `changed`-i tuleb, siis jooksuta playbook.
 
 ```bash
 sudo rm /var/www/html/index.html
 sudo systemctl stop nginx
 sudo userdel saidi
-```
-
-**Ennusta enne jooksu:** mitu `changed`-i tuleb ja millistel task'idel? Siis jooksuta `bootstrap.yml`.
-
-**Kontroll:** täpselt 3 `changed`-i, `nginx` pakett jäi `ok`. `curl -s localhost` vastab uuesti.
-
-💭 Kust Ansible teadis, mida taastada, kui sa talle ei öelnud, mis katki oli?
-
----
-
-## Osa 8 · SSH-võtmed sihtmasinatele
-
-Siiani oli sihtmasin sinu enda arvuti. Päris töös haldad masinaid üle SSH ja ilma paroolita, et Ansible saaks neid automaatselt kasutada. **Privaatvõti** jääb sinu masinasse, sihtmasinasse läheb ainult **avalik võti**.
-
-Juhendaja annab sulle sihtmasinate aadressid, kasutajanime ja esialgse parooli.
-
-```bash
-ssh-keygen -t ed25519 -C "<eesnimi>@kursus"
-ssh-copy-id -i ~/.ssh/id_ed25519.pub <kasutaja>@<vm1>
-ssh <kasutaja>@<vm1> hostname
-```
-
-Korda `ssh-copy-id` iga sihtmasina kohta. Lisa mugavuseks `~/.ssh/config`:
-
-```
-Host vm1
-    HostName <vm1-ip>
-    User <kasutaja>
-    IdentityFile ~/.ssh/id_ed25519
-```
-
-**Kontroll:** `ssh vm1 hostname` vastab ilma parooli küsimata, iga masina kohta.
-
-💡 `Permission denied (publickey)`: võti pole sihtmasinas. Kontrolli `ssh-copy-id` väljundit ja `ssh -v vm1`.
-
----
-
-## Osa 9 · Inventar mitme masinaga
-
-Lisa `inventory.ini`-sse uus grupp:
-
-```ini
-[kohalik]
-localhost ansible_connection=local
-
-[veeb]
-vm1
-vm2
-vm3
-```
-
-**Ennusta enne:** kui palju `pong`-e tuleb järgmisest kolmest käsust?
-
-```bash
-ansible -i inventory.ini veeb -m ping
-ansible -i inventory.ini all -m ping
-ansible -i inventory.ini veeb -m ping --limit vm2
-```
-
-Seejärel vaata, mis OS igal masinal on:
-
-```bash
-ansible -i inventory.ini veeb -m setup -a "filter=ansible_os_family"
-```
-
-**Kontroll:** vastused klapivad ennustusega. Tead iga sihtmasina OS-i perekonda.
-
----
-
-## Osa 10 · Sama playbook kolmele masinale
-
-Muuda `bootstrap.yml`-is rida `hosts: kohalik` kujule `hosts: veeb`.
-
-Kaks probleemi, mis nüüd välja tulevad:
-
-- **Veebi juurkaust erineb:** Debiani peres on see `/var/www/html`, RedHati peres (AlmaLinux, Rocky) `/usr/share/nginx/html`.
-- **Leht peaks ütlema, mis masin see on**, et näeksid, kust vastus tuli.
-
-Lisa playbooki algusesse muutuja, mis valib kausta fakti järgi:
-
-```yaml
-  vars:
-    veebi_juur: "{{ '/var/www/html' if ansible_os_family == 'Debian' else '/usr/share/nginx/html' }}"
-```
-
-Muuda `copy`-task'i:
-
-```yaml
-        dest: "{{ veebi_juur }}/index.html"
-        content: "<h1>{{ inventory_hostname }} - hallatud Ansible'iga</h1>\n"
-```
-
-Käivita esmalt **blast radius'e** kontrolliga ühel masinal, siis kõigil:
-
-```bash
-ansible-playbook -i inventory.ini bootstrap.yml --limit vm1
 ansible-playbook -i inventory.ini bootstrap.yml
-ansible-playbook -i inventory.ini bootstrap.yml | tee logid/kolm_masinat.txt
 ```
 
-**Kontroll:** `curl -s http://<vm1-ip>` näitab `vm1`, `vm2` näitab `vm2` jne. `logid/kolm_masinat.txt` `PLAY RECAP`-is on kolm rida, kõigil `changed=0`.
-
-Kui aega jääb: tekita ühes masinas drift (`ssh vm2 "sudo systemctl stop nginx"`) ja jooksuta playbook. Mitu `changed`-i tuleb ja millisel masinal?
-
-💭 Mitu rida pidid muutma, et üks masin asenduks kolmega? Mitu oleks 50 masina puhul?
+**Oodatav tulemus:** 3 `changed`-i; `nginx` pakett jääb `ok`; `curl` vastab uuesti.
+**Miks:** playbook parandab ainult selle, mis triivis, ilma et ütleksid, mis katki on.
+**Tõend:** vihikus: mis triivis, mis taastati, kas ennustus klappis.
 
 ---
 
-## Osa 11 · Git
+## ☕ Paus
 
-Playbook on kood, seega käib see versioonihaldusesse. README ütleb järgmisele lugejale, ka sulle endale kolme kuu pärast, milline on masinate soovitud olek ja kuidas seda rakendada.
+Pärast pausi jätka osaga B. Kui A on pooleli, lõpeta enne A5, sest B ehitab `bootstrap.yml` peale.
 
-Kirjuta `README.md`: masinate soovitud olek, käivituskäsk ja lühidalt, mis Osa 7-s triivis ja mis taastati.
+---
+
+## B · Iseseisev osa: kolm serverit
+
+### Eesmärk
+
+Juhendaja annab sulle kolme VM-i aadressid, kasutajanime ja esialgse parooli. Vii kõik kolm samasse olekusse sama `bootstrap.yml`-iga. Iga server näitab avalehel oma nime.
+
+### Piirangud
+
+- Ansible ühendub SSH-võtmega. Parool ei tohi olla üheski failis.
+- Üks playbook kõigile kolmele. OS-ist sõltuvad väärtused (veebi juurkaust) valitakse **fakti järgi**, mitte käsitsi hosti kaupa.
+- Enne kõiki masinaid proovi ühel (`--limit`).
+- `command`/`shell` pole lubatud seal, kus on olemas moodul.
+
+### Valmis, kui
+
+- [ ] `ssh <vm> hostname` töötab iga masina kohta ilma paroolita.
+- [ ] `ansible -i inventory.ini veeb -m ping` annab kolm `pong`-i.
+- [ ] `curl http://<vm-ip>` näitab iga masina puhul selle nime.
+- [ ] Teine jooks kõigil kolmel: `changed=0`, salvestatud faili `logid/kolm_masinat.txt`.
+- [ ] Drift ühes masinas (nt peatatud nginx) parandub ühe jooksuga ja teisi ei puudutata.
+
+### Vihjed
+
+Ava ainult siis, kui jääd kinni.
+
+??? tip "SSH-võti"
+    `ssh-keygen -t ed25519`, siis `ssh-copy-id <kasutaja>@<ip>` iga masina kohta. Privaatvõti jääb sinu masinasse, sihtmasinasse läheb ainult `.pub`. `~/.ssh/config`-is saad anda masinatele lühinimed (`Host vm1`, `HostName`, `User`).
+
+??? tip "Inventar"
+    Lisa `inventory.ini`-sse grupp `[veeb]` kolme masinaga ja muuda playbookis `hosts:`.
+
+??? tip "Veebi juurkaust erineb"
+    Debiani peres `/var/www/html`, RedHati peres `/usr/share/nginx/html`. Kontrolli `ansible veeb -m setup -a "filter=ansible_os_family"` ja kasuta playbookis muutujat, mille väärtus sõltub `ansible_os_family`-st (Jinja2 `if … else`).
+
+??? tip "Masina nimi lehel"
+    `copy` `content:` võib sisaldada muutujat: `{{ inventory_hostname }}`.
+
+??? tip "Missing sudo password"
+    Sihtmasinas pole paroolita sudo. Lisa käsule `-K`.
+
+---
+
+## Dokumenteerimine
+
+**Tegevus:** kirjuta `README.md`:
+
+- masinate soovitud olek (mis peab igas masinas olema);
+- käivituskäsk;
+- mis A7-s triivis ja mis taastati;
+- **peegeldus**, 2–3 lauset iga küsimuse kohta: (1) Mitu rida pidid muutma, et üks masin asenduks kolmega? Mitu oleks 50 puhul? (2) Mis ennustus läks mööda ja miks? (3) Mis sinu töös praegu triivib?
 
 ```bash
-git add . && git commit -m "K1: bootstrap playbook, idempotentne, 3 masinat"
+git add . && git commit -m "K1: bootstrap, idempotentne, 3 masinat"
 git push
 ```
 
-**Kontroll:** GitHubis on repos `halb.sh`, `parem.sh`, `inventory.ini`, `bootstrap.yml`, `logid/teine_jooks.txt`, `logid/kolm_masinat.txt`, `README.md`. Actions vahelehel on klassi kontrollid rohelised.
+**Oodatav tulemus:** Actions vahelehel on kontrollid 1–5 rohelised.
+**Tõend:** repos on `halb.sh`, `parem.sh`, `inventory.ini`, `bootstrap.yml`, `logid/teine_jooks.txt`, `logid/kolm_masinat.txt`, `README.md`.
 
-💡 `git push` küsib parooli: GitHub ei võta enam kontoparooli. Loo token (GitHub → Settings → Developer settings → Personal access tokens) või lisa oma SSH-võti GitHubi ja vaheta remote: `git remote set-url origin git@github.com:hkhk-automation/<sinu-repo>.git`.
+💡 `git push` küsib parooli: GitHub kontoparooli ei võta. Kasuta Personal Access Tokenit või lisa SSH-võti GitHubi ja vaheta remote: `git remote set-url origin git@github.com:hkhk-automation/<sinu-repo>.git`.
 
 ---
 
-## Kodutöö (~8 h)
+## Kodutöö
 
-Samasse reposse.
+Samasse reposse. Tähtaeg on Classroom 50-s. Kodutöö on klassitööst raskem: juhiseid on vähem, parameetrid otsid ise `ansible-doc`-ist ja dokumentatsioonist.
 
-**1. `admin.yml`.** Playbook grupile `veeb`, mis viib masinad olekusse:
+**1. `admin.yml`** grupile `veeb`:
 
-- kasutaja `deploy` on olemas ja kuulub sudo-gruppi (Debianis `sudo`, RedHatis `wheel`: vali fakti järgi);
+- kasutajad `deploy` ja `monitor` luuakse ühe task'iga, mis käib läbi nimekirja (`loop`);
+- mõlemale lisatakse sinu avalik SSH-võti (`ansible.posix.authorized_key`), nii et saad nendena sisse logida;
+- `deploy` kuulub sudo-gruppi (Debianis `sudo`, RedHatis `wheel`, vali fakti järgi);
 - `chrony` on paigaldatud ja käib;
-- `/etc/motd` sisaldab teksti "Hallatud Ansible'iga - <masina nimi>".
+- `/etc/motd` sisaldab "Hallatud Ansible'iga - <masina nimi>".
 
-`command`/`shell` pole lubatud seal, kus on olemas päris moodul. Teine jooks peab olema `changed=0`. Salvesta see väljund faili `logid/admin_teine_jooks.txt`.
+Teine jooks `changed=0`, salvesta `logid/admin_teine_jooks.txt`.
 
-**2. Oma töö.** Vali oma tööst üks korduv käsitsi tegevus: kasutajate loomine, paketid, konfifail, logide kaust vms. Kirjuta sellele idempotentne playbook kausta `oma/`. Kirjuta `oma/README.md`-sse, mis oli enne käsitsi ja mis on nüüd kood.
+**2. `hardening.yml`**: SSH turvamine grupile `veeb`.
 
-**3. Teooria.** Loe teooria §2, §5 ja §6 ning vasta kolmele kordamisküsimusele (§2, §4 ja Osa 7 "Mõtle") failis `vastused.md`.
+- `/etc/ssh/sshd_config`-is: `PermitRootLogin no` ja `PasswordAuthentication no` (`lineinfile`);
+- enne muudatuse rakendamist kontrollitakse konfi süntaksit (`validate: sshd -t -f %s`);
+- `sshd` taaskäivitatakse ainult siis, kui konf muutus (uuri `notify` ja `handlers`).
 
----
+**Ohutus:** see võib sind masinast välja lukustada. Hoia teine SSH-sessioon lahti, proovi esmalt `--check --diff` ja `--limit vm1`, alles siis kõigil. Kui lukustasid end välja, kirjuta README-sse, mis juhtus ja kuidas said tagasi.
 
-## ✅ Lõpukontroll
+Teine jooks `changed=0`, salvesta `logid/hardening_teine_jooks.txt`.
 
-- [ ] Kontrolltabel täidetud; `halb.sh` duplikaat nähtud; `parem.sh` töötab kaks korda järjest.
-- [ ] `bootstrap.yml`: ennustus kirjas, teine jooks `changed=0`, `command`-katse tehtud ja eemaldatud.
-- [ ] `--check --diff` näitas muutust ilma seda tegemata.
-- [ ] Drift: 3 `changed`-i, ennustus klappis.
-- [ ] SSH ilma paroolita kõigisse sihtmasinatesse.
-- [ ] Kolm masinat: iga leht näitab oma nime, `logid/kolm_masinat.txt` `changed=0`.
-- [ ] Kodutöö: `admin.yml` teine jooks `changed=0`; `oma/` playbook ja README; `vastused.md`.
+**3. Oma töö.** Vali oma tööst üks korduv käsitsi tegevus ja kirjuta sellele idempotentne playbook kausta `oma/`. `oma/README.md`: mis oli enne käsitsi, mis on nüüd kood, kuidas tõestasid, et teine jooks ei muuda midagi.
+
+**4. Teooria.** Loe loengu §2 ja §6. Vasta §2 ja §4 kordamisküsimustele failis `vastused.md`.
+
+**Boonus:** kirjuta `boonus.yml`, mis üritab paigaldada paketti, mida pole olemas, ja püüab vea kinni `block`/`rescue`-ga nii, et playbook kirjutab veast teate ega kuku. Selgita `vastused.md`-s, millal see on mõistlik ja millal ohtlik.
 
 ---
 
@@ -345,22 +275,20 @@ Samasse reposse.
 | Probleem | Kontroll |
 |---|---|
 | `ping` localhostile ei vasta | failis `ansible_connection=local`; käsus `-i inventory.ini` |
-| `ping` VM-ile: `UNREACHABLE` | `ssh vm1 hostname` töötab? Nimi sama nagu `~/.ssh/config`-is? |
+| VM: `UNREACHABLE` | kas `ssh <vm> hostname` töötab? kas nimi on sama mis `~/.ssh/config`-is? |
 | `Permission denied (publickey)` | võti pole sihtmasinas: korda `ssh-copy-id` |
-| `Missing sudo password` | sihtmasinas pole paroolita sudo; lisa käsule `-K` |
+| `Missing sudo password` | lisa `-K` |
 | `apt` "Could not get lock" | oota, korda |
 | `Permission denied` playbookis | `become: true` puudu |
-| task on igal jooksul `changed` | vale moodul (`command`); kasuta `package`/`service`/`user`/`copy` |
-| `curl` näitab vaikelehte | `copy` kirjutas vale kausta; kontrolli `veebi_juur` väärtust |
-| `systemctl` ei tööta WSL-is | systemd pole WSL-is sisse lülitatud; ütle juhendajale |
+| task on igal jooksul `changed` | `command`/`shell` mooduli asemel |
+| `curl` näitab vaikelehte | leht läks vale kausta; kontrolli juurkausta muutujat |
 
 ---
 
-## 📚 Allikad
+## Allikad
 
 | Allikas | URL |
 |---|---|
-| Ansible: inventory ja esimene playbook | <https://docs.ansible.com/ansible/latest/getting_started/> |
+| Ansible: getting started | <https://docs.ansible.com/ansible/latest/getting_started/> |
 | Ansible builtin moodulid | <https://docs.ansible.com/ansible/latest/collections/ansible/builtin/> |
 | Ansible faktid | <https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html> |
-| Pro Git (eesti k) | <https://git-scm.com/book/et/v2> |
