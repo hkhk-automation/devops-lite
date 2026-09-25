@@ -107,6 +107,7 @@ ls -la
 .github/
 .gitignore
 README.md
+ULESANNE.md
 logid/
 ```
 
@@ -748,7 +749,9 @@ Need ei lähe hindele, aga on head järgmise kohtumise ettevalmistuseks.
 
 ### README
 
-Kirjuta `README.md` üle. See on dokument, mille järgi keegi teine (või sina kolme kuu pärast) saab masinad sama olekusse viia. Kasuta seda malli:
+Repos on juba `README.md` mall. Täida see: asenda kõik nurksulgudes kohad oma tööga ja kustuta ülemine kast. README on dokument, mille järgi keegi teine (või sina kolme kuu pärast) saab masinad sama olekusse viia. Ülesande kirjeldus on eraldi failis `ULESANNE.md`, seda ära muuda.
+
+Mall näeb välja nii:
 
 ```markdown
 # Lab 01 · Esimene playbook
@@ -783,7 +786,7 @@ Mis triivis, mida ennustasin, mis tegelikult juhtus.
 3. Mis minu töökohal praegu triivib, ja kuidas see välja tuleks?
 ```
 
-Iga peegeldusküsimuse vastus 2–4 lauset.
+Iga peegeldusküsimuse vastus 2–4 lauset. Automaatne kontroll K1 kukub, kui README-s on veel täitmata kohti või kui see on alla 150 sõna.
 
 ### Commit ja push
 
@@ -804,7 +807,7 @@ Ava GitHubis oma repo → **Actions**. Viimase push'i juures jookseb kontroll. K
 
 | Kontroll | Mida vaatab |
 |---|---|
-| K1 | failid `halb.sh`, `inventory.ini`, `bootstrap.yml`, `logid/teine_jooks.txt`, `README.md` olemas |
+| K1 | failid `halb.sh`, `inventory.ini`, `bootstrap.yml`, `logid/teine_jooks.txt` olemas; `README.md` mall täidetud (≥150 sõna) |
 | K2 | `bootstrap.yml` süntaks |
 | K3 | päris moodulid, `command`/`shell` puudub |
 | K4 | `logid/teine_jooks.txt` sisaldab `changed=0` |
