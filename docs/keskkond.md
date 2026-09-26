@@ -14,6 +14,12 @@ Juhendaja annab sulle kolm IP-d, kasutajanime ja parooli. Kirjuta need üles:
 | vm2 | | |
 | vm3 | | |
 
+vm1 on sinu control node: sinna paigaldad Ansible'i ja Giti, sinna kloonid repo ja seal jooksevad kõik käsud. Oma arvutis on sul ainult VS Code, mis ühendub vm1-ga üle SSH.
+
+??? info "Kas saab ka teisiti?"
+
+    Kodus võid control node'ina kasutada ka WSL-i oma arvutis (VS Code + WSL). Siis on osa A `localhost` sinu WSL, mitte AlmaLinux, ja mõned käsud erinevad juhendist. Windows ilma WSL-ita control node'iks ei sobi: [Ansible seda ei toeta](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html). Klassis ja juhendis kasutame alati vm1-te.
+
 Ühendu Windowsist vm1-ga:
 
 === "VS Code (soovitatav)"
