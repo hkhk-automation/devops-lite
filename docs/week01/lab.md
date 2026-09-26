@@ -36,19 +36,17 @@ Praktikumi lõpuks oskad:
 
 ## 0 · Valmisolek
 
-### 0.1 Ühendus kooli serveritega
+### 0.1 Ühendus vm1-ga
 
-Klassiarvuti on Windows, aga töö käib kooli Proxmoxi klastris sulle antud kolmes Linuxi VM-is. **vm1 on sinu control node:** seal on Ansible ja Git, ja sealt haldad kõiki kolme masinat, ka vm1 ennast. Osa A teed ainult vm1-s (`localhost`), osas B lisanduvad vm2 ja vm3.
+Klassiarvuti on Windows, aga töö käib kooli Proxmoxi klastris sulle antud kolmes **AlmaLinux 9** VM-is. **vm1 on sinu control node:** sinna paigaldad Ansible'i ja Giti ning sealt haldad kõiki kolme masinat, ka vm1 ennast. Osa A teed ainult vm1-s (`localhost`), osas B lisanduvad vm2 ja vm3.
 
-Juhendaja annab sulle masinate IP-d, kasutajanime ja esialgse parooli. Kirjuta need üles:
+Juhendaja annab sulle kolm IP-d, kasutajanime ja parooli. Kirjuta need üles:
 
-| Nimi | IP | Kasutaja | OS |
-|---|---|---|---|
-| vm1 (control node) | | | |
-| vm2 | | | |
-| vm3 | | | |
-
-OS-i veeru täidad hiljem (A3 ja B).
+| Nimi | IP | Kasutaja |
+|---|---|---|
+| vm1 (control node) | | |
+| vm2 | | |
+| vm3 | | |
 
 **Tegevus:** ühendu Windowsist vm1-ga. Kaks võimalust:
 
@@ -57,80 +55,92 @@ OS-i veeru täidad hiljem (A3 ja B).
 
 Esimesel ühendumisel küsitakse host key kinnitust (`yes`) ja parooli.
 
-**Oodatav tulemus:** `hostname` näitab vm1 nime. Kõik järgmised käsud käivad vm1-s, mitte Windowsis.
+**Tegevus:** masinal pole veel nime (`localhost`). Anna talle nimi, et näeksid alati, kus oled:
+
+```bash
+sudo hostnamectl set-hostname vm1
+exec bash
+```
+
+**Oodatav tulemus:** prompt on `<kasutaja>@vm1`. Kõik järgmised käsud käivad vm1-s, mitte Windowsis.
 
 ### 0.2 Tööriistad vm1-s
 
 **Tegevus:**
 
 ```bash
+sudo dnf install -y git ansible-core
+ansible-galaxy collection install ansible.posix:1.5.4
 git --version
 ansible --version | head -3
-python3 --version
-systemctl is-system-running
 ```
 
 **Oodatav tulemus:**
 
 ```
-git version 2.43.0
-ansible [core 2.16.3]
-  config file = None
+git version 2.52.0
+ansible [core 2.14.18]
+  config file = /etc/ansible/ansible.cfg
   configured module search path = [...]
-Python 3.12.3
-running
 ```
 
-Versioonid võivad erineda. Oluline on, et `ansible` vastab ja `ansible-core` on vähemalt 2.15. `systemctl` võib vastata ka `degraded`, see on korras.
+Versioonid võivad veidi erineda. Oluline on, et `ansible` vastab. `ansible.posix` kollektsiooni (tulemüüri moodul) läheb vaja osas B. Versioon 1.5.4, sest uuemad ei toeta AlmaLinuxi `ansible-core 2.14`-t.
 
-**Kui midagi puudub:**
+### 0.3 SSH-võti
 
-| Puudu | Lahendus |
-|---|---|
-| `git` | `sudo apt install -y git` |
-| `ansible` | `sudo apt update && sudo apt install -y ansible` |
+Üks võtmepaar vm1-s teeb kaks asja: sellega kloonid oma privaatse repo GitHubist ja sellega ühendub Ansible osas B vm2 ja vm3 külge. Parooli pole kummalgi juhul vaja.
 
-### 0.3 Git ja GitHub
+**Tegevus:** loo võti. Vajuta kõigi küsimuste peale Enter:
 
-Seadista vm1-s nimi ja e-post. Need lähevad iga commit'i juurde:
+```bash
+ssh-keygen -t ed25519 -C "<eesnimi>@vm1"
+cat ~/.ssh/id_ed25519.pub
+```
+
+**Oodatav tulemus:** üks rida, mis algab `ssh-ed25519 AAAA...` ja lõpeb `<eesnimi>@vm1`. See on **avalik võti**, seda võib jagada. Fail `~/.ssh/id_ed25519` (ilma `.pub`-ita) on **privaatvõti**, see ei lahku kunagi vm1-st.
+
+### 0.4 Võti GitHubi ja repo kloonimine
+
+**Tegevus:** lisa avalik võti GitHubi:
+
+1. GitHub → paremal üleval profiilipilt → **Settings** → **SSH and GPG keys** → **New SSH key**.
+2. *Title:* `vm1`, *Key type:* Authentication Key, *Key:* kleebi `cat` väljundist kogu rida.
+3. **Add SSH key**.
+
+Kontrolli vm1-s:
+
+```bash
+ssh -T git@github.com
+```
+
+**Oodatav tulemus:** esimesel korral kinnita `yes`, siis:
+
+```
+Hi <sinu-github-kasutaja>! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+**Tegevus:** seadista Git ja klooni repo. Ava Classroom 50 link, mille juhendaja jagas, ja nõustu ülesandega. Sulle tekib privaatne repo organisatsioonis `hkhk-automation`. Repo lehel vajuta **Code** → vahekaart **SSH** → kopeeri aadress (algab `git@github.com:`).
 
 ```bash
 git config --global user.name "Eesnimi Perenimi"
 git config --global user.email "sinu@email.ee"
-```
-
-GitHub ei võta `git push`-il kontoparooli. Loo kohe token: GitHub → Settings → Developer settings → Personal access tokens → **Fine-grained token**, repository access: organisatsioon `hkhk-automation`, õigus **Contents: Read and write**. Kopeeri token turvalisse kohta, see näidatakse ainult üks kord. `git push` küsib parooli asemel seda tokenit.
-
-Et tokenit ei peaks iga kord sisestama:
-
-```bash
-git config --global credential.helper store
-```
-
-### 0.4 Repo
-
-Ava Classroom 50 link, mille juhendaja jagas, ja nõustu ülesandega. Sulle tekib oma repo organisatsioonis `hkhk-automation`. Klooni see vm1 kodukausta:
-
-```bash
 cd ~
-git clone https://github.com/hkhk-automation/<sinu-repo>.git
+git clone git@github.com:hkhk-automation/<sinu-repo>.git
 cd <sinu-repo>
-ls -la
+ls
 ```
 
 **Oodatav tulemus:**
 
 ```
-.github/
-.gitignore
-README.md
-ULESANNE.md
-logid/
+README.md  ULESANNE.md  logid
 ```
 
-Kõik tänased failid lähevad selle repo juurkausta.
+Kõik tänased failid lähevad selle repo juurkausta. `git push` töötab sama võtmega, parooli ega tokenit ei küsita.
 
-**Kontrollnimekiri:** kui oled invite'i vastu võtnud, avab juhendaja su repo **Issues** alla iga praktikumi ja kodutöö osa kohta issue. Samad kaardid on kursuse tahvlil (GitHubi org `hkhk-automation` → Projects), vaade **Minu tööd**. Sule issue, kui osa on tehtud. Kui jääd kinni, ava uus issue mallist **Vajan abi**. Lõpuks on struktuur selline:
+**Kontrollnimekiri:** su repo **Issues** all on selle nädala ülesanded. Samad kaardid on kursuse tahvlil (GitHubi org `hkhk-automation` → **Projects** → *ITS-25 Automatiseerimine*), vaade **Minu tööd**. Sule issue, kui osa on tehtud. Kui jääd kinni, ava uus issue mallist **Vajan abi**.
+
+Lõpuks on repos:
 
 ```
 <sinu-repo>/
@@ -156,8 +166,8 @@ Kõik tänased failid lähevad selle repo juurkausta.
 
 ```bash
 sudo useradd -m saidi
-sudo apt install -y nginx
-echo "<h1>Tere käsitsi</h1>" | sudo tee /var/www/html/index.html
+sudo dnf install -y nginx
+echo "<h1>Tere käsitsi</h1>" | sudo tee /usr/share/nginx/html/index.html
 sudo systemctl enable --now nginx
 ```
 
@@ -166,8 +176,8 @@ Kontrolltabeli näide:
 | Käsk | Tulemus | Kontroll |
 |---|---|---|
 | `useradd -m saidi` | kasutaja `saidi` on olemas, kodukaust olemas | `id saidi`, `ls -d /home/saidi` |
-| `apt install nginx` | pakett paigaldatud | `dpkg -s nginx \| grep Status` |
-| `tee index.html` | avaleht sisuga | `cat /var/www/html/index.html` |
+| `dnf install nginx` | pakett paigaldatud | `rpm -q nginx` |
+| `tee index.html` | avaleht sisuga | `cat /usr/share/nginx/html/index.html` |
 | `systemctl enable --now` | teenus käib ja käivitub buutimisel | `systemctl is-active nginx`, `systemctl is-enabled nginx` |
 
 **Oodatav tulemus:**
@@ -251,11 +261,16 @@ Loo `ansible.cfg`, et ei peaks iga käsu juurde `-i inventory.ini` kirjutama:
 ```ini
 [defaults]
 inventory = inventory.ini
-stdout_callback = yaml
+callback_result_format = yaml
+
+[privilege_escalation]
+become_ask_pass = True
 
 [ssh_connection]
 pipelining = True
 ```
+
+`become_ask_pass` tähendab, et iga kord, kui Ansible vajab sudo-õigust (`-b` või `become: true`), küsib ta alguses `BECOME password:`. Sisesta oma kasutaja parool.
 
 Kontrolli, et Ansible kasutab just seda faili:
 
@@ -286,19 +301,17 @@ ansible kohalik -m command -a "uptime"
 **Oodatav tulemus:**
 
 ```
-localhost | SUCCESS => {
-    "changed": false,
-    "ping": "pong"
-}
-localhost | SUCCESS => {
-    "ansible_facts": {
-        "ansible_distribution": "Ubuntu",
-        "ansible_distribution_version": "24.04",
+localhost | SUCCESS =>
+    changed: false
+    ping: pong
+localhost | SUCCESS =>
+    ansible_facts:
+        ansible_distribution: AlmaLinux
         ...
-localhost | SUCCESS => {
-    "ansible_facts": {
-        "ansible_os_family": "Debian"
-...
+        ansible_distribution_version: '9.8'
+localhost | SUCCESS =>
+    ansible_facts:
+        ansible_os_family: RedHat
 localhost | CHANGED | rc=0 >>
  10:42:17 up  1:03,  1 user,  load average: 0.08, 0.05, 0.01
 ```
@@ -318,7 +331,7 @@ ansible kohalik -b -m package -a "name=tree state=present"
 
 **Tõend:** `inventory.ini` ja `ansible.cfg` repos.
 
-💭 Kui tahad playbookis öelda "kui masin on Debiani perest, tee X", kumb annab selleks info: `setup` või `command`? Miks?
+💭 Kui tahad playbookis öelda "kui masin on RedHati perest, tee X", kumb annab selleks info: `setup` või `command`? Miks?
 
 ---
 
@@ -382,7 +395,7 @@ ansible-doc -s ansible.builtin.service
 ```
 
 1. `ansible.builtin.package`: pakett `nginx`, `state: present`
-2. `ansible.builtin.copy`: fail `/var/www/html/index.html`, `content: "<h1>Hallatud Ansible'iga</h1>\n"`
+2. `ansible.builtin.copy`: fail `/usr/share/nginx/html/index.html`, `content: "<h1>Hallatud Ansible'iga</h1>\n"`
 3. `ansible.builtin.service`: `nginx`, `state: started`, `enabled: true`
 
 Iga task'i `name` kirjuta soovitud olekuna: "nginx on paigaldatud", mitte "paigalda nginx".
@@ -417,7 +430,7 @@ localhost : ok=5  changed=1  unreachable=0  failed=0  skipped=0
 
 **Tõend:** täidetud ennustustabel vihikus, `bootstrap.yml` repos.
 
-💡 `Permission denied` või `You need to be root`: `become: true` puudub. `Could not get lock /var/lib/dpkg/lock`: taustal käib teine apt, oota ja korda. `this task has extra params`: parameeter on vale taandega (loeng §10).
+💡 `Permission denied` või `You need to be root`: `become: true` puudub. `Missing sudo password`: `ansible.cfg`-s puudub `become_ask_pass = True`. `Waiting for process ... dnf`: taustal käib teine dnf, oota. `this task has extra params`: parameeter on vale taandega (loeng §10).
 
 ---
 
@@ -485,8 +498,8 @@ curl -s localhost
 
 ```
 TASK [Avaleht on paigas] **************************************
---- before: /var/www/html/index.html
-+++ after: /var/www/html/index.html
+--- before: /usr/share/nginx/html/index.html
++++ after: /usr/share/nginx/html/index.html
 @@ -1 +1 @@
 -<h1>Hallatud Ansible'iga</h1>
 +<h1>Versioon 2</h1>
@@ -509,7 +522,7 @@ curl -s localhost
 
 **Miks:** tootmises vaatad enne muutust, mida see teeks. `--diff` näitab täpselt, mis rida muutub, ja see on see, mida kolleeg code review's näha tahab.
 
-💭 Lisa ajutiselt tagasi `command: date` task ja jooksuta `--check`. Mida näitab väljund selle task'i kohta? Miks?
+💭 Lisa ajutiselt tagasi `command: date` task ja jooksuta `--check`. Mida näitab väljund selle task'i kohta? Miks? **Eemalda task pärast uuesti**, automaatne kontroll K3 ei luba `command`-i.
 
 ---
 
@@ -520,7 +533,7 @@ curl -s localhost
 **Tegevus:** tekita kolm kõrvalekallet, nagu teeks kolleeg öösel käsitsi:
 
 ```bash
-sudo rm /var/www/html/index.html
+sudo rm /usr/share/nginx/html/index.html
 sudo systemctl stop nginx
 sudo userdel saidi
 ```
@@ -546,7 +559,7 @@ curl -s localhost
 
 **Tõend:** vihikus ennustus ja tegelik tulemus.
 
-💭 Mis oleks juhtunud, kui keegi oleks A7-s nginx-i paketi eemaldanud (`apt remove nginx`)? Mitu `changed`-i? Kas avaleht oleks alles?
+💭 Mis oleks juhtunud, kui keegi oleks A7-s nginx-i paketi eemaldanud (`dnf remove nginx`)? Mitu `changed`-i? Kas avaleht oleks alles?
 
 ---
 
@@ -571,7 +584,7 @@ curl -s localhost
 
     - name: Avaleht on paigas
       ansible.builtin.copy:
-        dest: /var/www/html/index.html
+        dest: /usr/share/nginx/html/index.html
         content: "<h1>{{ lehe_pealkiri }}</h1><p>{{ inventory_hostname }}, {{ ansible_distribution }}</p>\n"
 ```
 
@@ -585,10 +598,10 @@ curl -s localhost
 ```
 TASK [Näita fakte, mida lehel kasutame] ***********************
 ok: [localhost] => {
-    "msg": "localhost / Ubuntu 24.04"
+    "msg": "localhost / AlmaLinux 9.8"
 }
 
-<h1>Hallatud Ansible'iga</h1><p>localhost, Ubuntu</p>
+<h1>Hallatud Ansible'iga</h1><p>localhost, AlmaLinux</p>
 ```
 
 **Tegevus:** kirjuta muutuja üle käsurealt, ilma faili muutmata:
@@ -604,24 +617,21 @@ Seejärel jooksuta ilma `-e`-ta, et leht saaks tagasi soovitud oleku.
 
 ---
 
-## ☕ Paus
-
-Pärast pausi jätka osaga B. Kui A on pooleli, lõpeta enne A5, sest B ehitab `bootstrap.yml` peale ja vajab `logid/teine_jooks.txt` faili. A6–A8 saad lõpetada kodus.
-
----
-
 ## B · Iseseisev osa: kolm serverit
 
 ### Eesmärk
 
 Vii kõik kolm VM-i (vm1, vm2, vm3) samasse olekusse **sama** `bootstrap.yml`-iga, mille kirjutasid osas A. Iga server näitab avalehel oma inventari nime. Masinate andmed on sul osa 0.1 tabelis.
 
-vm1 on nii control node kui üks kolmest serverist. Ansible ühendub ka vm1-ga üle SSH, seega kopeeri oma avalik võti ka vm1 enda IP-le. Pane OS-i veerg tabelis täis pärast esimest ad-hoc käsku.
+vm1 on nii control node kui üks kolmest serverist. Ansible ühendub ka vm1-ga üle SSH, seega kopeeri osas 0.3 tehtud avalik võti **kõigile kolmele**, ka vm1 enda IP-le.
+
+Kõik kolm on AlmaLinux 9. Playbook peab siiski valima OS-ist sõltuvad väärtused fakti järgi, nii et see töötaks muutmata ka Ubuntu masinal.
 
 ### Piirangud
 
 - Ansible ühendub SSH-võtmega. Parool ei tohi olla üheski repo failis.
 - Üks playbook kõigile kolmele. OS-ist sõltuvad väärtused (veebi juurkaust) valitakse **fakti järgi**, mitte käsitsi hosti kaupa.
+- Tulemüüris peab `http` olema avatud, ka see käib playbookiga (`ansible.posix.firewalld`), mitte käsitsi.
 - `localhost` jääb inventari alles, aga B-osa playbook sihib ainult gruppi `veeb`.
 - Enne kõiki masinaid proovi ühel (`--limit`).
 - `command`/`shell` pole lubatud seal, kus on olemas moodul.
@@ -630,31 +640,37 @@ vm1 on nii control node kui üks kolmest serverist. Ansible ühendub ka vm1-ga �
 
 - [ ] `ssh vm1 hostname`, `ssh vm2 hostname`, `ssh vm3 hostname` vastavad ilma parooli küsimata.
 - [ ] `ansible veeb -m ping` annab kolm `pong`-i.
-- [ ] `ansible veeb -m setup -a "filter=ansible_os_family"` on käivitatud ja OS-i veerg ülal täidetud.
-- [ ] `curl http://<vm-ip>` näitab iga masina puhul selle nime.
+- [ ] vm2 ja vm3 prompt näitab nende nime (`sudo hostnamectl set-hostname vm2` jne, nagu 0.1-s).
+- [ ] vm1-st `curl http://<vm-ip>` näitab iga masina puhul selle nime (vm2 ja vm3 vastavad alles pärast tulemüüri avamist).
 - [ ] Teine jooks kõigil kolmel: `changed=0`, `unreachable=0`, salvestatud faili `logid/kolm_masinat.txt`.
 - [ ] Drift ühes masinas (nt peatatud nginx) parandub ühe jooksuga, ja teised kaks jäävad `changed=0`.
 
 ### Soovitatav järjekord
 
-1. SSH-võti ja `~/.ssh/config`.
-2. Käsitsi `ssh` igasse masinasse, et host key'd saaksid kinnitatud.
+1. `ssh-copy-id` kõigile kolmele ja `~/.ssh/config`.
+2. Käsitsi `ssh vm2`, `ssh vm3`: host key kinnitus, hostinimi paika.
 3. Inventari grupp `veeb`.
 4. `ping` ja faktid.
-5. Playbook: `hosts`, juurkaust fakti järgi, leht masina nimega.
+5. Playbook: `hosts`, juurkaust fakti järgi, leht masina nimega, tulemüür.
 6. `--check --diff --limit vm1` → `--limit vm1` → kõik → teine jooks.
+
+    Värskes masinas (vm2, vm3) kukub `--check` task'is "nginx käib": kuivjooks ei paigalda nginx'i päriselt, seega teenust pole veel. See on ootuspärane.
 7. Drift ühes masinas.
 
 ### Vihjed
 
 Ava ainult siis, kui oled ise proovinud ja jäänud kinni.
 
-??? tip "1 · SSH-võti"
-    Võtmepaari loomine: `ssh-keygen -t ed25519 -C "<nimi>@kursus"`. Vajuta Enter kõigi küsimuste peale, kui ei taha võtmele parooli.
+??? tip "1 · Võti vm-idesse"
+    Võti on sul osast 0.3 olemas. Kopeeri avalik võti iga masina kohta, ka vm1 enda IP-le:
 
-    Avaliku võtme kopeerimine: `ssh-copy-id -i ~/.ssh/id_ed25519.pub <kasutaja>@<ip>` iga masina kohta. Esimesel korral küsitakse parooli, siis enam mitte.
+    ```bash
+    ssh-copy-id -i ~/.ssh/id_ed25519.pub <kasutaja>@<vm1-ip>
+    ssh-copy-id -i ~/.ssh/id_ed25519.pub <kasutaja>@<vm2-ip>
+    ssh-copy-id -i ~/.ssh/id_ed25519.pub <kasutaja>@<vm3-ip>
+    ```
 
-    Privaatvõti (`id_ed25519`, ilma `.pub`-ita) jääb sinu masinasse. Seda ei kopeerita kuhugi.
+    Iga kord küsitakse üks kord parooli, siis enam mitte. Privaatvõti (`id_ed25519`, ilma `.pub`-ita) ei lahku vm1-st.
 
 ??? tip "2 · `~/.ssh/config`"
     ```
@@ -687,7 +703,7 @@ Ava ainult siis, kui oled ise proovinud ja jäänud kinni.
     Muuda `hosts: kohalik` → `hosts: veeb`. Kui tahad, et sama fail töötaks ka `localhost`-il, kasuta `hosts: kohalik:veeb` ja jooksuta `--limit veeb`.
 
 ??? tip "6 · Veebi juurkaust erineb"
-    Debiani peres (Ubuntu, Debian) serveerib nginx faile kaustast `/var/www/html`. RedHati peres (AlmaLinux, Rocky, Fedora) kaustast `/usr/share/nginx/html`.
+    RedHati peres (AlmaLinux, Rocky, Fedora) serveerib nginx faile kaustast `/usr/share/nginx/html`, Debiani peres (Ubuntu, Debian) kaustast `/var/www/html`. Sinu masinad on kõik RedHati perest, aga playbook peab töötama mõlemal.
 
     Kontrolli: `ansible veeb -m setup -a "filter=ansible_os_family"`.
 
@@ -703,11 +719,13 @@ Ava ainult siis, kui oled ise proovinud ja jäänud kinni.
 ??? tip "7 · Masina nimi lehel"
     `content: "<h1>{{ inventory_hostname }}</h1>\n"`. `inventory_hostname` on nimi inventaris (`vm1`), mitte masina enda hostname.
 
-??? tip "8 · Missing sudo password"
-    Sihtmasinas pole paroolita sudo. Lisa käsule `-K` ja sisesta parool, kui küsitakse. Kui paroolid on masinates erinevad, küsi juhendajalt.
+??? tip "8 · Sudo parool kolmes masinas"
+    `ansible.cfg`-s on `become_ask_pass = True` (A3), nii et Ansible küsib `BECOME password:` ühe korra ja kasutab seda kõigis masinates. Kui paroolid on masinates erinevad, küsi juhendajalt.
 
-??? tip "9 · RedHati peres nginx ei vasta väljast"
-    AlmaLinuxis on vaikimisi `firewalld` sees. Kontrolli: `ssh vm1 sudo firewall-cmd --list-services`. Kui `http` puudub, lisa playbooki task mooduliga `ansible.posix.firewalld` (`service: http`, `permanent: true`, `immediate: true`, `state: enabled`), ainult RedHati perele: `when: ansible_os_family == 'RedHat'`.
+??? tip "9 · Tulemüür"
+    AlmaLinuxis on `firewalld` sees ja lubab vaikimisi ainult `ssh`-i. Seepärast vastab vm1 iseendale (`curl localhost`), aga vm2 ja vm3 ei vasta väljast. Kontrolli: `ansible veeb -b -m command -a "firewall-cmd --list-services"`.
+
+    Lisa playbooki task mooduliga `ansible.posix.firewalld`: `service: http`, `permanent: true`, `immediate: true`, `state: enabled`. Et see töötaks ka Ubuntul (seal firewalld-d pole), lisa `when: ansible_os_family == 'RedHat'`.
 
 ??? tip "10 · Kas leht tuli õigest masinast?"
     `for h in <ip1> <ip2> <ip3>; do curl -s http://$h; done`
@@ -734,23 +752,11 @@ vm3 : ok=6  changed=0  unreachable=0  failed=0  skipped=0
 Drift ühes masinas:
 
 ```bash
-ssh vm2 "sudo systemctl stop nginx"
+ssh -t vm2 "sudo systemctl stop nginx"
 ansible-playbook bootstrap.yml --limit veeb
 ```
 
 Ootus: `vm2` näitab `changed=1`, `vm1` ja `vm3` näitavad `changed=0`.
-
-### Kui jõudsid varem
-
-Need ei lähe hindele, aga on head järgmise kohtumise ettevalmistuseks.
-
-**B+1 · Jooksu kiirus.** Mõõda jooksu aega `pipelining = True` ja `False` korral: `time ansible-playbook bootstrap.yml --limit veeb`. Kui suur on vahe ja miks?
-
-**B+2 · Järjestikune rakendamine.** Lisa play'le `serial: 1` ja jooksuta. Mis muutus väljundis? Millal oleks see toodangus kasulik?
-
-**B+3 · Lint.** Paigalda `ansible-lint` (`pipx install ansible-lint`) ja jooksuta `ansible-lint bootstrap.yml`. Paranda, mida saad.
-
-**B+4 · Fakti-raport.** Ad-hoc käsuga kogu kõigist kolmest masinast mälu ja protsessorite arv: `ansible veeb -m setup -a "filter=ansible_memtotal_mb"`. Kuidas saaksid kõigi masinate väärtused ühte tabelisse?
 
 ---
 
@@ -759,41 +765,6 @@ Need ei lähe hindele, aga on head järgmise kohtumise ettevalmistuseks.
 ### README
 
 Repos on juba `README.md` mall. Täida see: asenda kõik nurksulgudes kohad oma tööga ja kustuta ülemine kast. README on dokument, mille järgi keegi teine (või sina kolme kuu pärast) saab masinad sama olekusse viia. Ülesande kirjeldus on eraldi failis `ULESANNE.md`, seda ära muuda.
-
-Mall näeb välja nii:
-
-```markdown
-# Lab 01 · Esimene playbook
-
-**Nimi:** Eesnimi Perenimi
-
-## Soovitud olek
-
-Igas `veeb`-grupi masinas:
-
-- ...
-- ...
-
-## Käivitamine
-
-    ansible-playbook bootstrap.yml --limit veeb
-
-## Masinad
-
-| Nimi | OS | Veebi juurkaust |
-|---|---|---|
-| vm1 | | |
-
-## Drift (A7)
-
-Mis triivis, mida ennustasin, mis tegelikult juhtus.
-
-## Peegeldus
-
-1. Mitu rida pidin muutma, et üks masin asenduks kolmega? Mitu oleks 50 puhul?
-2. Mis ennustus läks mööda ja miks?
-3. Mis minu töökohal praegu triivib, ja kuidas see välja tuleks?
-```
 
 Iga peegeldusküsimuse vastus 2–4 lauset. Automaatne kontroll K1 kukub, kui README-s on veel täitmata kohti või kui see on alla 150 sõna.
 
@@ -808,11 +779,11 @@ git push
 
 `git status` enne `add`-i näitab, mis faile lisad. Kontrolli, et seal pole midagi, mis ei kuulu reposse: võtmed, paroolid, `.retry` failid.
 
-💡 Kui `git push` küsib parooli: GitHub ei võta kontoparooli. Loo Personal Access Token (GitHub → Settings → Developer settings → Personal access tokens → Fine-grained, õigus Contents: Read and write) ja kasuta seda parooli asemel. Teine võimalus on lisada SSH-võti GitHubi ja vahetada remote: `git remote set-url origin git@github.com:hkhk-automation/<sinu-repo>.git`.
+💡 Kui `git push` küsib kasutajanime või parooli, kloonisid repo HTTPS-iga. Vaheta SSH peale: `git remote set-url origin git@github.com:hkhk-automation/<sinu-repo>.git` (võti peab olema GitHubis, osa 0.4).
 
 ### Automaatne kontroll
 
-Ava GitHubis oma repo → **Actions**. Viimase push'i juures jookseb kontroll. Klassitöö kontrollid (K1–K5) peavad olema rohelised:
+Ava GitHubis oma repo → **Actions** → viimane **Autograde**. Seal on iga kontrolli tulemus ja punktisumma. Klassitöö kontrollid K1–K5 peavad olema läbitud:
 
 | Kontroll | Mida vaatab |
 |---|---|
@@ -824,25 +795,13 @@ Ava GitHubis oma repo → **Actions**. Viimase push'i juures jookseb kontroll. K
 
 Kui kontroll on punane, ava job ja leia rida, kus on `FAIL` või `PUUDU`. Paranda, commit'i, push'i uuesti.
 
-Kodutöö kontrollid (H1–H6 jne) on punased seni, kuni kodutöö pole tehtud. See on ootuspärane.
-
----
-
-## Kokkuvõte
-
-Enne lahkumist vasta endale:
-
-- [ ] Kas oskan selgitada, miks `halb.sh` teisel jooksul duplikaadi tegi ja `bootstrap.yml` mitte?
-- [ ] Kas oskan lugeda `PLAY RECAP`-ist, milline masin on soovitud olekus ja millisest ma midagi ei tea?
-- [ ] Kas tean, kus on minu privaatvõti ja kus avalik võti?
-- [ ] Kas oskan sama playbooki käivitada ühe masina vastu ilma faili muutmata?
-- [ ] Kas README ütleb võõrale lugejale, mida mu playbook teeb ja kuidas seda käivitada?
+Kodutöö kontrollid (H1–H6 jne) kukuvad seni, kuni kodutöö pole tehtud, ja seetõttu on kogu Autograde punane. See on ootuspärane: loeb punktisumma, mitte värv.
 
 ---
 
 ## Kodutöö
 
-Kodune õpe ja kodutöö (~11 h) on eraldi lehel: **[K1 · Kodune õpe ja kodutöö](homework.md)**. Samasse reposse, tähtaeg Classroom 50-s.
+Kodune õpe ja kodutöö (~8,5 h) on eraldi lehel: **[K1 · Kodune õpe ja kodutöö](homework.md)**. Samasse reposse, tähtaeg Classroom 50-s.
 
 ---
 
@@ -852,16 +811,20 @@ Kontrolli järjekorras: loe veateade algusest lõpuni, korda käsku `-v`-ga, pro
 
 | Probleem | Põhjus | Lahendus |
 |---|---|---|
-| `ansible: command not found` | Ansible pole paigaldatud | `sudo apt install -y ansible` |
+| `ansible: command not found` | Ansible pole paigaldatud | `sudo dnf install -y ansible-core` |
 | `config file = None` | `ansible.cfg` pole jooksvas kaustas | `cd ~/<sinu-repo>` |
 | `Could not match supplied host pattern` | grupp puudub inventaris | `ansible-inventory --graph` |
 | `ping` localhostile ei vasta | `ansible_connection=local` puudu | vaata `inventory.ini` |
 | VM: `UNREACHABLE` | SSH ei tööta | `ssh vm1 hostname` käsitsi, siis `-vvv` |
 | `Permission denied (publickey)` | avalik võti pole sihtmasinas | korda `ssh-copy-id` |
 | `Host key verification failed` | host key muutus (VM uuesti loodud) | `ssh-keygen -R vm1` |
-| `Missing sudo password` | sihtmasinas pole paroolita sudo | lisa `-K` |
 | `Permission denied` task'is | `become: true` puudu | lisa play tasemele |
-| `Could not get lock /var/lib/dpkg/lock` | taustal käib apt | oota, korda |
+| `Invalid callback for stdout specified: yaml` | `ansible.cfg`-s vana rida `stdout_callback = yaml` | asenda `callback_result_format = yaml` |
+| `Missing sudo password` | `ansible.cfg`-s pole `become_ask_pass = True` | lisa `[privilege_escalation]` plokk (A3) |
+| `couldn't resolve module/action 'ansible.posix.firewalld'` | kollektsioon puudu | `ansible-galaxy collection install ansible.posix:1.5.4` |
+| `Could not find the requested service nginx` `--check`-iga | värskes masinas pole nginx'i veel päriselt paigaldatud | ootuspärane, jooksuta ilma `--check`-ita |
+| `sudo: a terminal is required` | `ssh vm2 "sudo ..."` ilma terminalita | `ssh -t vm2 "sudo ..."` |
+| `Waiting for process ... dnf` | taustal käib teine dnf | oota |
 | `mapping values are not allowed` | YAML: koolon väärtuses | jutumärgid |
 | `this task has extra params` | parameeter vale taandega | vaata taanet, loeng §10 |
 | `couldn't resolve module/action` | mooduli nimi vale | `ansible-doc -l \| grep <nimi>` |
@@ -869,7 +832,8 @@ Kontrolli järjekorras: loe veateade algusest lõpuni, korda käsku `-v`-ga, pro
 | `curl` näitab nginx vaikelehte | fail läks vale kausta | `debug: var=veebi_juur` |
 | `curl` väljast ei vasta, masinas vastab | tulemüür (RedHat) | vihje 9 |
 | käsk töötab PowerShellis, aga mitte vm1-s (või vastupidi) | oled vales aknas | `hostname` — kõik käsud käivad vm1-s |
-| `git push` küsib parooli | HTTPS ja kontoparool | token või SSH, vt Dokumenteerimine |
+| `git push` küsib parooli | repo on kloonitud HTTPS-iga | `git remote set-url origin git@github.com:...` |
+| `Permission denied (publickey)` GitHubist | võti pole GitHubis | osa 0.4 |
 
 ---
 
@@ -883,4 +847,4 @@ Kontrolli järjekorras: loe veateade algusest lõpuni, korda käsku `-v`-ga, pro
 | Faktid ja muutujad | <https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html> |
 | Check mode ja diff | <https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html> |
 | VS Code Remote-SSH | <https://code.visualstudio.com/docs/remote/ssh> |
-| GitHub: Personal access tokens | <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens> |
+| GitHub: SSH-võti kontole | <https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account> |
