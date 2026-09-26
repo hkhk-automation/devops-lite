@@ -77,12 +77,16 @@ Playbook `admin.yml` viib iga `veeb`-grupi masina olekusse:
     - paroolita sudo: fail `/etc/sudoers.d/deploy` sisuga `deploy ALL=(ALL) NOPASSWD: ALL` (`copy`, `mode: "0440"`, `validate: visudo -cf %s`);
     - AlmaLinuxis on teenuse nimi `chronyd`, paketi nimi `chrony`.
 
-Valmis, kui:
+Valmis, kui
+{ .silt }
 
 - [ ] `ssh deploy@vm1 sudo -n true` õnnestub
 - [ ] teine jooks `changed=0`
 
-Esitad: `admin.yml`, `logid/admin_teine_jooks.txt`
+Esitad
+{ .silt }
+
+`admin.yml`, `logid/admin_teine_jooks.txt`
 
 ### H2 · Turva SSH · 10 p
 
@@ -108,13 +112,17 @@ Playbook `hardening.yml`:
     - süntaksikontroll: `validate: sshd -t -f %s`;
     - taaskäivitus ainult muutusel: `notify` ja `handlers`.
 
-Valmis, kui:
+Valmis, kui
+{ .silt }
 
 - [ ] `ssh root@vm1` keeldub
 - [ ] `ssh vm1` töötab võtmega
 - [ ] teine jooks `changed=0` ja handler ei käivitu
 
-Esitad: `hardening.yml`, `logid/hardening_teine_jooks.txt`
+Esitad
+{ .silt }
+
+`hardening.yml`, `logid/hardening_teine_jooks.txt`
 
 ### H3 · Halda pakette nimekirjast · 7 p
 
@@ -132,12 +140,16 @@ Kontroll: paigalda `telnet` käsitsi ühte masinasse ja jooksuta playbook. `teln
 
     `vars` plokk kahe nimekirjaga; `ansible.builtin.package` võtab `name`-ile terve nimekirja; puudumine on `state: absent`.
 
-Valmis, kui:
+Valmis, kui
+{ .silt }
 
 - [ ] teine jooks `changed=0`
 - [ ] käsitsi paigaldatud `telnet` eemaldati
 
-Esitad: `baas.yml`, `logid/baas_teine_jooks.txt`
+Esitad
+{ .silt }
+
+`baas.yml`, `logid/baas_teine_jooks.txt`
 
 ### H4 · Kogu masinatest raport · 7 p
 
@@ -152,11 +164,15 @@ Playbook `raport.yml`:
 
     Faili toomine: `ansible.builtin.fetch`, uuri `flat: true`. Failinimi inventari nime järgi: `raportid/{{ inventory_hostname }}.txt`, muidu kirjutavad raportid üksteist üle.
 
-Valmis, kui:
+Valmis, kui
+{ .silt }
 
 - [ ] kaustas `raportid/` on kolm faili, igaüks oma masina andmetega
 
-Esitad: `raport.yml`, `raportid/`
+Esitad
+{ .silt }
+
+`raport.yml`, `raportid/`
 
 ### H5 · Ajasta varundus
 
@@ -193,13 +209,17 @@ ssh -t vm1 sudo crontab -l -u root
 
     Arhiiv tänase kuupäevaga ja täpselt üks cron-rida, ka pärast playbooki teist jooksu.
 
-Valmis, kui:
+Valmis, kui
+{ .silt }
 
 - [ ] arhiiv tekib
 - [ ] cron-rida on üks
 - [ ] teine jooks `changed=0`
 
-Esitad: `cron.yml`, `logid/cron_teine_jooks.txt`
+Esitad
+{ .silt }
+
+`cron.yml`, `logid/cron_teine_jooks.txt`
 
 ### H6 · Leia ja paranda drift
 
@@ -210,7 +230,10 @@ Selle ülesande lõpuks oskad `--check`-iga leida, mis masinates on midagi käsi
 3. Paranda drift päris jooksuga.
 4. Kirjuta `vastused.md`-sse lõik: kas iga drift tuli `--check`-iga välja ja millise playbooki järgi? Kui see kontroll jookseks igal ööl automaatselt, kes peaks teate saama?
 
-Esitad: `logid/drift_check.txt`, lõik `vastused.md`-s
+Esitad
+{ .silt }
+
+`logid/drift_check.txt`, lõik `vastused.md`-s
 
 ---
 
