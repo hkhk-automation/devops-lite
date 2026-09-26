@@ -1,6 +1,6 @@
 # K1 · Kodune õpe ja kodutöö
 
-Kodutöö läheb samasse reposse, kuhu klassitöö. Tähtaeg on kirjas Classroom 50-s. Kodutöö on klassitööst raskem: juhiseid on vähem ja parameetrid otsid `ansible-doc`-ist ise. Kui jääd kinni, küsi Discordis või ava oma repos issue **Vajan abi** (kirjuta käsk ja veateade).
+Kodutöö läheb samasse reposse, kuhu klassitöö. Tähtaeg on kirjas Classroom 50-s. Kodutöö on klassitööst raskem: juhiseid on vähem ja parameetrid otsid `ansible-doc`-ist ise. Kui jääd kinni, küsi Discordis või ava oma repos issue **Vajan abi**. Kirjuta sinna käsk ja veateade.
 
 | Osa | Mida teed | Esitad | Punkte |
 |---|---|---|---|
@@ -29,7 +29,7 @@ Enne küsimusi loe läbi:
 
 ### Uuri mooduleid → `markmed.md`
 
-Ava `ansible-doc`-iga moodulid `user` ja `service`. Kirjuta kummagi kohta kolm parameetrit, mida klassis ei kasutanud, ja ühe lausega, milleks need on. Näiteks `user`: `shell`, `groups` + `append`, `state: absent` + `remove`.
+Ava `ansible-doc`-iga moodulid `user` ja `service`. Kirjuta kummagi kohta kolm parameetrit, mida klassis ei kasutanud. Lisa ühe lausega, milleks need on. Näiteks `user`: `shell`, `groups` + `append`, `state: absent` + `remove`.
 
 ### Vasta küsimustele → `vastused.md`
 
@@ -56,7 +56,7 @@ Kõik harjutused käivad grupi `veeb` vastu.
 
 Selle ülesande lõpuks on igas masinas kasutaja `deploy`, kes pääseb võtmega sisse ja saab sudo't ilma paroolita.
 
-Playbook `admin.yml` viib iga `veeb`-grupi masina olekusse:
+Playbook `admin.yml` viib iga `veeb`-grupi masina sellisesse olekusse:
 
 - kasutajad `deploy` ja `monitor` on olemas, mõlemad luuakse **ühe** task'iga;
 - mõlemal on sinu avalik SSH-võti;
@@ -128,7 +128,7 @@ Playbook `baas.yml`:
 - tagab, et nimekirja `eemalda` paketid puuduvad: vähemalt `telnet`;
 - mõlemad nimekirjad on muutujad, mitte task'i sees.
 
-Kontroll: paigalda `telnet` käsitsi ühte masinasse ja jooksuta playbook. `telnet` peab kaduma ja teised masinad jääma `changed=0`.
+Kontroll: paigalda `telnet` käsitsi ühte masinasse ja jooksuta playbook. `telnet` peab kaduma ja teistes masinates peab jääma `changed=0`.
 
 ??? tip "Vihje: moodulid ja parameetrid"
 
@@ -147,11 +147,11 @@ Esitad
 
 ### H4 · Kogu masinatest raport · 7 p
 
-Selle ülesande lõpuks on vm1-s iga masina kohta faktidest koostatud raport.
+Selle ülesande lõpuks on vm1-s iga masina kohta raport, mis on tehtud faktide põhjal.
 
 Playbook `raport.yml`:
 
-- loob igas masinas faili `/tmp/raport.txt`: masina nimi, distributsioon ja versioon, IP-aadress, mälu MB-des, protsessorite arv, kõik faktidest;
+- loob igas masinas faili `/tmp/raport.txt`: masina nimi, distributsioon ja versioon, IP-aadress, mälu MB-des, protsessorite arv, kõik võetud faktidest;
 - toob raportid vm1 kausta `raportid/`, iga masina oma eraldi failis.
 
 ??? tip "Vihje: moodulid ja parameetrid"
@@ -201,7 +201,7 @@ ssh -t vm1 sudo crontab -l -u root
     30 2 * * * /usr/local/bin/varunda.sh
     ```
 
-    Arhiiv tänase kuupäevaga ja täpselt üks cron-rida, ka pärast playbooki teist jooksu.
+    Näed tänase kuupäevaga arhiivi ja täpselt ühte cron-rida, ka pärast playbooki teist jooksu.
 
 Valmis, kui
 { .silt }
@@ -217,7 +217,7 @@ Esitad
 
 ### H6 · Leia ja paranda drift
 
-Selle ülesande lõpuks oskad `--check`-iga leida, mis masinates on midagi käsitsi muudetud, ja parandad selle playbookidega.
+Selle ülesande lõpuks oskad `--check`-iga leida masinad, kus keegi on midagi käsitsi muutnud. Ja oskad selle playbookidega parandada.
 
 1. Tekita igasse masinasse erinev drift: ühes kustuta kasutaja `monitor`, teises muuda `/etc/motd` sisu, kolmandas peata `chronyd`.
 2. Jooksuta kõik oma playbookid `--check` režiimis ja salvesta väljund faili `logid/drift_check.txt`.
@@ -241,6 +241,6 @@ Esitad
 
 ??? note "Vabatahtlik: boonus ja lint"
 
-    Boonus: kirjuta `boonus.yml`, mis üritab paigaldada paketti, mida pole olemas, ja püüab vea kinni `block`/`rescue`-ga nii, et playbook kirjutab veast teate ega kuku. Selgita `vastused.md`-s, millal on selline vea püüdmine mõistlik ja millal ohtlik.
+    Boonus: kirjuta `boonus.yml`, mis proovib paigaldada paketti, mida pole olemas. Püüa viga kinni `block`/`rescue`-ga nii, et playbook kirjutab veast teate ega kuku. Selgita `vastused.md`-s, millal on selline vea püüdmine mõistlik ja millal ohtlik.
 
     Lint: jooksuta `ansible-lint *.yml` ja paranda, mis parandada saad. Mida ei parandanud, selgita `vastused.md`-s.

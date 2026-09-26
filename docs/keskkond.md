@@ -1,10 +1,10 @@
 # Töökeskkond
 
-Tee see leht läbi üks kord kursuse alguses. Iga järgmine praktikum eeldab, et see on tehtud: masinatel on nimed ja sinu parool, vm1-s on Ansible ja Git, ning vm1 SSH-võti on GitHubis.
+Tee see leht läbi üks kord, kursuse alguses. Kõik järgmised praktikumid lähtuvad sellest, et see on tehtud: masinatel on nimed ja sinu parool, vm1-s on Ansible ja Git ning vm1 SSH-võti on GitHubis.
 
 ## 1 · Ühendus vm1-ga
 
-Klassiarvuti on Windows, aga töö käib kooli Proxmoxi klastris sulle antud kolmes AlmaLinux 9 VM-is. vm1 on sinu control node: sinna paigaldad Ansible'i ja Giti ning sealt haldad kõiki kolme masinat, ka vm1 ennast. Esimestes sammudes töötad ainult vm1-s (`localhost`), hiljem lisanduvad vm2 ja vm3.
+Klassiarvutis on Windows, aga töö käib mujal. Kooli Proxmoxi klastris on sulle antud kolm AlmaLinux 9 VM-i. vm1 on sinu control node: sinna paigaldad Ansible'i ja Giti ning sealt haldad kõiki kolme masinat, ka vm1 ennast. Alguses töötad ainult vm1-s (`localhost`), hiljem tulevad juurde vm2 ja vm3.
 
 Juhendaja annab sulle kolm IP-d, kasutajanime ja parooli. Kirjuta need üles:
 
@@ -30,7 +30,7 @@ Esimesel ühendumisel küsitakse host key kinnitust (`yes`) ja parooli.
 
 Allikas: [VS Code Remote-SSH](https://code.visualstudio.com/docs/remote/ssh)
 
-Juhendajalt saadud parool on kõigil tudengitel sama ja masinad on ühes võrgus, seega vaheta see. Masinatel pole ka veel nime (prompt näitab `localhost`). Tee mõlemad asjad igas masinas.
+Juhendajalt saadud parool on kõigil tudengitel sama ja masinad on ühes võrgus. Seega vaheta parool ära. Masinatel pole ka veel nime (prompt näitab `localhost`), nii et pane neile nimi. Tee mõlemat igas masinas.
 
 vm1 (oled juba sees):
 
@@ -40,7 +40,7 @@ sudo hostnamectl set-hostname vm1
 exec bash
 ```
 
-`passwd` küsib vana parooli, siis kaks korda uut. Liiga lihtsa lükkab AlmaLinux tagasi (`BAD PASSWORD`): vali vähemalt 8 märki tähtede ja numbritega. Pane kõigis kolmes masinas sama uus parool, sest Ansible küsib sudo parooli ühe korra ja kasutab seda kõigil kolmel.
+`passwd` küsib vana parooli, siis kaks korda uut. Liiga lihtsa parooli lükkab AlmaLinux tagasi (`BAD PASSWORD`). Vali vähemalt 8 märki, tähed ja numbrid segamini. Pane kõigis kolmes masinas sama uus parool. Ansible küsib sudo parooli ühe korra ja kasutab seda kõigil kolmel.
 
 vm2 (vm1 terminalist):
 
@@ -87,11 +87,11 @@ ansible-galaxy collection list ansible.posix
 - `ansible [core 2.14.18]`: Ansible'i versioon. Sellest sõltub, millised kollektsioonid sobivad.
 - `python version = 3.9…`: Python, millega Ansible jookseb. Sihtmasinates kasutab Ansible nende enda Pythonit (AlmaLinuxis sama 3.9).
 
-Kollektsioon peab sobima Ansible'i versiooniga. Kui ei sobi, näed iga käsu alguses hoiatust `Collection ansible.posix does not support Ansible version 2.14.18`. Siis paigalda sobiv versioon (`ansible-galaxy collection install ansible.posix:1.5.4 --force`). Mis versiooniga kollektsioon töötab, on kirjas selle lehel [Ansible Galaxy](https://galaxy.ansible.com/ui/repo/published/ansible/posix/) väljal *Requires Ansible*.
+Kollektsioon peab sobima Ansible'i versiooniga. Kui ei sobi, näed iga käsu alguses hoiatust `Collection ansible.posix does not support Ansible version 2.14.18`. Siis paigalda sobiv versioon (`ansible-galaxy collection install ansible.posix:1.5.4 --force`). Millise Ansible'i versiooniga kollektsioon töötab, näed selle lehel [Ansible Galaxy](https://galaxy.ansible.com/ui/repo/published/ansible/posix/) väljal *Requires Ansible*.
 
 ## 3 · SSH-võti
 
-Üks võtmepaar vm1-s teeb kaks asja: sellega kloonid oma privaatse repo GitHubist ja sellega ühendub Ansible vm2 ja vm3 külge. Parooli pole kummalgi juhul vaja.
+vm1-s olev võtmepaar teeb kaks asja. Sellega kloonid oma privaatse repo GitHubist. Ja sellega ühendub Ansible vm2 ja vm3 külge. Parooli pole kummalgi juhul vaja.
 
 Loo võti. Vajuta kõigi küsimuste peale Enter:
 
@@ -126,7 +126,7 @@ ssh -T git@github.com
     Hi <sinu-github-kasutaja>! You've successfully authenticated, but GitHub does not provide shell access.
     ```
 
-Seadista Git ja klooni repo. Ava Classroom 50 link, mille juhendaja jagas, ja nõustu ülesandega. Sulle tekib privaatne repo organisatsioonis `hkhk-automation`. Repo lehel vajuta **Code** → vahekaart **SSH** → kopeeri aadress (algab `git@github.com:`).
+Nüüd seadista Git ja klooni repo. Ava juhendaja jagatud Classroom 50 link ja nõustu ülesandega. Sulle tekib privaatne repo organisatsioonis `hkhk-automation`. Repo lehel vajuta **Code** → vahekaart **SSH** → kopeeri aadress (algab `git@github.com:`).
 
 ```bash
 git config --global user.name "Eesnimi Perenimi"
@@ -143,7 +143,7 @@ ls
     README.md  ULESANNE.md  logid
     ```
 
-Iga praktikum on eraldi Classroom 50 ülesanne ja eraldi repo: igal kohtumisel kloonid uue repo samamoodi. `git push` töötab sama võtmega, parooli ega tokenit ei küsita.
+Iga praktikum on eraldi Classroom 50 ülesanne ja sellel on oma repo. Igal kohtumisel kloonid uue repo samamoodi. `git push` töötab sama võtmega, parooli ega tokenit ei küsita.
 
 Allikas: [GitHub: SSH-võti kontole](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
 

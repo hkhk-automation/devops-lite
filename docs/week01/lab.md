@@ -5,7 +5,7 @@ Tänase lõpuks viib üks playbook kolm serverit samasse olekusse: kasutaja on o
 <figure class="dl-var" markdown="0">
 <svg viewBox="0 0 730 194" role="img" aria-labelledby="dl-var-t" xmlns="http://www.w3.org/2000/svg">
 <title id="dl-var-t">Kolm võimalust, kus Ansible jookseb: vm1, WSL või Windows (ei tööta)</title>
-<style>.dl-var svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.dl-var .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.dl-var .ctrl{fill:var(--md-primary-fg-color);fill-opacity:.18;stroke:var(--md-primary-fg-color);stroke-width:1.5}.dl-var .t{fill:var(--md-default-fg-color);font-size:12.5px;font-weight:700}.dl-var .b{fill:var(--md-default-fg-color);font-size:12px;font-weight:600}.dl-var .s{fill:var(--md-default-fg-color--light);font-size:10.5px}.dl-var .w{fill:var(--md-accent-fg-color);font-size:11px;font-weight:700}.dl-var .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5}.dl-var .d{stroke-dasharray:4 3}.dl-var .h{fill:var(--md-default-fg-color--light)}</style>
+<style>.dl-var svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.dl-var .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.dl-var .ctrl{fill:var(--md-primary-fg-color);fill-opacity:.18;stroke:var(--md-primary-fg-color);stroke-width:1.5}.dl-var .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.dl-var .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.dl-var .s{fill:var(--md-default-fg-color--light);font-size:12px}.dl-var .w{fill:var(--md-accent-fg-color);font-size:12.5px;font-weight:700}.dl-var .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5}.dl-var .d{stroke-dasharray:4 3}.dl-var .h{fill:var(--md-default-fg-color--light)}</style>
 <defs><marker id="va" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
 <text class="t" x="115" y="16" text-anchor="middle">1 · VS Code → vm1 (soovitatav)</text>
 <rect class="box" x="6" y="30" width="92" height="40" rx="6"/><text class="b" x="52.0" y="47.0" text-anchor="middle">Windows</text><text class="s" x="52.0" y="61.0" text-anchor="middle">VS Code</text>
@@ -34,7 +34,7 @@ Tänase lõpuks viib üks playbook kolm serverit samasse olekusse: kasutaja on o
 </svg>
 </figure>
 
-Juhend on kirjutatud variandi 1 järgi. Osa A teed ühel masinal (`localhost`) samm-sammult, osa B kolmel VM-il iseseisvalt. Oodatav tulemus ja vihjed on kinnistes plokkides: tee enne ise, siis võrdle.
+Juhend käib variandi 1 järgi. Osa A teed samm-sammult ühel masinal (`localhost`). Osa B teed iseseisvalt kolmel VM-il. Oodatav tulemus ja vihjed on kinnistes plokkides: tee enne ise ja siis võrdle.
 
 ??? abstract "Õpiväljundid"
 
@@ -50,7 +50,7 @@ Juhend on kirjutatud variandi 1 järgi. Osa A teed ühel masinal (`localhost`) s
 
 ## Enne alustamist
 
-Kui [Töökeskkond](../keskkond.md) on tegemata, tee see enne läbi. Klooni Classroom 50 lingist tekkinud repo vm1-sse SSH-ga (**Code** → **SSH**): kõik tänased failid lähevad selle juurkausta.
+Kui [Töökeskkond](../keskkond.md) on tegemata, tee see kõigepealt läbi. Siis klooni Classroom 50 lingist tekkinud repo SSH-ga vm1-sse (**Code** → **SSH**). Kõik tänased failid lähevad selle repo juurkausta.
 
 Kontrollnimekiri on su repos **Issues** all: issue Lab 01 · Esimene playbook.
 
@@ -108,7 +108,7 @@ sudo systemctl enable --now nginx
     sudo tail -n 20 /var/log/nginx/error.log
     ```
 
-    `systemctl status` näitab, kas teenus käib ja viimaseid logiridu. `journalctl -u nginx` on teenuse täielik logi, `-n 20` näitab viimast 20 rida. nginx kirjutab oma vead lisaks faili `/var/log/nginx/error.log`, iga päringu faili `access.log`.
+    `systemctl status` näitab, kas teenus käib, ja paari viimast logirida. `journalctl -u nginx` on teenuse täielik logi, `-n 20` näitab sellest viimast 20 rida. Lisaks kirjutab nginx oma vead faili `/var/log/nginx/error.log` ja iga päringu faili `access.log`.
 
 ??? success "Oodatav tulemus"
 
@@ -120,7 +120,7 @@ sudo systemctl enable --now nginx
     <h1>Tere käsitsi</h1>
     ```
 
-Enne automatiseerimist pead teadma, mida masin peab tegema. Kontrolltabeli read muutuvad A4-s playbooki task'ideks, ja kontrolliveerg ütleb, mida moodul iga task'i juures ise kontrollib.
+Enne kui midagi automatiseerid, pead teadma, mida masin tegema peab. A4-s muutuvad kontrolltabeli read playbooki task'ideks. Kontrolliveerg ütleb, mida moodul iga task'i juures ise kontrollib.
 
 ??? question "Mõtle (vabatahtlik)"
 
@@ -136,7 +136,7 @@ Enne automatiseerimist pead teadma, mida masin peab tegema. Kontrolltabeli read 
 
 Selle sammu lõpuks oled näinud, mis juhtub, kui tavalise skripti käivitad kaks korda.
 
-See on lühike demo, mitte skriptimise harjutus: Bash on sellel kursusel eeldus.
+See on lühike demo, mitte skriptimise harjutus. Bashi peaksid sellel kursusel juba oskama.
 
 Loo repo juurkausta fail `halb.sh`:
 
@@ -164,7 +164,7 @@ cat /srv/raport/conf
     seade=1
     ```
 
-Skript andis kahest veast teada, aga duplikaatrida tekkis vaikselt. Skripti ohutuks tegemiseks peaks iga rea ette kirjutama kontrolli (`id … ||`, `mkdir -p`, `grep -qx … ||`), ja iga uus erijuht tähendab uut `if`-i. Ansible'i moodulid teevad need kontrollid ise. A4-s kirjutad sama asja playbookina ja näed vahet.
+Skript andis kahest veast teada, aga topeltrida tekkis vaikselt. Et skript oleks ohutu, peaksid iga rea ette kirjutama kontrolli (`id … ||`, `mkdir -p`, `grep -qx … ||`). Iga uus erijuht tähendab uut `if`-i. Ansible'i moodulid teevad need kontrollid ise. A4-s kirjutad sama asja playbookina ja näed vahet.
 
 ??? question "Mõtle (vabatahtlik)"
 
@@ -253,7 +253,7 @@ ansible kohalik -m command -a "uptime"
      10:42:17 up  1:03,  1 user,  load average: 0.08, 0.05, 0.01
     ```
 
-Pane tähele viimast rida: `uptime` ei muuda midagi, aga Ansible märgib selle `CHANGED`-ks, sest `command` ei tea, mida käsk tegi.
+Vaata viimast rida. `uptime` ei muuda midagi, aga Ansible märgib selle `CHANGED`-ks. `command` ei tea ju, mida käsk tegi.
 
 Ad-hoc käsk, mis muudab midagi:
 
@@ -283,7 +283,7 @@ Moodul (`ping`, `setup`, `package`) tagastab struktureeritud info ja teab, kas t
 
 Selle sammu lõpuks teeb A1 käsitsitöö ära playbook `bootstrap.yml`.
 
-Nüüd paned A1 käsitsitöö kirja soovitud olekuna. Ehita playbook üks task korraga ja jooksuta iga lisanduse järel. Nii tead alati, milline task vea tekitas.
+Nüüd paned A1 käsitsitöö kirja soovitud olekuna. Ehita playbooki üks task korraga ja jooksuta seda pärast iga uut task'i. Nii tead alati, milline task vea tekitas.
 
 **Samm 1.** Loo `bootstrap.yml` ühe task'iga:
 
@@ -328,9 +328,9 @@ PLAY RECAP ****************************************************
 localhost : ok=2  changed=0  unreachable=0  failed=0  skipped=0
 ```
 
-`ok`, sest kasutaja on A1-st juba olemas. `ok=2` sisaldab ka faktide kogumist.
+`ok`, sest kasutaja on A1-st juba olemas. `ok=2`-s on sees ka faktide kogumine.
 
-**Sammud 2–4.** Lisa ükshaaval ja jooksuta iga lisanduse järel. Parameetrid leiad `ansible-doc`-ist:
+**Sammud 2–4.** Lisa task'id ükshaaval ja jooksuta pärast igaüht. Parameetrid leiad `ansible-doc`-ist:
 
 ```bash
 ansible-doc -s ansible.builtin.package
@@ -370,7 +370,7 @@ curl -s localhost
     <h1>Hallatud Ansible'iga</h1>
     ```
 
-Ainult avalehe sisu erines käsitsi tehtust. Kõik muu oli juba soovitud olekus, ja moodulid tuvastasid selle ise.
+Ainult avalehe sisu erines sellest, mis sa käsitsi tegid. Kõik muu oli juba soovitud olekus ja moodulid nägid seda ise.
 
 ??? tip "Kui tuleb viga"
 
@@ -434,7 +434,7 @@ Jooksuta kaks korda. Esimene `changed`, teine `ok`.
 
 Seejärel eemalda katse-task ja jooksuta veel kord, kuni `PLAY RECAP` on `changed=0`. Salvesta see uuesti `logid/teine_jooks.txt`-sse.
 
-Toores käsk ei tea olekut. Kui moodulit pole, teeb `creates` käsu idempotentseks: käsku ei käivitata, kui fail on juba olemas. Päris töös kasuta moodulit, kui see on olemas (`ansible.builtin.file` + `state: touch` teeks sama).
+Toores käsk ei tea, milline olek on. Kui moodulit pole, teeb `creates` käsu idempotentseks: kui fail on juba olemas, käsku ei käivitata. Päriselt kasuta moodulit, kui see olemas on (`ansible.builtin.file` + `state: touch` teeks sama).
 
 ??? info "Loe juurde"
 
@@ -479,11 +479,11 @@ ansible-playbook bootstrap.yml
 curl -s localhost
 ```
 
-Tootmises vaatad enne muutust, mida see teeks. `--diff` näitab täpselt, mis rida muutub, ja see on see, mida kolleeg code review's näha tahab.
+Tootmises vaatad enne muudatust, mida see teeks. `--diff` näitab täpselt, mis rida muutub. Just seda tahab kolleeg code review's näha.
 
 ??? question "Mõtle (vabatahtlik)"
 
-    Lisa ajutiselt tagasi `command: date` task ja jooksuta `--check`. Mida näitab väljund selle task'i kohta? Miks? Eemalda task pärast uuesti, automaatne kontroll K3 ei luba `command`-i.
+    Lisa ajutiselt tagasi `command: date` task ja jooksuta `--check`. Mida näitab väljund selle task'i kohta? Miks? Pärast eemalda task uuesti, sest automaatne kontroll K3 ei luba `command`-i.
 
 ??? info "Loe juurde"
 
@@ -523,7 +523,7 @@ curl -s localhost
 
     `--check` näitab 3 `changed`-i ilma midagi parandamata. Päris jooks näitab samuti 3 `changed`-i, `nginx on paigaldatud` jääb `ok`. `curl` vastab uuesti.
 
-Playbook parandas ainult selle, mis triivis, ja sa ei pidanud talle ütlema, mis katki on. `--check` üksi on drift'i avastamise tööriist: nii saab öösel kontrollida kõiki masinaid ilma midagi muutmata.
+Playbook parandas ainult selle, mis triivis. Sa ei pidanud talle ütlema, mis katki on. `--check` üksinda sobib drift'i leidmiseks: nii saad öösel kõik masinad üle kontrollida ja midagi ei muutu.
 
 ??? question "Mõtle (vabatahtlik)"
 
@@ -584,7 +584,7 @@ curl -s localhost
 
 Seejärel jooksuta ilma `-e`-ta, et leht saaks tagasi soovitud oleku.
 
-Muutuja teeb playbooki taaskasutatavaks. `-e` (extra vars) on kõige kõrgema prioriteediga ja kirjutab üle kõik muu. Teisel kohtumisel paneme muutujad gruppide kaupa failidesse.
+Muutujaga saad sama playbooki uuesti kasutada. `-e` (extra vars) on kõige kõrgema prioriteediga ja kirjutab üle kõik muu. Teisel kohtumisel paneme muutujad gruppide kaupa failidesse.
 
 ??? info "Loe juurde"
 
@@ -595,7 +595,9 @@ Muutuja teeb playbooki taaskasutatavaks. `-e` (extra vars) on kõige kõrgema pr
 
 ## B · Iseseisev osa: kolm serverit
 
-Vii kõik kolm VM-i (vm1, vm2, vm3) samasse olekusse sama `bootstrap.yml`-iga, mille kirjutasid osas A. Iga server näitab avalehel oma inventari nime. Sammud on antud, lahenduse leiad ise. Vihje on iga sammu juures kinnises plokis: ava see alles siis, kui oled ise proovinud.
+Vii kõik kolm VM-i (vm1, vm2, vm3) samasse olekusse. Kasuta sama `bootstrap.yml`-i, mille kirjutasid osas A. Iga server näitab avalehel oma nime inventaris. Sammud on antud, lahenduse leiad ise.
+
+Iga sammu juures on vihje kinnises plokis. Ava see alles siis, kui oled ise proovinud.
 
 Piirangud kogu B-osas:
 
@@ -605,7 +607,7 @@ Piirangud kogu B-osas:
 
 ### B1 · Võti kõigisse kolme masinasse
 
-vm1 on nii control node kui üks kolmest serverist. Ansible ühendub ka vm1-ga üle SSH, seega kopeeri [Töökeskkonnas](../keskkond.md) tehtud avalik võti kõigile kolmele, ka vm1 enda IP-le. Seejärel ühendu igasse korra käsitsi: `ssh <kasutaja>@<vm2-ip> hostname` peab vastama `vm2` ilma parooli küsimata.
+vm1 on nii control node kui ka üks kolmest serverist. Ansible ühendub ka vm1-ga üle SSH. Seega kopeeri [Töökeskkonnas](../keskkond.md) tehtud avalik võti kõigile kolmele, ka vm1 enda IP-le. Siis ühendu igasse masinasse korra käsitsi: `ssh <kasutaja>@<vm2-ip> hostname` peab vastama `vm2` ja parooli ei tohi küsida.
 
 ??? tip "Vihje: võtme kopeerimine"
     ```bash
@@ -614,10 +616,10 @@ vm1 on nii control node kui üks kolmest serverist. Ansible ühendub ka vm1-ga �
     ssh-copy-id -i ~/.ssh/id_ed25519.pub <kasutaja>@<vm3-ip>
     ```
 
-    Iga kord küsitakse üks kord parooli, siis enam mitte. Privaatvõti (`id_ed25519`, ilma `.pub`-ita) ei lahku vm1-st.
+    Iga masina juures küsitakse parooli üks kord, edaspidi enam mitte. Privaatvõti (`id_ed25519`, ilma `.pub`-ita) ei lahku vm1-st.
 
 ??? tip "Vihje: `Are you sure you want to continue connecting`"
-    Esimesel ühendumisel küsib SSH host key kinnitust ja Ansible jääks samasse kohta ootama. Seepärast ühendu esimest korda käsitsi, või kogu võtmed korraga: `ssh-keyscan <ip1> <ip2> <ip3> >> ~/.ssh/known_hosts`.
+    Esimesel ühendumisel küsib SSH host key kinnitust ja Ansible jääks samasse kohta ootama. Seepärast ühendu esimest korda käsitsi või kogu võtmed korraga kokku: `ssh-keyscan <ip1> <ip2> <ip3> >> ~/.ssh/known_hosts`.
 
 ### B2 · Lühinimed `~/.ssh/config`-is
 
@@ -656,7 +658,7 @@ ansible veeb -m ping
 
 ### B4 · Playbook kolmele masinale
 
-Muuda playbooki päises `hosts: kohalik` → `hosts: kohalik:veeb` ja jooksuta B-osas alati `--limit veeb`. Nii jääb üks playbook kõigile ja A-osa töö säilib. Avaleht peab näitama masina nime inventaris (`vm1`, `vm2`, `vm3`).
+Muuda playbooki päises `hosts: kohalik` → `hosts: kohalik:veeb`. B-osas jooksuta alati `--limit veeb`. Nii on sul üks playbook kõigile ja A-osa töö jääb alles. Avaleht peab näitama masina nime inventaris (`vm1`, `vm2`, `vm3`).
 
 Proovi enne ühel masinal:
 
@@ -666,7 +668,7 @@ ansible-playbook bootstrap.yml --limit vm1
 ansible-playbook bootstrap.yml --limit veeb
 ```
 
-Värskes masinas (vm2, vm3) kukub `--check` task'is "nginx käib": kuivjooks ei paigalda nginx'i päriselt, seega teenust pole veel. See on ootuspärane.
+Värskes masinas (vm2, vm3) kukub `--check` task'is "nginx käib". Kuivjooks ei paigalda nginx'i päriselt, seega teenust veel pole. Nii peabki olema.
 
 ??? tip "Vihje: masina nimi lehel"
     `content: "<h1>{{ inventory_hostname }}</h1>\n"`. `inventory_hostname` on nimi inventaris (`vm1`), mitte masina enda hostname.
@@ -685,7 +687,7 @@ for h in <vm1-ip> <vm2-ip> <vm3-ip>; do curl -s --max-time 3 http://$h || echo "
 vm1 vastab, vm2 ja vm3 ei vasta, kuigi nginx käib. Leia põhjus ja paranda see playbookis, mitte käsitsi.
 
 ??? tip "Vihje 1: kus viga on"
-    AlmaLinuxis on `firewalld` sees ja lubab vaikimisi ainult `ssh`-i. vm1 vastab, sest `curl` iseendale ei läbi tulemüüri. Vaata: `ansible veeb -b -m command -a "firewall-cmd --list-services"`.
+    AlmaLinuxis on `firewalld` sees ja lubab vaikimisi ainult `ssh`-i. vm1 vastab, sest `curl` iseendale ei käi läbi tulemüüri. Vaata: `ansible veeb -b -m command -a "firewall-cmd --list-services"`.
 
 ??? tip "Vihje 2: moodul"
     Vaja on moodulit, mis lubab firewalld-s teenuse `http` nii kohe kui ka pärast taaskäivitust. Otsi `ansible-doc ansible.posix.firewalld`.
@@ -762,7 +764,7 @@ Ava GitHubis oma repo → **Actions** → viimane **Autograde**. Seal on iga kon
 
 Kui kontroll on punane, ava job ja leia rida, kus on `FAIL` või `PUUDU`. Paranda, commit'i, push'i uuesti.
 
-Kodutöö kontrollid (H1–H6 jne) kukuvad seni, kuni kodutöö pole tehtud, ja seetõttu on kogu Autograde punane. See on ootuspärane: loeb punktisumma, mitte värv.
+Kodutöö kontrollid (H1–H6 jne) kukuvad seni, kuni kodutöö on tegemata. Seepärast on kogu Autograde punane. Nii peabki olema: loeb punktisumma, mitte värv.
 
 ---
 
@@ -781,6 +783,7 @@ Kodune õpe ja kodutöö on eraldi lehel: [K1 · Kodune õpe ja kodutöö](homew
     | Probleem | Põhjus | Lahendus |
     |---|---|---|
     | `ansible: command not found` | Ansible pole paigaldatud | `sudo dnf install -y ansible-core` |
+    | hoiatus, et `ansible.cfg` jäetakse vahele | töökaust on Windowsi kettal (WSL, `/mnt/c/...`) | tööta Linuxi kaustas, nt `~/` |
     | `config file = None` | `ansible.cfg` pole jooksvas kaustas | `cd ~/<sinu-repo>` |
     | `Could not match supplied host pattern` | grupp puudub inventaris | `ansible-inventory --graph` |
     | `ping` localhostile ei vasta | `ansible_connection=local` puudu | vaata `inventory.ini` |
