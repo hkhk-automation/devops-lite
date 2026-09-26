@@ -2,16 +2,39 @@
 
 Tänase lõpuks viib üks playbook kolm serverit samasse olekusse: kasutaja on olemas, nginx käib ja avaleht näitab serveri nime. Teine jooks ei muuda midagi (`changed=0`).
 
-```mermaid
-flowchart LR
-    W["Klassiarvuti<br>Windows"] -->|SSH / VS Code| CN["vm1<br>control node<br>Ansible + Git"]
-    CN -->|SSH-võti| V1[vm1 ise]
-    CN -->|SSH-võti| V2[vm2]
-    CN -->|SSH-võti| V3[vm3]
-    CN -->|git push| GH[GitHub<br>Autograde]
-```
+<figure class="dl-var" markdown="0">
+<svg viewBox="0 0 730 194" role="img" aria-labelledby="dl-var-t" xmlns="http://www.w3.org/2000/svg">
+<title id="dl-var-t">Kolm võimalust, kus Ansible jookseb: vm1, WSL või Windows (ei tööta)</title>
+<style>.dl-var svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.dl-var .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.dl-var .ctrl{fill:var(--md-primary-fg-color);fill-opacity:.18;stroke:var(--md-primary-fg-color);stroke-width:1.5}.dl-var .t{fill:var(--md-default-fg-color);font-size:12.5px;font-weight:700}.dl-var .b{fill:var(--md-default-fg-color);font-size:12px;font-weight:600}.dl-var .s{fill:var(--md-default-fg-color--light);font-size:10.5px}.dl-var .w{fill:var(--md-accent-fg-color);font-size:11px;font-weight:700}.dl-var .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5}.dl-var .d{stroke-dasharray:4 3}.dl-var .h{fill:var(--md-default-fg-color--light)}</style>
+<defs><marker id="va" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<text class="t" x="115" y="16" text-anchor="middle">1 · VS Code → vm1 (soovitatav)</text>
+<rect class="box" x="6" y="30" width="92" height="40" rx="6"/><text class="b" x="52.0" y="47.0" text-anchor="middle">Windows</text><text class="s" x="52.0" y="61.0" text-anchor="middle">VS Code</text>
+<line class="a" x1="98" y1="50" x2="128" y2="50" marker-end="url(#va)"/>
+<rect class="ctrl" x="132" y="30" width="92" height="40" rx="6"/><text class="b" x="178.0" y="47.0" text-anchor="middle">vm1</text><text class="s" x="178.0" y="61.0" text-anchor="middle">Ansible + Git</text>
+<line class="a" x1="165" y1="70" x2="140" y2="114" marker-end="url(#va)"/>
+<line class="a" x1="195" y1="70" x2="204" y2="114" marker-end="url(#va)"/>
+<rect class="box" x="112" y="116" width="54" height="28" rx="6"/><text class="b" x="139.0" y="134.0" text-anchor="middle">vm2</text>
+<rect class="box" x="174" y="116" width="54" height="28" rx="6"/><text class="b" x="201.0" y="134.0" text-anchor="middle">vm3</text>
+<text class="s" x="115" y="168" text-anchor="middle">vm1 haldab ka iseennast</text>
+<text class="t" x="365" y="16" text-anchor="middle">2 · WSL oma arvutis</text>
+<rect class="ctrl" x="310" y="30" width="110" height="40" rx="6"/><text class="b" x="365.0" y="47.0" text-anchor="middle">WSL</text><text class="s" x="365.0" y="61.0" text-anchor="middle">Ansible + Git</text>
+<line class="a" x1="365" y1="70" x2="285" y2="114" marker-end="url(#va)"/>
+<rect class="box" x="258" y="116" width="54" height="28" rx="6"/><text class="b" x="285.0" y="134.0" text-anchor="middle">vm1</text>
+<line class="a" x1="365" y1="70" x2="365" y2="114" marker-end="url(#va)"/>
+<rect class="box" x="338" y="116" width="54" height="28" rx="6"/><text class="b" x="365.0" y="134.0" text-anchor="middle">vm2</text>
+<line class="a" x1="365" y1="70" x2="445" y2="114" marker-end="url(#va)"/>
+<rect class="box" x="418" y="116" width="54" height="28" rx="6"/><text class="b" x="445.0" y="134.0" text-anchor="middle">vm3</text>
+<text class="s" x="365" y="168" text-anchor="middle">töötab, kui VPN on sees</text>
+<text class="t" x="610" y="16" text-anchor="middle">3 · Windows ilma WSL-ita</text>
+<rect class="box" x="555" y="30" width="110" height="40" rx="6"/><text class="b" x="610.0" y="47.0" text-anchor="middle">Windows</text><text class="s" x="610.0" y="61.0" text-anchor="middle">PowerShell</text>
+<line class="a d" x1="610" y1="70" x2="610" y2="114" marker-end="url(#va)"/>
+<rect class="box" x="583" y="116" width="54" height="28" rx="6"/><text class="b" x="610.0" y="134.0" text-anchor="middle">vm1</text>
+<text class="w" x="610" y="168" text-anchor="middle">Ansible Windowsis ei käi</text>
+<text class="s" x="610" y="184" text-anchor="middle">tegelikult sama mis variant 1</text>
+</svg>
+</figure>
 
-Osa A teed ühel masinal (`localhost`) samm-sammult, osa B kolmel VM-il iseseisvalt. Oodatav tulemus ja vihjed on kinnistes plokkides: tee enne ise, siis võrdle.
+Juhend on kirjutatud variandi 1 järgi. Osa A teed ühel masinal (`localhost`) samm-sammult, osa B kolmel VM-il iseseisvalt. Oodatav tulemus ja vihjed on kinnistes plokkides: tee enne ise, siis võrdle.
 
 ??? abstract "Õpiväljundid"
 
