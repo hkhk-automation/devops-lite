@@ -1,7 +1,7 @@
 # K1 · Kodune õpe ja kodutöö
 
-**Tähtaeg:** kirjas Classroom 50-s.
-**Kuhu:** samasse reposse, kuhu klassitöö. Iga ülesande juures on kirjas, mis fail kuhu läheb ja mida automaatne kontroll vaatab.
+Tähtaeg: kirjas Classroom 50-s.
+Kuhu: samasse reposse, kuhu klassitöö. Iga ülesande juures on kirjas, mis fail kuhu läheb ja mida automaatne kontroll vaatab.
 
 Kodutöö on klassitööst raskem. Juhiseid on vähem: parameetrid otsid `ansible-doc`-ist ja dokumentatsioonist ise, nagu tööl. Kui jääd kinni, küsi Discordis või ava oma repos issue **Vajan abi**: kirjuta, mis käsu jooksutasid ja mis veateate said.
 
@@ -54,42 +54,60 @@ Iga harjutuse lõpus salvesta teine jooks: `ansible-playbook -i inventory.ini <f
 
 Masinad `veeb`-grupis peavad olema olekus:
 
-- kasutajad `deploy` ja `monitor` luuakse **ühe task'iga**, mis käib läbi nimekirja (`loop`);
+- kasutajad `deploy` ja `monitor` luuakse ühe task'iga, mis käib läbi nimekirja (`loop`);
 - mõlemal on sinu avalik SSH-võti (`ansible.posix.authorized_key`), nii et `ssh deploy@vm1` töötab;
 - `deploy` kuulub gruppi `wheel` (AlmaLinuxi admin-grupp);
 - `deploy` saab kasutada sudo't ilma paroolita: fail `/etc/sudoers.d/deploy` sisuga `deploy ALL=(ALL) NOPASSWD: ALL` (`copy`, `mode: "0440"`, `validate: visudo -cf %s`);
 - `chrony` on paigaldatud ja teenus käib (AlmaLinuxis on teenuse nimi `chronyd`);
 - `/etc/motd` sisaldab `Hallatud Ansible'iga - <masina nimi>`.
 
-**Valmis, kui:** `ssh deploy@vm1 sudo -n true` õnnestub; teine jooks `changed=0`.
-**Fail:** `admin.yml`, `logid/admin_teine_jooks.txt`.
+Valmis, kui:
+
+- [ ] `ssh deploy@vm1 sudo -n true` õnnestub
+- [ ] teine jooks `changed=0`
+
+Fail: `admin.yml`, `logid/admin_teine_jooks.txt`.
 
 ### H2 · `hardening.yml`: SSH turvamine
 
 - `/etc/ssh/sshd_config`-is on `PermitRootLogin no` ja `PasswordAuthentication no` (`lineinfile`, uuri `regexp`);
 - enne muudatuse rakendamist kontrollitakse konfi süntaksit (`validate: sshd -t -f %s`);
-- `sshd` taaskäivitatakse **ainult siis, kui konf muutus** (uuri `notify` ja `handlers`).
+- `sshd` taaskäivitatakse ainult siis, kui konf muutus (uuri `notify` ja `handlers`).
 
-⚠️ See ülesanne võib sind masinast välja lukustada. Hoia teine SSH-sessioon lahti, jooksuta esmalt `--check --diff`, siis `--limit vm1`, kontrolli uuest terminalist, et sisse saad, alles siis kõigil. Kui lukustasid end välja, kirjuta README-sse, mis juhtus ja kuidas said tagasi. See on väärtuslikum kui töö, mis kohe õnnestus.
+!!! warning "Võid end masinast välja lukustada"
 
-**Valmis, kui:** `ssh root@vm1` keeldub; `ssh vm1` töötab võtmega; teine jooks `changed=0` ja handler ei käivitu.
-**Fail:** `hardening.yml`, `logid/hardening_teine_jooks.txt`.
+    See ülesanne võib sind masinast välja lukustada. Hoia teine SSH-sessioon lahti, jooksuta esmalt `--check --diff`, siis `--limit vm1`, kontrolli uuest terminalist, et sisse saad, alles siis kõigil. Kui lukustasid end välja, kirjuta README-sse, mis juhtus ja kuidas said tagasi. See on väärtuslikum kui töö, mis kohe õnnestus.
+
+Valmis, kui:
+
+- [ ] `ssh root@vm1` keeldub
+- [ ] `ssh vm1` töötab võtmega
+- [ ] teine jooks `changed=0` ja handler ei käivitu
+
+Fail: `hardening.yml`, `logid/hardening_teine_jooks.txt`.
 
 ### H3 · `baas.yml`: paketid nimekirjast
 
-Defineeri playbooki `vars` all kaks nimekirja: `paigalda` (vähemalt `curl`, `git`, `tree`, `wget`, `tar`) ja `eemalda` (vähemalt `telnet`). Üks task paigaldab esimese nimekirja, teine tagab, et teise nimekirja paketid **puuduvad** (`state: absent`).
+Defineeri playbooki `vars` all kaks nimekirja: `paigalda` (vähemalt `curl`, `git`, `tree`, `wget`, `tar`) ja `eemalda` (vähemalt `telnet`). Üks task paigaldab esimese nimekirja, teine tagab, et teise nimekirja paketid puuduvad (`state: absent`).
 
 Proovi: paigalda `telnet` käsitsi ühte masinasse ja jooksuta playbook. Mitu `changed`-i tuleb?
 
-**Valmis, kui:** teine jooks `changed=0`; käsitsi paigaldatud `telnet` eemaldati.
-**Fail:** `baas.yml`, `logid/baas_teine_jooks.txt`.
+Valmis, kui:
+
+- [ ] teine jooks `changed=0`
+- [ ] käsitsi paigaldatud `telnet` eemaldati
+
+Fail: `baas.yml`, `logid/baas_teine_jooks.txt`.
 
 ### H4 · `raport.yml`: faktidest raport
 
 Kirjuta playbook, mis loob igas masinas faili `/tmp/raport.txt`, kus on masina nimi, distributsioon ja versioon, IP-aadress, mälu MB-des ja protsessorite arv (kõik faktidest). Seejärel toob faili control node'i kausta `raportid/` (`ansible.builtin.fetch`, uuri `flat: true`), nii et iga masina raport on eraldi failis. Nimeta failid inventari nime järgi (`raportid/{{ inventory_hostname }}.txt`), muidu võivad need üksteist üle kirjutada.
 
-**Valmis, kui:** kaustas `raportid/` on kolm faili, igaüks oma masina andmetega.
-**Fail:** `raport.yml`, `raportid/`.
+Valmis, kui:
+
+- [ ] kaustas `raportid/` on kolm faili, igaüks oma masina andmetega
+
+Fail: `raport.yml`, `raportid/`.
 
 ### H5 · `cron.yml`: ajastatud töö
 
@@ -102,17 +120,22 @@ Igas masinas:
 
 Käivita skript korra käsitsi (`ssh -t vm1 sudo /usr/local/bin/varunda.sh`) ja kontrolli, et arhiiv tekkis (`ssh -t vm1 sudo ls /var/backups`). Vaata `ssh -t vm1 sudo crontab -l -u root`: kui jooksutad playbooki kaks korda, kas cron-rida on seal üks või kaks korda? Miks?
 
-**Valmis, kui:** arhiiv tekib; cron-rida on üks; teine jooks `changed=0`.
-**Fail:** `cron.yml`, `logid/cron_teine_jooks.txt`.
+Valmis, kui:
+
+- [ ] arhiiv tekib
+- [ ] cron-rida on üks
+- [ ] teine jooks `changed=0`
+
+Fail: `cron.yml`, `logid/cron_teine_jooks.txt`.
 
 ### H6 · Drift ja koristamine
 
 1. Tekita igasse masinasse erinev drift: ühes kustuta `monitor`-kasutaja, teises muuda `/etc/motd` sisu, kolmandas peata `chrony`.
-2. Jooksuta **kõik** oma playbookid `--check` režiimis ja salvesta väljund faili `logid/drift_check.txt`. Kas iga drift tuli välja? Millise playbooki järgi?
+2. Jooksuta kõik oma playbookid `--check` režiimis ja salvesta väljund faili `logid/drift_check.txt`. Kas iga drift tuli välja? Millise playbooki järgi?
 3. Paranda drift päris jooksuga.
 4. Kirjuta `vastused.md`-sse lõik: kui peaksid seda kontrolli igal ööl automaatselt jooksutama, kuidas see välja näeks ja kes saaks teate?
 
-**Fail:** `logid/drift_check.txt`, lõik `vastused.md`-s.
+Fail: `logid/drift_check.txt`, lõik `vastused.md`-s.
 
 ---
 
@@ -133,13 +156,13 @@ Tee see oma VM-ides. Reposse ei lähe paroole ega võtmeid.
 
 ## IV · Eneseanalüüs ja vabatahtlik boonus
 
-**Eneseanalüüs** (`vastused.md` lõpus, 5–10 lauset): mis oli kõige raskem, kus ennustus läks mööda, mida teed tööl nüüd teisiti, mis jäi segaseks ja mida tahad järgmisel kohtumisel küsida.
+Eneseanalüüs (`vastused.md` lõpus, 5–10 lauset): mis oli kõige raskem, kus ennustus läks mööda, mida teed tööl nüüd teisiti, mis jäi segaseks ja mida tahad järgmisel kohtumisel küsida.
 
-**Vabatahtlik, kui aega jääb:**
+Vabatahtlik, kui aega jääb:
 
-**Boonus:** kirjuta `boonus.yml`, mis üritab paigaldada paketti, mida pole olemas, ja püüab vea kinni `block`/`rescue`-ga nii, et playbook kirjutab veast teate ega kuku. Selgita `vastused.md`-s, millal on selline vea püüdmine mõistlik ja millal ohtlik.
+Boonus: kirjuta `boonus.yml`, mis üritab paigaldada paketti, mida pole olemas, ja püüab vea kinni `block`/`rescue`-ga nii, et playbook kirjutab veast teate ega kuku. Selgita `vastused.md`-s, millal on selline vea püüdmine mõistlik ja millal ohtlik.
 
-**Lint:** jooksuta `ansible-lint *.yml` ja paranda, mis parandada saad. Mida ei parandanud, selgita `vastused.md`-s.
+Lint: jooksuta `ansible-lint *.yml` ja paranda, mis parandada saad. Mida ei parandanud, selgita `vastused.md`-s.
 
 ---
 
