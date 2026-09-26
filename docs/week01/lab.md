@@ -15,12 +15,12 @@ flowchart LR
 
 Praktikumil on kaks osa:
 
-- **A · Juhendatud:** kõik ühel masinal (`localhost`), samm-sammult. Oodatava tulemuse näed iga sammu juures kokkuvolditud plokis: tee enne ise, siis võrdle.
-- **B · Iseseisev:** sama oskus kolmel VM-il. Antud on eesmärk ja piirangud, lahenduse leiad ise. Vihjed on kinnistes plokkides.
+- A · Juhendatud: kõik ühel masinal (`localhost`), samm-sammult. Oodatava tulemuse näed iga sammu juures kokkuvolditud plokis: tee enne ise, siis võrdle.
+- B · Iseseisev: sama oskus kolmel VM-il. Antud on eesmärk ja piirangud, lahenduse leiad ise. Vihjed on kinnistes plokkides.
 
 | Samm | Tulemus | Kuidas kontrollid |
 |---|---|---|
-| 0 | vm1-ga ühendus, Ansible ja Git olemas, repo kloonitud | `ansible --version`, `ls` repos |
+| Enne | Töökeskkond tehtud, repo kloonitud | `ansible --version`, `ls` repos |
 | A1 | nginx käib käsitsi seadistatuna | `curl -s localhost` |
 | A2 | skripti probleem on nähtav | `cat /srv/raport/conf` |
 | A3 | Ansible leiab localhosti | `ansible kohalik -m ping` |
@@ -31,7 +31,7 @@ Praktikumil on kaks osa:
 
 Loengu vastavad peatükid on iga sammu juures viidatud. Kui mõni mõiste on udune, ava [loeng](lecture.md) samal ajal teises aknas.
 
-## 🎯 Õpiväljundid
+## Õpiväljundid
 
 Praktikumi lõpuks oskad:
 
@@ -45,131 +45,13 @@ Praktikumi lõpuks oskad:
 
 ---
 
-## 0 · Valmisolek
+## Enne alustamist
 
-### 0.1 Ühendus vm1-ga
+Kui sa pole seda veel teinud, tee läbi [Töökeskkond](../keskkond.md): ühendus vm1-ga, parooli vahetus ja masinate nimed, Ansible ja Git, SSH-võti ning repo kloonimine.
 
-Klassiarvuti on Windows, aga töö käib kooli Proxmoxi klastris sulle antud kolmes **AlmaLinux 9** VM-is. **vm1 on sinu control node:** sinna paigaldad Ansible'i ja Giti ning sealt haldad kõiki kolme masinat, ka vm1 ennast. Osa A teed ainult vm1-s (`localhost`), osas B lisanduvad vm2 ja vm3.
+Selle praktikumi repo tekib Classroom 50 lingist, mille juhendaja jagab. Klooni see vm1-s SSH-ga (**Code** → **SSH**) ja tee kõik tänased failid selle juurkausta.
 
-Juhendaja annab sulle kolm IP-d, kasutajanime ja parooli. Kirjuta need üles:
-
-| Nimi | IP | Kasutaja |
-|---|---|---|
-| vm1 (control node) | | |
-| vm2 | | |
-| vm3 | | |
-
-Ühendu Windowsist vm1-ga. Kaks võimalust:
-
-- **VS Code:** Remote-SSH laiendus → `F1` → *Remote-SSH: Connect to Host* → `<kasutaja>@<vm1-ip>`. Terminal (`Ctrl+ö`) avaneb otse vm1-s, failid näed külgpaanil.
-- **PowerShell:** `ssh <kasutaja>@<vm1-ip>`
-
-Esimesel ühendumisel küsitakse host key kinnitust (`yes`) ja parooli.
-
-Juhendajalt saadud parool on kõigil tudengitel sama ja masinad on ühes võrgus, seega vaheta see. Masinatel pole ka veel nime (prompt näitab `localhost`). Tee mõlemad asjad igas masinas.
-
-**vm1** (oled juba sees):
-
-```bash
-passwd
-sudo hostnamectl set-hostname vm1
-exec bash
-```
-
-`passwd` küsib vana parooli, siis kaks korda uut. Liiga lihtsa lükkab AlmaLinux tagasi (`BAD PASSWORD`): vali vähemalt 8 märki tähtede ja numbritega. Pane **kõigis kolmes masinas sama** uus parool, sest Ansible küsib sudo parooli ühe korra ja kasutab seda kõigil kolmel.
-
-**vm2** (vm1 terminalist):
-
-```bash
-ssh <kasutaja>@<vm2-ip>
-passwd
-sudo hostnamectl set-hostname vm2
-exit
-```
-
-**vm3:** sama, `vm3` nimega.
-
-??? success "Oodatav tulemus"
-
-    vm1 prompt on `<kasutaja>@vm1`. `ssh <kasutaja>@<vm2-ip> hostname` vastab `vm2`, vm3 samamoodi. Kõik järgmised käsud käivad vm1-s, mitte Windowsis.
-
-### 0.2 Tööriistad vm1-s
-
-```bash
-sudo dnf install -y git ansible-core
-ansible-galaxy collection install ansible.posix:1.5.4
-git --version
-ansible --version | head -3
-```
-
-??? success "Oodatav tulemus"
-
-    ```
-    git version 2.52.0
-    ansible [core 2.14.18]
-      config file = /etc/ansible/ansible.cfg
-      configured module search path = [...]
-    ```
-
-Versioonid võivad veidi erineda. Oluline on, et `ansible` vastab. `ansible.posix` kollektsiooni (tulemüüri moodul) läheb vaja osas B. Versioon 1.5.4, sest uuemad ei toeta AlmaLinuxi `ansible-core 2.14`-t.
-
-### 0.3 SSH-võti
-
-Üks võtmepaar vm1-s teeb kaks asja: sellega kloonid oma privaatse repo GitHubist ja sellega ühendub Ansible osas B vm2 ja vm3 külge. Parooli pole kummalgi juhul vaja.
-
-Loo võti. Vajuta kõigi küsimuste peale Enter:
-
-```bash
-ssh-keygen -t ed25519 -C "<eesnimi>@vm1"
-cat ~/.ssh/id_ed25519.pub
-```
-
-??? success "Oodatav tulemus"
-
-    Üks rida, mis algab `ssh-ed25519 AAAA...` ja lõpeb `<eesnimi>@vm1`. See on **avalik võti**, seda võib jagada. Fail `~/.ssh/id_ed25519` (ilma `.pub`-ita) on **privaatvõti**, see ei lahku kunagi vm1-st.
-
-### 0.4 Võti GitHubi ja repo kloonimine
-
-Lisa avalik võti GitHubi:
-
-1. GitHub → paremal üleval profiilipilt → **Settings** → **SSH and GPG keys** → **New SSH key**.
-2. *Title:* `vm1`, *Key type:* Authentication Key, *Key:* kleebi `cat` väljundist kogu rida.
-3. **Add SSH key**.
-
-Kontrolli vm1-s:
-
-```bash
-ssh -T git@github.com
-```
-
-??? success "Oodatav tulemus"
-
-    Esimesel korral kinnita `yes`, siis:
-
-    ```
-    Hi <sinu-github-kasutaja>! You've successfully authenticated, but GitHub does not provide shell access.
-    ```
-
-Seadista Git ja klooni repo. Ava Classroom 50 link, mille juhendaja jagas, ja nõustu ülesandega. Sulle tekib privaatne repo organisatsioonis `hkhk-automation`. Repo lehel vajuta **Code** → vahekaart **SSH** → kopeeri aadress (algab `git@github.com:`).
-
-```bash
-git config --global user.name "Eesnimi Perenimi"
-git config --global user.email "sinu@email.ee"
-cd ~
-git clone git@github.com:hkhk-automation/<sinu-repo>.git
-cd <sinu-repo>
-ls
-```
-
-??? success "Oodatav tulemus"
-
-    ```
-    README.md  ULESANNE.md  logid
-    ```
-
-Kõik tänased failid lähevad selle repo juurkausta. `git push` töötab sama võtmega, parooli ega tokenit ei küsita.
-
-**Kontrollnimekiri:** su repo **Issues** all on issue **Lab 01 · Esimene playbook**, kus on kõik tänased ja kodused osad märkeruutudena. Märgi ruut, kui osa on tehtud, ja sulge issue, kui kõik on tehtud. Sama issue on kursuse projektis (GitHubi org `hkhk-automation` → **Projects** → *ITS-25 Automatiseerimine*), vaade **Minu tööd**. Kui jääd kinni, küsi Discordis või ava uus issue mallist **Vajan abi**.
+Kontrollnimekiri: su repo **Issues** all on issue Lab 01 · Esimene playbook, kus on kõik tänased ja kodused osad märkeruutudena. Märgi ruut, kui osa on tehtud, ja sulge issue, kui kõik on tehtud. Sama issue on kursuse projektis (GitHubi org `hkhk-automation` → **Projects** → *ITS-25 Automatiseerimine*), vaade **Minu tööd**. Kui jääd kinni, küsi Discordis või ava uus issue mallist **Vajan abi**.
 
 Lõpuks on repos:
 
@@ -223,7 +105,9 @@ Kontrolltabeli näide:
 
 Enne automatiseerimist pead teadma, mida masin peab tegema. Kontrolltabeli read muutuvad A4-s playbooki task'ideks, ja kontrolliveerg ütleb, mida moodul iga task'i juures ise kontrollib.
 
-💭 Kui peaksid sama tegema kümnele masinale, mitmendal ununeks mõni samm? Milline samm ununeks kõige tõenäolisemalt ja miks just see?
+!!! question "Mõtle"
+
+    Kui peaksid sama tegema kümnele masinale, mitmendal ununeks mõni samm? Milline samm ununeks kõige tõenäolisemalt ja miks just see?
 
 ---
 
@@ -261,7 +145,9 @@ cat /srv/raport/conf
 
 Skript andis kahest veast teada, aga duplikaatrida tekkis vaikselt. Skripti ohutuks tegemiseks peaks iga rea ette kirjutama kontrolli (`id … ||`, `mkdir -p`, `grep -qx … ||`), ja iga uus erijuht tähendab uut `if`-i. Ansible'i moodulid teevad need kontrollid ise. A4-s kirjutad sama asja playbookina ja näed vahet.
 
-💭 Kui see skript jookseks igal ööl cronist, mitu rida `seade=1` oleks failis kuu aja pärast? Kas keegi märkaks?
+!!! question "Mõtle"
+
+    Kui see skript jookseks igal ööl cronist, mitu rida `seade=1` oleks failis kuu aja pärast? Kas keegi märkaks?
 
 Korista jäljed, et need ei segaks edasist tööd:
 
@@ -274,7 +160,7 @@ sudo rm -rf /srv/raport
 
 ### A3 · Inventar, `ansible.cfg` ja ad-hoc käsud
 
-*Loeng §7–§9*
+*Loeng §7–§9 · [Ansible: ad-hoc käsud](https://docs.ansible.com/ansible/latest/command_guide/intro_adhoc.html)*
 
 Loo `inventory.ini`:
 
@@ -287,17 +173,20 @@ Loo `ansible.cfg`, et ei peaks iga käsu juurde `-i inventory.ini` kirjutama:
 
 ```ini
 [defaults]
-inventory = inventory.ini
-callback_result_format = yaml
+inventory = inventory.ini # (1)!
+callback_result_format = yaml # (2)!
 
 [privilege_escalation]
-become_ask_pass = True
+become_ask_pass = True # (3)!
 
 [ssh_connection]
-pipelining = True
+pipelining = True # (4)!
 ```
 
-`become_ask_pass` tähendab, et iga kord, kui Ansible vajab sudo-õigust (`-b` või `become: true`), küsib ta alguses `BECOME password:`. Sisesta oma kasutaja parool.
+1. Ansible loeb masinad sellest failist, `-i` pole vaja.
+2. Väljund loetava YAML-ina, mitte ühe pika JSON-reana.
+3. Kui Ansible vajab sudo-õigust (`-b` või `become: true`), küsib ta alguses `BECOME password:`. Sisesta oma kasutaja parool.
+4. Vähem SSH-ühendusi task'i kohta, jooks on kiirem.
 
 Kontrolli, et Ansible kasutab just seda faili:
 
@@ -354,15 +243,17 @@ ansible kohalik -b -m package -a "name=tree state=present"
 
 Moodul (`ping`, `setup`, `package`) tagastab struktureeritud info ja teab, kas ta midagi muutis. `command` tagastab ainult teksti ja on alati `CHANGED`. Fakte (`ansible_distribution` jt) kasutad A8-s avalehel.
 
-💭 Kui tahad avalehele kirjutada masina distributsiooni ja versiooni, kumb annab selleks info: `setup` või `command`? Miks?
+!!! question "Mõtle"
+
+    Kui tahad avalehele kirjutada masina distributsiooni ja versiooni, kumb annab selleks info: `setup` või `command`? Miks?
 
 ---
 
 ### A4 · Esimene playbook
 
-*Loeng §4, §11, §14*
+*Loeng §4, §11, §14 · [Ansible: getting started](https://docs.ansible.com/ansible/latest/getting_started/) · [builtin moodulid](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/)*
 
-Nüüd paned A1 käsitsitöö kirja soovitud olekuna. Ehita playbook **üks task korraga** ja jooksuta iga lisanduse järel. Nii tead alati, milline task vea tekitas.
+Nüüd paned A1 käsitsitöö kirja soovitud olekuna. Ehita playbook üks task korraga ja jooksuta iga lisanduse järel. Nii tead alati, milline task vea tekitas.
 
 **Samm 1.** Loo `bootstrap.yml` ühe task'iga:
 
@@ -423,7 +314,7 @@ ansible-doc -s ansible.builtin.service
 
 Iga task'i `name` kirjuta soovitud olekuna: "nginx on paigaldatud", mitte "paigalda nginx".
 
-**Enne viimast jooksu ennusta.** Täida tabel vihikus:
+Enne viimast jooksu ennusta. Täida tabel vihikus:
 
 | Task | Ennustus: ok või changed? | Miks | Tegelik |
 |---|---|---|---|
@@ -451,7 +342,9 @@ curl -s localhost
 
 Ainult avalehe sisu erines käsitsi tehtust. Kõik muu oli juba soovitud olekus, ja moodulid tuvastasid selle ise.
 
-💡 `Permission denied` või `You need to be root`: `become: true` puudub. `Missing sudo password`: `ansible.cfg`-s puudub `become_ask_pass = True`. `Waiting for process ... dnf`: taustal käib teine dnf, oota. `this task has extra params`: parameeter on vale taandega (loeng §10).
+??? tip "Kui tuleb viga"
+
+    `Permission denied` või `You need to be root`: `become: true` puudub. `Missing sudo password`: `ansible.cfg`-s puudub `become_ask_pass = True`. `Waiting for process ... dnf`: taustal käib teine dnf, oota. `this task has extra params`: parameeter on vale taandega (loeng §10).
 
 ---
 
@@ -506,7 +399,7 @@ Toores käsk ei tea olekut. Kui moodulit pole, teeb `creates` käsu idempotentse
 
 ### A6 · Dry run
 
-*Loeng §16*
+*Loeng §16 · [Ansible: check mode ja diff](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html)*
 
 Muuda `bootstrap.yml`-is avalehe teksti, näiteks `<h1>Versioon 2</h1>\n`. Jooksuta kuivalt:
 
@@ -543,7 +436,9 @@ curl -s localhost
 
 Tootmises vaatad enne muutust, mida see teeks. `--diff` näitab täpselt, mis rida muutub, ja see on see, mida kolleeg code review's näha tahab.
 
-💭 Lisa ajutiselt tagasi `command: date` task ja jooksuta `--check`. Mida näitab väljund selle task'i kohta? Miks? **Eemalda task pärast uuesti**, automaatne kontroll K3 ei luba `command`-i.
+!!! question "Mõtle"
+
+    Lisa ajutiselt tagasi `command: date` task ja jooksuta `--check`. Mida näitab väljund selle task'i kohta? Miks? Eemalda task pärast uuesti, automaatne kontroll K3 ei luba `command`-i.
 
 ---
 
@@ -559,7 +454,7 @@ sudo systemctl stop nginx
 sudo userdel saidi
 ```
 
-**Enne jooksu ennusta:**
+Enne jooksu ennusta:
 
 | Task | Ennustus | Tegelik |
 |---|---|---|
@@ -580,13 +475,15 @@ curl -s localhost
 
 Playbook parandas ainult selle, mis triivis, ja sa ei pidanud talle ütlema, mis katki on. `--check` üksi on drift'i avastamise tööriist: nii saab öösel kontrollida kõiki masinaid ilma midagi muutmata.
 
-💭 Mis oleks juhtunud, kui keegi oleks A7-s nginx-i paketi eemaldanud (`dnf remove nginx`)? Mitu `changed`-i? Kas avaleht oleks alles?
+!!! question "Mõtle"
+
+    Mis oleks juhtunud, kui keegi oleks A7-s nginx-i paketi eemaldanud (`dnf remove nginx`)? Mitu `changed`-i? Kas avaleht oleks alles?
 
 ---
 
 ### A8 · Muutujad ja `debug`
 
-*Loeng §13*
+*Loeng §13 · [Ansible: faktid ja muutujad](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html)*
 
 Lisa play'le `vars` plokk ja kasuta muutujat avalehel:
 
@@ -639,7 +536,7 @@ Muutuja teeb playbooki taaskasutatavaks. `-e` (extra vars) on kõige kõrgema pr
 
 ## B · Iseseisev osa: kolm serverit
 
-Vii kõik kolm VM-i (vm1, vm2, vm3) samasse olekusse **sama** `bootstrap.yml`-iga, mille kirjutasid osas A. Iga server näitab avalehel oma inventari nime. Sammud on antud, lahenduse leiad ise. Vihje on iga sammu juures kinnises plokis: ava see alles siis, kui oled ise proovinud.
+Vii kõik kolm VM-i (vm1, vm2, vm3) samasse olekusse sama `bootstrap.yml`-iga, mille kirjutasid osas A. Iga server näitab avalehel oma inventari nime. Sammud on antud, lahenduse leiad ise. Vihje on iga sammu juures kinnises plokis: ava see alles siis, kui oled ise proovinud.
 
 Piirangud kogu B-osas:
 
@@ -649,7 +546,7 @@ Piirangud kogu B-osas:
 
 ### B1 · Võti kõigisse kolme masinasse
 
-vm1 on nii control node kui üks kolmest serverist. Ansible ühendub ka vm1-ga üle SSH, seega kopeeri osas 0.3 tehtud avalik võti **kõigile kolmele**, ka vm1 enda IP-le. Seejärel ühendu igasse korra käsitsi: `ssh <kasutaja>@<vm2-ip> hostname` peab vastama `vm2` ilma parooli küsimata.
+vm1 on nii control node kui üks kolmest serverist. Ansible ühendub ka vm1-ga üle SSH, seega kopeeri [Töökeskkonnas](../keskkond.md) tehtud avalik võti kõigile kolmele, ka vm1 enda IP-le. Seejärel ühendu igasse korra käsitsi: `ssh <kasutaja>@<vm2-ip> hostname` peab vastama `vm2` ilma parooli küsimata.
 
 ??? tip "Vihje: võtme kopeerimine"
     ```bash
@@ -716,7 +613,7 @@ Värskes masinas (vm2, vm3) kukub `--check` task'is "nginx käib": kuivjooks ei 
     `content: "<h1>{{ inventory_hostname }}</h1>\n"`. `inventory_hostname` on nimi inventaris (`vm1`), mitte masina enda hostname.
 
 ??? tip "Vihje: `BECOME password` kolmes masinas"
-    `ansible.cfg`-s on `become_ask_pass = True` (A3), nii et Ansible küsib parooli ühe korra ja kasutab seda kõigis masinates. Seepärast panid 0.1-s kõigile sama parooli.
+    `ansible.cfg`-s on `become_ask_pass = True` (A3), nii et Ansible küsib parooli ühe korra ja kasutab seda kõigis masinates. Seepärast panid Töökeskkonnas kõigile sama parooli.
 
 ### B5 · Leht väljast nähtavaks
 
@@ -767,7 +664,7 @@ ansible-playbook bootstrap.yml --limit veeb
 
 ---
 
-## Dokumenteerimine
+## Esitamine
 
 ### README
 
@@ -786,7 +683,9 @@ git push
 
 `git status` enne `add`-i näitab, mis faile lisad. Kontrolli, et seal pole midagi, mis ei kuulu reposse: võtmed, paroolid, `.retry` failid.
 
-💡 Kui `git push` küsib kasutajanime või parooli, kloonisid repo HTTPS-iga. Vaheta SSH peale: `git remote set-url origin git@github.com:hkhk-automation/<sinu-repo>.git` (võti peab olema GitHubis, osa 0.4).
+??? tip "Kui git push küsib parooli"
+
+    Kui `git push` küsib kasutajanime või parooli, kloonisid repo HTTPS-iga. Vaheta SSH peale: `git remote set-url origin git@github.com:hkhk-automation/<sinu-repo>.git` (võti peab olema GitHubis, vt [Töökeskkond](../keskkond.md)).
 
 ### Automaatne kontroll
 
@@ -808,50 +707,38 @@ Kodutöö kontrollid (H1–H6 jne) kukuvad seni, kuni kodutöö pole tehtud, ja 
 
 ## Kodutöö
 
-Kodune õpe ja kodutöö on eraldi lehel: **[K1 · Kodune õpe ja kodutöö](homework.md)**. Samasse reposse, tähtaeg Classroom 50-s.
+Kodune õpe ja kodutöö on eraldi lehel: [K1 · Kodune õpe ja kodutöö](homework.md). Samasse reposse, tähtaeg Classroom 50-s.
 
 ---
 
 ## Veaotsing
 
-Kontrolli järjekorras: loe veateade algusest lõpuni, korda käsku `-v`-ga, proovi sama asja käsitsi sihtmasinas.
+??? info "Veaotsingu tabel: tüüpilised vead ja lahendused"
 
-| Probleem | Põhjus | Lahendus |
-|---|---|---|
-| `ansible: command not found` | Ansible pole paigaldatud | `sudo dnf install -y ansible-core` |
-| `config file = None` | `ansible.cfg` pole jooksvas kaustas | `cd ~/<sinu-repo>` |
-| `Could not match supplied host pattern` | grupp puudub inventaris | `ansible-inventory --graph` |
-| `ping` localhostile ei vasta | `ansible_connection=local` puudu | vaata `inventory.ini` |
-| VM: `UNREACHABLE` | SSH ei tööta | `ssh vm1 hostname` käsitsi, siis `-vvv` |
-| `Permission denied (publickey)` | avalik võti pole sihtmasinas | korda `ssh-copy-id` |
-| `Host key verification failed` | host key muutus (VM uuesti loodud) | `ssh-keygen -R vm1` |
-| `Permission denied` task'is | `become: true` puudu | lisa play tasemele |
-| `Invalid callback for stdout specified: yaml` | `ansible.cfg`-s vana rida `stdout_callback = yaml` | asenda `callback_result_format = yaml` |
-| `Missing sudo password` | `ansible.cfg`-s pole `become_ask_pass = True` | lisa `[privilege_escalation]` plokk (A3) |
-| `couldn't resolve module/action 'ansible.posix.firewalld'` | kollektsioon puudu | `ansible-galaxy collection install ansible.posix:1.5.4` |
-| `Could not find the requested service nginx` `--check`-iga | värskes masinas pole nginx'i veel päriselt paigaldatud | ootuspärane, jooksuta ilma `--check`-ita |
-| `sudo: a terminal is required` | `ssh vm2 "sudo ..."` ilma terminalita | `ssh -t vm2 "sudo ..."` |
-| `Waiting for process ... dnf` | taustal käib teine dnf | oota |
-| `mapping values are not allowed` | YAML: koolon väärtuses | jutumärgid |
-| `this task has extra params` | parameeter vale taandega | vaata taanet, loeng §10 |
-| `couldn't resolve module/action` | mooduli nimi vale | `ansible-doc -l \| grep <nimi>` |
-| task on igal jooksul `changed` | `command`/`shell` mooduli asemel | vaheta moodul |
-| `curl` näitab nginx vaikelehte | fail läks vale kausta | `dest` peab olema `/usr/share/nginx/html/index.html` |
-| `curl` väljast ei vasta, masinas vastab | tulemüür | B5 |
-| käsk töötab PowerShellis, aga mitte vm1-s (või vastupidi) | oled vales aknas | `hostname` — kõik käsud käivad vm1-s |
-| `git push` küsib parooli | repo on kloonitud HTTPS-iga | `git remote set-url origin git@github.com:...` |
-| `Permission denied (publickey)` GitHubist | võti pole GitHubis | osa 0.4 |
+    Kontrolli järjekorras: loe veateade algusest lõpuni, korda käsku `-v`-ga, proovi sama asja käsitsi sihtmasinas.
 
----
-
-## Allikad
-
-| Allikas | URL |
-|---|---|
-| Ansible: getting started | <https://docs.ansible.com/ansible/latest/getting_started/> |
-| Ad-hoc käsud | <https://docs.ansible.com/ansible/latest/command_guide/intro_adhoc.html> |
-| Ansible builtin moodulid | <https://docs.ansible.com/ansible/latest/collections/ansible/builtin/> |
-| Faktid ja muutujad | <https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html> |
-| Check mode ja diff | <https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html> |
-| VS Code Remote-SSH | <https://code.visualstudio.com/docs/remote/ssh> |
-| GitHub: SSH-võti kontole | <https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account> |
+    | Probleem | Põhjus | Lahendus |
+    |---|---|---|
+    | `ansible: command not found` | Ansible pole paigaldatud | `sudo dnf install -y ansible-core` |
+    | `config file = None` | `ansible.cfg` pole jooksvas kaustas | `cd ~/<sinu-repo>` |
+    | `Could not match supplied host pattern` | grupp puudub inventaris | `ansible-inventory --graph` |
+    | `ping` localhostile ei vasta | `ansible_connection=local` puudu | vaata `inventory.ini` |
+    | VM: `UNREACHABLE` | SSH ei tööta | `ssh vm1 hostname` käsitsi, siis `-vvv` |
+    | `Permission denied (publickey)` | avalik võti pole sihtmasinas | korda `ssh-copy-id` |
+    | `Host key verification failed` | host key muutus (VM uuesti loodud) | `ssh-keygen -R vm1` |
+    | `Permission denied` task'is | `become: true` puudu | lisa play tasemele |
+    | `Invalid callback for stdout specified: yaml` | `ansible.cfg`-s vana rida `stdout_callback = yaml` | asenda `callback_result_format = yaml` |
+    | `Missing sudo password` | `ansible.cfg`-s pole `become_ask_pass = True` | lisa `[privilege_escalation]` plokk (A3) |
+    | `couldn't resolve module/action 'ansible.posix.firewalld'` | kollektsioon puudu | `ansible-galaxy collection install ansible.posix:1.5.4` |
+    | `Could not find the requested service nginx` `--check`-iga | värskes masinas pole nginx'i veel päriselt paigaldatud | ootuspärane, jooksuta ilma `--check`-ita |
+    | `sudo: a terminal is required` | `ssh vm2 "sudo ..."` ilma terminalita | `ssh -t vm2 "sudo ..."` |
+    | `Waiting for process ... dnf` | taustal käib teine dnf | oota |
+    | `mapping values are not allowed` | YAML: koolon väärtuses | jutumärgid |
+    | `this task has extra params` | parameeter vale taandega | vaata taanet, loeng §10 |
+    | `couldn't resolve module/action` | mooduli nimi vale | `ansible-doc -l \| grep <nimi>` |
+    | task on igal jooksul `changed` | `command`/`shell` mooduli asemel | vaheta moodul |
+    | `curl` näitab nginx vaikelehte | fail läks vale kausta | `dest` peab olema `/usr/share/nginx/html/index.html` |
+    | `curl` väljast ei vasta, masinas vastab | tulemüür | B5 |
+    | käsk töötab PowerShellis, aga mitte vm1-s (või vastupidi) | oled vales aknas | `hostname` — kõik käsud käivad vm1-s |
+    | `git push` küsib parooli | repo on kloonitud HTTPS-iga | `git remote set-url origin git@github.com:...` |
+    | `Permission denied (publickey)` GitHubist | võti pole GitHubis | [Töökeskkond](../keskkond.md) |

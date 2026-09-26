@@ -73,6 +73,7 @@ plugins:
 nav:
 - Kursus:
   - Avaleht: index.md
+  - Töökeskkond: keskkond.md
 - Kohtumised:
   - K1 · Idempotentsus ja esimene playbook:
     - Loeng: week01/lecture.md
@@ -102,6 +103,9 @@ markdown_extensions:
 - pymdownx.keys
 - pymdownx.mark
 - pymdownx.smartsymbols
+- pymdownx.snippets:
+    auto_append:
+    - includes/abbreviations.md
 - pymdownx.superfences:
     custom_fences:
     - name: mermaid
