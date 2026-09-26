@@ -15,9 +15,24 @@
 .md-typeset li { margin-bottom: .15em; }
 .md-typeset li p { margin: .15em 0; }
 
-.md-typeset h1 { font-size: 1.6em; margin: 0 0 .6em; }
-.md-typeset h2 { font-size: 1.3em; margin: 1.4em 0 .4em; }
-.md-typeset h3 { font-size: 1.1em; margin: 1.1em 0 .3em; }
+/* Selge hierarhia: pealkirjad eristuvad tekstist suuruse, paksuse ja värviga */
+.md-typeset h1 { font-size: 1.9em; font-weight: 700; margin: 0 0 .6em; }
+.md-typeset h2 {
+  font-size: 1.5em; font-weight: 700;
+  color: var(--md-primary-fg-color);
+  margin: 1.8em 0 .5em; padding-bottom: .2em;
+  border-bottom: 2px solid var(--md-primary-fg-color--light);
+}
+.md-typeset h3 { font-size: 1.2em; font-weight: 700; margin: 1.4em 0 .35em; }
+.md-typeset h4 { font-size: 1em; font-weight: 700; margin: 1em 0 .3em; }
+
+/* Sildid "Valmis, kui" ja "Esitad" */
+.md-typeset .silt {
+  margin: .9em 0 .2em;
+  font-size: .62rem; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--md-accent-fg-color);
+}
 
 /* Plokid (oodatav tulemus, vihje, hoiatus) tihedamalt */
 .md-typeset .admonition,
