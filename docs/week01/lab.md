@@ -6,7 +6,8 @@ Tänase lõpuks on sul playbook, mis viib kolm serverit samasse olekusse: teenus
 
 ```mermaid
 flowchart LR
-    CN["Control node<br>sinu masin<br>Ansible + Git"] -->|SSH-võti| V1[vm1]
+    W["Klassiarvuti<br>Windows"] -->|SSH / VS Code| CN["vm1<br>control node<br>Ansible + Git"]
+    CN -->|SSH-võti| V1[vm1 ise]
     CN -->|SSH-võti| V2[vm2]
     CN -->|SSH-võti| V3[vm3]
     CN -->|git push| GH[GitHub<br>kontroll roheline]
@@ -35,7 +36,30 @@ Praktikumi lõpuks oskad:
 
 ## 0 · Valmisolek
 
-### 0.1 Tööriistad
+### 0.1 Ühendus kooli serveritega
+
+Klassiarvuti on Windows, aga töö käib kooli Proxmoxi klastris sulle antud kolmes Linuxi VM-is. **vm1 on sinu control node:** seal on Ansible ja Git, ja sealt haldad kõiki kolme masinat, ka vm1 ennast. Osa A teed ainult vm1-s (`localhost`), osas B lisanduvad vm2 ja vm3.
+
+Juhendaja annab sulle masinate IP-d, kasutajanime ja esialgse parooli. Kirjuta need üles:
+
+| Nimi | IP | Kasutaja | OS |
+|---|---|---|---|
+| vm1 (control node) | | | |
+| vm2 | | | |
+| vm3 | | | |
+
+OS-i veeru täidad hiljem (A3 ja B).
+
+**Tegevus:** ühendu Windowsist vm1-ga. Kaks võimalust:
+
+- **VS Code:** Remote-SSH laiendus → `F1` → *Remote-SSH: Connect to Host* → `<kasutaja>@<vm1-ip>`. Terminal (`Ctrl+ö`) avaneb otse vm1-s, failid näed külgpaanil.
+- **PowerShell:** `ssh <kasutaja>@<vm1-ip>`
+
+Esimesel ühendumisel küsitakse host key kinnitust (`yes`) ja parooli.
+
+**Oodatav tulemus:** `hostname` näitab vm1 nime. Kõik järgmised käsud käivad vm1-s, mitte Windowsis.
+
+### 0.2 Tööriistad vm1-s
 
 **Tegevus:**
 
@@ -65,34 +89,27 @@ Versioonid võivad erineda. Oluline on, et `ansible` vastab ja `ansible-core` on
 |---|---|
 | `git` | `sudo apt install -y git` |
 | `ansible` | `sudo apt update && sudo apt install -y ansible` |
-| `systemctl`: `System has not been booted with systemd` (WSL) | vt allpool |
 
-WSL-is peab systemd olema sisse lülitatud. Kontrolli faili `/etc/wsl.conf`:
+### 0.3 Git ja GitHub
 
-```bash
-cat /etc/wsl.conf
-```
-
-Kui seal pole ridu `[boot]` ja `systemd=true`, lisa need:
-
-```bash
-printf "[boot]\nsystemd=true\n" | sudo tee -a /etc/wsl.conf
-```
-
-Seejärel PowerShellis `wsl --shutdown` ja ava WSL uuesti.
-
-### 0.2 Git
-
-Kui sa pole selles masinas Giti kasutanud, seadista nimi ja e-post. Need lähevad iga commit'i juurde:
+Seadista vm1-s nimi ja e-post. Need lähevad iga commit'i juurde:
 
 ```bash
 git config --global user.name "Eesnimi Perenimi"
 git config --global user.email "sinu@email.ee"
 ```
 
-### 0.3 Repo
+GitHub ei võta `git push`-il kontoparooli. Loo kohe token: GitHub → Settings → Developer settings → Personal access tokens → **Fine-grained token**, repository access: organisatsioon `hkhk-automation`, õigus **Contents: Read and write**. Kopeeri token turvalisse kohta, see näidatakse ainult üks kord. `git push` küsib parooli asemel seda tokenit.
 
-Ava Classroom 50 link, mille juhendaja jagas, ja nõustu ülesandega. Sulle tekib oma repo organisatsioonis `hkhk-automation`. Klooni see oma kodukausta, mitte Windowsi kettale:
+Et tokenit ei peaks iga kord sisestama:
+
+```bash
+git config --global credential.helper store
+```
+
+### 0.4 Repo
+
+Ava Classroom 50 link, mille juhendaja jagas, ja nõustu ülesandega. Sulle tekib oma repo organisatsioonis `hkhk-automation`. Klooni see vm1 kodukausta:
 
 ```bash
 cd ~
@@ -126,8 +143,6 @@ Kõik tänased failid lähevad selle repo juurkausta.
     ├── teine_jooks.txt
     └── kolm_masinat.txt
 ```
-
-**Miks kodukaust:** WSL-is on Windowsi ketas (`/mnt/c/...`) kõigile kirjutatav, ja Ansible ignoreerib seal `ansible.cfg`-d turvakaalutlustel (loeng §7).
 
 ---
 
@@ -599,17 +614,9 @@ Pärast pausi jätka osaga B. Kui A on pooleli, lõpeta enne A5, sest B ehitab `
 
 ### Eesmärk
 
-Juhendaja annab sulle kolme VM-i aadressid, kasutajanime ja esialgse parooli. Vii kõik kolm samasse olekusse **sama** `bootstrap.yml`-iga, mille kirjutasid osas A. Iga server näitab avalehel oma inventari nime.
+Vii kõik kolm VM-i (vm1, vm2, vm3) samasse olekusse **sama** `bootstrap.yml`-iga, mille kirjutasid osas A. Iga server näitab avalehel oma inventari nime. Masinate andmed on sul osa 0.1 tabelis.
 
-Kirjuta siia oma masinate andmed:
-
-| Nimi | IP | Kasutaja | OS |
-|---|---|---|---|
-| vm1 | | | |
-| vm2 | | | |
-| vm3 | | | |
-
-OS-i veergu täidad pärast esimest ad-hoc käsku.
+vm1 on nii control node kui üks kolmest serverist. Ansible ühendub ka vm1-ga üle SSH, seega kopeeri oma avalik võti ka vm1 enda IP-le. Pane OS-i veerg tabelis täis pärast esimest ad-hoc käsku.
 
 ### Piirangud
 
@@ -846,7 +853,7 @@ Kontrolli järjekorras: loe veateade algusest lõpuni, korda käsku `-v`-ga, pro
 | Probleem | Põhjus | Lahendus |
 |---|---|---|
 | `ansible: command not found` | Ansible pole paigaldatud | `sudo apt install -y ansible` |
-| `config file = None` | `ansible.cfg` pole jooksvas kaustas või on Windowsi kettal | `cd ~/<sinu-repo>` |
+| `config file = None` | `ansible.cfg` pole jooksvas kaustas | `cd ~/<sinu-repo>` |
 | `Could not match supplied host pattern` | grupp puudub inventaris | `ansible-inventory --graph` |
 | `ping` localhostile ei vasta | `ansible_connection=local` puudu | vaata `inventory.ini` |
 | VM: `UNREACHABLE` | SSH ei tööta | `ssh vm1 hostname` käsitsi, siis `-vvv` |
@@ -861,7 +868,7 @@ Kontrolli järjekorras: loe veateade algusest lõpuni, korda käsku `-v`-ga, pro
 | task on igal jooksul `changed` | `command`/`shell` mooduli asemel | vaheta moodul |
 | `curl` näitab nginx vaikelehte | fail läks vale kausta | `debug: var=veebi_juur` |
 | `curl` väljast ei vasta, masinas vastab | tulemüür (RedHat) | vihje 9 |
-| `systemctl` ei tööta WSL-is | systemd väljas | osa 0.1 |
+| käsk töötab PowerShellis, aga mitte vm1-s (või vastupidi) | oled vales aknas | `hostname` — kõik käsud käivad vm1-s |
 | `git push` küsib parooli | HTTPS ja kontoparool | token või SSH, vt Dokumenteerimine |
 
 ---
@@ -875,5 +882,5 @@ Kontrolli järjekorras: loe veateade algusest lõpuni, korda käsku `-v`-ga, pro
 | Ansible builtin moodulid | <https://docs.ansible.com/ansible/latest/collections/ansible/builtin/> |
 | Faktid ja muutujad | <https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html> |
 | Check mode ja diff | <https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html> |
-| WSL ja systemd | <https://learn.microsoft.com/en-us/windows/wsl/systemd> |
+| VS Code Remote-SSH | <https://code.visualstudio.com/docs/remote/ssh> |
 | GitHub: Personal access tokens | <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens> |

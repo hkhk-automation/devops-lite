@@ -100,8 +100,9 @@ Probleem sinu töökohast või kodulaborist. Vähemalt kolm kursuse kihti koos (
 
 ## Keskkond
 
-- **Control node:** sinu masin (WSL2, oma VM või Linux), kus on Ansible, Docker, OpenTofu, `kubectl` ja Git.
-- **Sihtmasinad:** alguses `localhost`, seejärel klastri VM-id, mille aadressid annab juhendaja.
+- **Klassis:** Windowsi klassiarvutist ühendud VS Code Remote-SSH või PowerShelli `ssh` kaudu kooli Proxmoxi klastrisse.
+- **Control node:** sinu esimene VM (vm1), kus on Ansible, Git ja hiljem Docker, OpenTofu ja `kubectl`.
+- **Sihtmasinad:** alguses vm1 ise (`localhost`), seejärel kõik sinu kolm VM-i. Aadressid annab juhendaja.
 
 ## Esitamine
 
