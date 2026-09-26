@@ -56,7 +56,7 @@ Masinad `veeb`-grupis peavad olema olekus:
 
 - kasutajad `deploy` ja `monitor` luuakse **ühe task'iga**, mis käib läbi nimekirja (`loop`);
 - mõlemal on sinu avalik SSH-võti (`ansible.posix.authorized_key`), nii et `ssh deploy@vm1` töötab;
-- `deploy` kuulub sudo-gruppi: Debianis `sudo`, RedHatis `wheel`, vali **fakti järgi**, mitte käsitsi hosti kaupa;
+- `deploy` kuulub gruppi `wheel` (AlmaLinuxi admin-grupp);
 - `deploy` saab kasutada sudo't ilma paroolita: fail `/etc/sudoers.d/deploy` sisuga `deploy ALL=(ALL) NOPASSWD: ALL` (`copy`, `mode: "0440"`, `validate: visudo -cf %s`);
 - `chrony` on paigaldatud ja teenus käib (AlmaLinuxis on teenuse nimi `chronyd`);
 - `/etc/motd` sisaldab `Hallatud Ansible'iga - <masina nimi>`.

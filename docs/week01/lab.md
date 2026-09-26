@@ -18,18 +18,29 @@ Praktikumil on kaks osa:
 - **A · Juhendatud:** kõik ühel masinal (`localhost`), samm-sammult. Oodatava tulemuse näed iga sammu juures kokkuvolditud plokis: tee enne ise, siis võrdle.
 - **B · Iseseisev:** sama oskus kolmel VM-il. Antud on eesmärk ja piirangud, lahenduse leiad ise. Vihjed on kinnistes plokkides.
 
+| Samm | Tulemus | Kuidas kontrollid |
+|---|---|---|
+| 0 | vm1-ga ühendus, Ansible ja Git olemas, repo kloonitud | `ansible --version`, `ls` repos |
+| A1 | nginx käib käsitsi seadistatuna | `curl -s localhost` |
+| A2 | skripti probleem on nähtav | `cat /srv/raport/conf` |
+| A3 | Ansible leiab localhosti | `ansible kohalik -m ping` |
+| A4–A5 | playbook töötab, teine jooks ei muuda midagi | `changed=0`, `logid/teine_jooks.txt` |
+| A6–A8 | eelvaade, drift, muutujad | `--check --diff`, `curl` |
+| B | kolm masinat samas olekus | `logid/kolm_masinat.txt`, `curl` iga IP-le |
+| Esitamine | README täidetud, push tehtud | Autograde K1–K5 |
+
 Loengu vastavad peatükid on iga sammu juures viidatud. Kui mõni mõiste on udune, ava [loeng](lecture.md) samal ajal teises aknas.
 
 ## 🎯 Õpiväljundid
 
 Praktikumi lõpuks oskad:
 
-1. näidata oma masinas, miks toores skript pole idempotentne, ja parandada see;
+1. näidata oma masinas, miks toores skript pole idempotentne, ja asendada see playbookiga;
 2. luua inventari ja ansible.cfg-i ning kasutada ad-hoc käske ja fakte;
 3. kirjutada playbooki päris moodulitega ja tõestada idempotentsust `changed=0`-ga;
 4. eelvaadata muudatust `--check --diff`-ga ja parandada drift'i;
 5. seadistada võtmepõhise SSH ja rakendada sama playbooki kolmele masinale;
-6. valida OS-ist sõltuvad väärtused faktide järgi;
+6. kasutada muutujaid ja fakte playbookis;
 7. dokumenteerida töö README-s ja esitada see Giti kaudu.
 
 ---
@@ -55,23 +66,32 @@ Juhendaja annab sulle kolm IP-d, kasutajanime ja parooli. Kirjuta need üles:
 
 Esimesel ühendumisel küsitakse host key kinnitust (`yes`) ja parooli.
 
-Vaheta parool ja anna masinatele nimed. Juhendajalt saadud parool on kõigil tudengitel sama, ja masinad on ühes võrgus. Vaheta see kõigis kolmes masinas **samaks** uueks parooliks, sest Ansible küsib sudo parooli ühe korra ja kasutab seda kõigil kolmel.
+Juhendajalt saadud parool on kõigil tudengitel sama ja masinad on ühes võrgus, seega vaheta see. Masinatel pole ka veel nime (prompt näitab `localhost`). Tee mõlemad asjad igas masinas.
 
-Masinatel pole veel nime (prompt näitab `localhost`). Nimi aitab sul alati näha, kus oled, ja teeb Ansible'i faktid loetavaks.
+**vm1** (oled juba sees):
 
 ```bash
 passwd
 sudo hostnamectl set-hostname vm1
-ssh -t <kasutaja>@<vm2-ip> "passwd && sudo hostnamectl set-hostname vm2"
-ssh -t <kasutaja>@<vm3-ip> "passwd && sudo hostnamectl set-hostname vm3"
 exec bash
 ```
 
-`passwd` küsib esmalt vana parooli, siis kaks korda uut. `sudo` küsib pärast seda juba uut parooli. Liiga lihtsa parooli lükkab AlmaLinux tagasi (`BAD PASSWORD`), vali vähemalt 8 märki tähtede ja numbritega. `ssh` küsib enne seda vm2 ja vm3 host key kinnitust (`yes`) ja vana parooli. Uus parool ei lähe kunagi üheski repo faili.
+`passwd` küsib vana parooli, siis kaks korda uut. Liiga lihtsa lükkab AlmaLinux tagasi (`BAD PASSWORD`): vali vähemalt 8 märki tähtede ja numbritega. Pane **kõigis kolmes masinas sama** uus parool, sest Ansible küsib sudo parooli ühe korra ja kasutab seda kõigil kolmel.
+
+**vm2** (vm1 terminalist):
+
+```bash
+ssh <kasutaja>@<vm2-ip>
+passwd
+sudo hostnamectl set-hostname vm2
+exit
+```
+
+**vm3:** sama, `vm3` nimega.
 
 ??? success "Oodatav tulemus"
 
-    Prompt on `<kasutaja>@vm1`. Kõik järgmised käsud käivad vm1-s, mitte Windowsis.
+    vm1 prompt on `<kasutaja>@vm1`. `ssh <kasutaja>@<vm2-ip> hostname` vastab `vm2`, vm3 samamoodi. Kõik järgmised käsud käivad vm1-s, mitte Windowsis.
 
 ### 0.2 Tööriistad vm1-s
 
@@ -149,7 +169,7 @@ ls
 
 Kõik tänased failid lähevad selle repo juurkausta. `git push` töötab sama võtmega, parooli ega tokenit ei küsita.
 
-**Kontrollnimekiri:** su repo **Issues** all on selle nädala ülesanded. Samad kaardid on kursuse tahvlil (GitHubi org `hkhk-automation` → **Projects** → *ITS-25 Automatiseerimine*), vaade **Minu tööd**. Sule issue, kui osa on tehtud. Kui jääd kinni, ava uus issue mallist **Vajan abi**.
+**Kontrollnimekiri:** su repo **Issues** all on issue **Lab 01 · Esimene playbook**, kus on kõik tänased ja kodused osad märkeruutudena. Märgi ruut, kui osa on tehtud, ja sulge issue, kui kõik on tehtud. Sama issue on kursuse projektis (GitHubi org `hkhk-automation` → **Projects** → *ITS-25 Automatiseerimine*), vaade **Minu tööd**. Kui jääd kinni, küsi Discordis või ava uus issue mallist **Vajan abi**.
 
 Lõpuks on repos:
 
@@ -301,7 +321,6 @@ Esimesed ad-hoc käsud:
 ```bash
 ansible kohalik -m ping
 ansible kohalik -m setup -a "filter=ansible_distribution*"
-ansible kohalik -m setup -a "filter=ansible_os_family"
 ansible kohalik -m command -a "uptime"
 ```
 
@@ -316,9 +335,6 @@ ansible kohalik -m command -a "uptime"
             ansible_distribution: AlmaLinux
             ...
             ansible_distribution_version: '9.8'
-    localhost | SUCCESS =>
-        ansible_facts:
-            ansible_os_family: RedHat
     localhost | CHANGED | rc=0 >>
      10:42:17 up  1:03,  1 user,  load average: 0.08, 0.05, 0.01
     ```
@@ -336,9 +352,9 @@ ansible kohalik -b -m package -a "name=tree state=present"
 
     Esimene kord `CHANGED`, teine kord `SUCCESS` ja `"changed": false`.
 
-Moodul (`ping`, `setup`, `package`) tagastab struktureeritud info ja teab, kas ta midagi muutis. `command` tagastab ainult teksti ja on alati `CHANGED`. `ansible_os_family` läheb vaja osas B.
+Moodul (`ping`, `setup`, `package`) tagastab struktureeritud info ja teab, kas ta midagi muutis. `command` tagastab ainult teksti ja on alati `CHANGED`. Fakte (`ansible_distribution` jt) kasutad A8-s avalehel.
 
-💭 Kui tahad playbookis öelda "kui masin on RedHati perest, tee X", kumb annab selleks info: `setup` või `command`? Miks?
+💭 Kui tahad avalehele kirjutada masina distributsiooni ja versiooni, kumb annab selleks info: `setup` või `command`? Miks?
 
 ---
 
@@ -629,14 +645,14 @@ Vii kõik kolm VM-i (vm1, vm2, vm3) samasse olekusse **sama** `bootstrap.yml`-ig
 
 vm1 on nii control node kui üks kolmest serverist. Ansible ühendub ka vm1-ga üle SSH, seega kopeeri osas 0.3 tehtud avalik võti **kõigile kolmele**, ka vm1 enda IP-le.
 
-Kõik kolm on AlmaLinux 9. Playbook peab siiski valima OS-ist sõltuvad väärtused fakti järgi, nii et see töötaks muutmata ka Ubuntu masinal.
+Muuda playbooki päises `hosts: kohalik` → `hosts: kohalik:veeb` ja jooksuta B-osas alati `--limit veeb`. Nii jääb üks playbook kõigile ja A-osa töö säilib.
 
 ### Piirangud
 
 - Ansible ühendub SSH-võtmega. Parool ei tohi olla üheski repo failis.
-- Üks playbook kõigile kolmele. OS-ist sõltuvad väärtused (veebi juurkaust) valitakse **fakti järgi**, mitte käsitsi hosti kaupa.
+- Üks playbook kõigile kolmele, ilma hostipõhiste erisusteta.
 - Tulemüüris peab `http` olema avatud, ka see käib playbookiga (`ansible.posix.firewalld`), mitte käsitsi.
-- `localhost` jääb inventari alles, aga B-osa playbook sihib ainult gruppi `veeb`.
+- `localhost` jääb inventari alles. B-osa jooksud käivad alati `--limit veeb`-iga.
 - Enne kõiki masinaid proovi ühel (`--limit`).
 - `command`/`shell` pole lubatud seal, kus on olemas moodul.
 
@@ -654,7 +670,7 @@ Kõik kolm on AlmaLinux 9. Playbook peab siiski valima OS-ist sõltuvad väärtu
 2. Käsitsi `ssh vm2 hostname`, `ssh vm3 hostname`: vastab `vm2`, `vm3` (nimed panid 0.1-s).
 3. Inventari grupp `veeb`.
 4. `ping` ja faktid.
-5. Playbook: `hosts`, juurkaust fakti järgi, leht masina nimega, tulemüür.
+5. Playbook: `hosts`, leht masina nimega, tulemüür.
 6. `--check --diff --limit vm1` → `--limit vm1` → kõik → teine jooks.
 
     Värskes masinas (vm2, vm3) kukub `--check` task'is "nginx käib": kuivjooks ei paigalda nginx'i päriselt, seega teenust pole veel. See on ootuspärane.
@@ -703,34 +719,23 @@ Ava ainult siis, kui oled ise proovinud ja jäänud kinni.
     `ansible-inventory --graph` peab näitama mõlemat gruppi.
 
 ??? tip "5 · Playbook kolmele"
-    Muuda `hosts: kohalik` → `hosts: veeb`. Kui tahad, et sama fail töötaks ka `localhost`-il, kasuta `hosts: kohalik:veeb` ja jooksuta `--limit veeb`.
+    `hosts: kohalik:veeb` tähendab "mõlemad grupid". `--limit veeb` jätab `localhost`-i välja. Kui unustad `--limit`-i, muudab playbook ka localhosti, mis pole viga, aga logifail ei klapi.
 
-??? tip "6 · Veebi juurkaust erineb"
-    RedHati peres (AlmaLinux, Rocky, Fedora) serveerib nginx faile kaustast `/usr/share/nginx/html`, Debiani peres (Ubuntu, Debian) kaustast `/var/www/html`. Sinu masinad on kõik RedHati perest, aga playbook peab töötama mõlemal.
-
-    Kontrolli: `ansible veeb -m setup -a "filter=ansible_os_family"`.
-
-    Playbookis muutuja, mille väärtus sõltub faktist (loeng §13):
-
-    ```yaml
-    vars:
-      veebi_juur: "{{ '/var/www/html' if ansible_os_family == 'Debian' else '/usr/share/nginx/html' }}"
-    ```
-
-    ja `copy`-task'is `dest: "{{ veebi_juur }}/index.html"`.
-
-??? tip "7 · Masina nimi lehel"
+??? tip "6 · Masina nimi lehel"
     `content: "<h1>{{ inventory_hostname }}</h1>\n"`. `inventory_hostname` on nimi inventaris (`vm1`), mitte masina enda hostname.
 
-??? tip "8 · Sudo parool kolmes masinas"
+??? tip "7 · Sudo parool kolmes masinas"
     `ansible.cfg`-s on `become_ask_pass = True` (A3), nii et Ansible küsib `BECOME password:` ühe korra ja kasutab seda kõigis masinates. Kui paroolid on masinates erinevad, küsi juhendajalt.
 
-??? tip "9 · Tulemüür"
+??? tip "8 · Tulemüür"
     AlmaLinuxis on `firewalld` sees ja lubab vaikimisi ainult `ssh`-i. Seepärast vastab vm1 iseendale (`curl localhost`), aga vm2 ja vm3 ei vasta väljast. Kontrolli: `ansible veeb -b -m command -a "firewall-cmd --list-services"`.
 
-    Lisa playbooki task mooduliga `ansible.posix.firewalld`: `service: http`, `permanent: true`, `immediate: true`, `state: enabled`. Et see töötaks ka Ubuntul (seal firewalld-d pole), lisa `when: ansible_os_family == 'RedHat'`.
+    Vaja on moodulit, mis lubab firewalld-s teenuse `http` nii kohe kui ka pärast taaskäivitust. Otsi `ansible-doc ansible.posix.firewalld`.
 
-??? tip "10 · Kas leht tuli õigest masinast?"
+    ??? example "Näide, kui ikka kinni"
+        `service: http`, `permanent: true`, `immediate: true`, `state: enabled`.
+
+??? tip "9 · Kas leht tuli õigest masinast?"
     `for h in <ip1> <ip2> <ip3>; do curl -s http://$h; done`
 
 ### Kontroll
@@ -832,8 +837,8 @@ Kontrolli järjekorras: loe veateade algusest lõpuni, korda käsku `-v`-ga, pro
 | `this task has extra params` | parameeter vale taandega | vaata taanet, loeng §10 |
 | `couldn't resolve module/action` | mooduli nimi vale | `ansible-doc -l \| grep <nimi>` |
 | task on igal jooksul `changed` | `command`/`shell` mooduli asemel | vaheta moodul |
-| `curl` näitab nginx vaikelehte | fail läks vale kausta | `debug: var=veebi_juur` |
-| `curl` väljast ei vasta, masinas vastab | tulemüür (RedHat) | vihje 9 |
+| `curl` näitab nginx vaikelehte | fail läks vale kausta | `dest` peab olema `/usr/share/nginx/html/index.html` |
+| `curl` väljast ei vasta, masinas vastab | tulemüür | vihje 8 |
 | käsk töötab PowerShellis, aga mitte vm1-s (või vastupidi) | oled vales aknas | `hostname` — kõik käsud käivad vm1-s |
 | `git push` küsib parooli | repo on kloonitud HTTPS-iga | `git remote set-url origin git@github.com:...` |
 | `Permission denied (publickey)` GitHubist | võti pole GitHubis | osa 0.4 |
