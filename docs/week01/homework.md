@@ -76,7 +76,11 @@ Fail: `admin.yml`, `logid/admin_teine_jooks.txt`.
 
 !!! warning "Võid end masinast välja lukustada"
 
-    See ülesanne võib sind masinast välja lukustada. Hoia teine SSH-sessioon lahti, jooksuta esmalt `--check --diff`, siis `--limit vm1`, kontrolli uuest terminalist, et sisse saad, alles siis kõigil. Kui lukustasid end välja, kirjuta README-sse, mis juhtus ja kuidas said tagasi. See on väärtuslikum kui töö, mis kohe õnnestus.
+    1. Hoia teine SSH-sessioon lahti.
+    2. Jooksuta esmalt `--check --diff`, siis `--limit vm1`.
+    3. Kontrolli uuest terminalist, et sisse saad. Alles siis kõigil.
+
+    Kui lukustasid end välja, kirjuta README-sse, mis juhtus ja kuidas said tagasi. See on väärtuslikum kui töö, mis kohe õnnestus.
 
 Valmis, kui:
 
@@ -101,7 +105,10 @@ Fail: `baas.yml`, `logid/baas_teine_jooks.txt`.
 
 ### H4 · `raport.yml`: faktidest raport
 
-Kirjuta playbook, mis loob igas masinas faili `/tmp/raport.txt`, kus on masina nimi, distributsioon ja versioon, IP-aadress, mälu MB-des ja protsessorite arv (kõik faktidest). Seejärel toob faili control node'i kausta `raportid/` (`ansible.builtin.fetch`, uuri `flat: true`), nii et iga masina raport on eraldi failis. Nimeta failid inventari nime järgi (`raportid/{{ inventory_hostname }}.txt`), muidu võivad need üksteist üle kirjutada.
+Kirjuta playbook, mis:
+
+- loob igas masinas faili `/tmp/raport.txt`: masina nimi, distributsioon ja versioon, IP-aadress, mälu MB-des, protsessorite arv (kõik faktidest);
+- toob faili control node'i kausta `raportid/` (`ansible.builtin.fetch`, uuri `flat: true`), iga masina raport eraldi failis `raportid/{{ inventory_hostname }}.txt`.
 
 Valmis, kui:
 
@@ -156,7 +163,7 @@ Tee see oma VM-ides. Reposse ei lähe paroole ega võtmeid.
 
 ## IV · Eneseanalüüs ja vabatahtlik boonus
 
-Eneseanalüüs (`vastused.md` lõpus, 5–10 lauset): mis oli kõige raskem, kus ennustus läks mööda, mida teed tööl nüüd teisiti, mis jäi segaseks ja mida tahad järgmisel kohtumisel küsida.
+Eneseanalüüs (`vastused.md` lõpus, 5–10 lauset): mis oli kõige raskem, kus ennustus läks mööda, mida teeksid nüüd teisiti, mis jäi segaseks ja mida tahad järgmisel kohtumisel küsida.
 
 Vabatahtlik, kui aega jääb:
 
