@@ -37,22 +37,22 @@ theme:
   palette:
   - media: "(prefers-color-scheme)"
     scheme: default
-    primary: deep purple
-    accent: pink
+    primary: indigo
+    accent: teal
     toggle:
       icon: material/brightness-auto
       name: Vaheta tumele režiimile
   - media: "(prefers-color-scheme: light)"
     scheme: default
-    primary: deep purple
-    accent: pink
+    primary: indigo
+    accent: teal
     toggle:
       icon: material/brightness-7
       name: Vaheta tumele režiimile
   - media: "(prefers-color-scheme: dark)"
     scheme: slate
-    primary: deep purple
-    accent: pink
+    primary: indigo
+    accent: teal
     toggle:
       icon: material/brightness-4
       name: Vaheta heledasse režiimi
@@ -80,6 +80,9 @@ nav:
     - Praktikum: week01/lab.md
     - Kodune õpe ja kodutöö: week01/homework.md
 
+extra_css:
+- stylesheets/extra.css
+
 markdown_extensions:
 - abbr
 - admonition
@@ -89,7 +92,7 @@ markdown_extensions:
 - md_in_html
 - tables
 - toc:
-    permalink: false
+    permalink: true
     title: Sisukord
     toc_depth: 3
 - pymdownx.betterem:

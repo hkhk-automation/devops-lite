@@ -51,7 +51,11 @@ Kui sa pole seda veel teinud, tee läbi [Töökeskkond](../keskkond.md): ühendu
 
 Selle praktikumi repo tekib Classroom 50 lingist, mille juhendaja jagab. Klooni see vm1-s SSH-ga (**Code** → **SSH**) ja tee kõik tänased failid selle juurkausta.
 
-Kontrollnimekiri: su repo **Issues** all on issue Lab 01 · Esimene playbook, kus on kõik tänased ja kodused osad märkeruutudena. Märgi ruut, kui osa on tehtud, ja sulge issue, kui kõik on tehtud. Sama issue on kursuse projektis (GitHubi org `hkhk-automation` → **Projects** → *ITS-25 Automatiseerimine*), vaade **Minu tööd**. Kui jääd kinni, küsi Discordis või ava uus issue mallist **Vajan abi**.
+Kontrollnimekiri on su repos **Issues** all: issue Lab 01 · Esimene playbook.
+
+- Märgi ruut, kui osa on tehtud. Sulge issue, kui kõik on tehtud.
+- Sama issue on kursuse projektis: **Projects** → ITS-25 Automatiseerimine → **Minu tööd**.
+- Kinni? Küsi Discordis või ava issue mallist **Vajan abi**.
 
 Lõpuks on repos:
 
@@ -71,9 +75,11 @@ Lõpuks on repos:
 
 ## A · Juhendatud osa
 
-### A1 · Käsitsi seadistus
+### A1 · Seadista nginx käsitsi
 
 *Loeng §1–§2*
+
+Selle sammu lõpuks käib vm1-s käsitsi seadistatud nginx ja `curl localhost` näitab sinu lehte.
 
 Seadista `localhost` käsitsi veebiserveriks. Iga käsu järel kirjuta vihikusse või faili `kontrolltabel.md` rida: käsk | tulemus, mis pidi tekkima | kuidas kontrollid.
 
@@ -111,11 +117,13 @@ Enne automatiseerimist pead teadma, mida masin peab tegema. Kontrolltabeli read 
 
 ---
 
-### A2 · Miks mitte lihtsalt skript?
+### A2 · Vaata, miks skript ei sobi
 
 *Loeng §5*
 
-Enne Ansible'it vaata korra, mis juhtub, kui sama töö teeb tavaline shelli skript. See on lühike demo, mitte skriptimise harjutus: Bash on sellel kursusel eeldus.
+Selle sammu lõpuks oled näinud, mis juhtub, kui tavalise skripti käivitad kaks korda.
+
+See on lühike demo, mitte skriptimise harjutus: Bash on sellel kursusel eeldus.
 
 Loo repo juurkausta fail `halb.sh`:
 
@@ -158,9 +166,11 @@ sudo rm -rf /srv/raport
 
 ---
 
-### A3 · Inventar, `ansible.cfg` ja ad-hoc käsud
+### A3 · Loo inventar ja proovi ad-hoc käske
 
 *Loeng §7–§9 · [Ansible: ad-hoc käsud](https://docs.ansible.com/ansible/latest/command_guide/intro_adhoc.html)*
+
+Selle sammu lõpuks leiab Ansible sinu inventari ja vastab `ping`-ile.
 
 Loo `inventory.ini`:
 
@@ -249,9 +259,11 @@ Moodul (`ping`, `setup`, `package`) tagastab struktureeritud info ja teab, kas t
 
 ---
 
-### A4 · Esimene playbook
+### A4 · Kirjuta esimene playbook
 
 *Loeng §4, §11, §14 · [Ansible: getting started](https://docs.ansible.com/ansible/latest/getting_started/) · [builtin moodulid](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/)*
+
+Selle sammu lõpuks teeb A1 käsitsitöö ära playbook `bootstrap.yml`.
 
 Nüüd paned A1 käsitsitöö kirja soovitud olekuna. Ehita playbook üks task korraga ja jooksuta iga lisanduse järel. Nii tead alati, milline task vea tekitas.
 
@@ -344,13 +356,18 @@ Ainult avalehe sisu erines käsitsi tehtust. Kõik muu oli juba soovitud olekus,
 
 ??? tip "Kui tuleb viga"
 
-    `Permission denied` või `You need to be root`: `become: true` puudub. `Missing sudo password`: `ansible.cfg`-s puudub `become_ask_pass = True`. `Waiting for process ... dnf`: taustal käib teine dnf, oota. `this task has extra params`: parameeter on vale taandega (loeng §10).
+    - `Permission denied`, `You need to be root`: `become: true` puudub.
+    - `Missing sudo password`: `ansible.cfg`-s puudub `become_ask_pass = True`.
+    - `Waiting for process ... dnf`: taustal käib teine dnf, oota.
+    - `this task has extra params`: parameeter on vale taandega (loeng §10).
 
 ---
 
-### A5 · Teine jooks ja `command`-katse
+### A5 · Tõenda, et teine jooks ei muuda midagi
 
 *Loeng §5*
+
+Selle sammu lõpuks on failis `logid/teine_jooks.txt` tõend, et teine jooks ei muuda midagi.
 
 Jooksuta playbook kohe uuesti ja salvesta väljund:
 
@@ -397,9 +414,11 @@ Toores käsk ei tea olekut. Kui moodulit pole, teeb `creates` käsu idempotentse
 
 ---
 
-### A6 · Dry run
+### A6 · Vaata muudatust enne tegemist
 
 *Loeng §16 · [Ansible: check mode ja diff](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html)*
+
+Selle sammu lõpuks oskad vaadata, mida playbook muudaks, ilma et midagi muutuks.
 
 Muuda `bootstrap.yml`-is avalehe teksti, näiteks `<h1>Versioon 2</h1>\n`. Jooksuta kuivalt:
 
@@ -442,9 +461,11 @@ Tootmises vaatad enne muutust, mida see teeks. `--diff` näitab täpselt, mis ri
 
 ---
 
-### A7 · Drift
+### A7 · Paranda drift
 
 *Loeng §16*
+
+Selle sammu lõpuks oled näinud, et playbook parandab ainult selle, mis käsitsi ära rikuti.
 
 Tekita kolm kõrvalekallet, nagu teeks kolleeg öösel käsitsi:
 
@@ -481,9 +502,11 @@ Playbook parandas ainult selle, mis triivis, ja sa ei pidanud talle ütlema, mis
 
 ---
 
-### A8 · Muutujad ja `debug`
+### A8 · Kasuta muutujaid ja fakte
 
 *Loeng §13 · [Ansible: faktid ja muutujad](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html)*
+
+Selle sammu lõpuks näitab avaleht muutuja väärtust ja masina fakte.
 
 Lisa play'le `vars` plokk ja kasuta muutujat avalehel:
 
@@ -668,7 +691,9 @@ ansible-playbook bootstrap.yml --limit veeb
 
 ### README
 
-Repos on juba `README.md` mall. Täida see: asenda kõik nurksulgudes kohad oma tööga ja kustuta ülemine kast. README on dokument, mille järgi keegi teine (või sina kolme kuu pärast) saab masinad sama olekusse viia. Ülesande kirjeldus on eraldi failis `ULESANNE.md`, seda ära muuda.
+Täida repos olev `README.md` mall: asenda nurksulgudes kohad oma tööga ja kustuta ülemine kast. `ULESANNE.md` jääb muutmata.
+
+README järgi peab keegi teine (või sina kolme kuu pärast) saama masinad sama olekusse viia.
 
 Iga peegeldusküsimuse vastus 2–4 lauset. Automaatne kontroll K1 kukub, kui README-s on veel täitmata kohti või kui see on alla 150 sõna.
 

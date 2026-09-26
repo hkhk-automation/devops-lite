@@ -1,12 +1,12 @@
 # K1 · Ansible alused: idempotentsus ja esimene playbook
 
 **Kursus:** DevOps Lite
-**Kestus:** klassis 2 × 15 min (§1, §4–5, §8); ülejäänu iseseisvaks lugemiseks (~2 h)
-**Tase:** kesktase. Eeldame Linuxi käsurida, SSH-d, `sudo`-t, paketihaldust (`apt`/`dnf`) ja Giti baasi.
+Klassis käsitleme §1, §4–5 ja §8, ülejäänu on iseseisvaks lugemiseks.
+**Tase:** kesktase. Eeldame Linuxi käsurida, SSH-d, `sudo`-t, paketihaldust (`dnf`) ja Giti baasi.
 
 ---
 
-## 🎯 Õpiväljundid
+## Õpiväljundid
 
 Pärast seda loengut oskad:
 
@@ -156,21 +156,20 @@ if ! id saidi >/dev/null 2>&1; then
     useradd -m saidi
 fi
 
-if ! dpkg -s nginx >/dev/null 2>&1; then
-    apt-get update
-    apt-get install -y nginx
+if ! rpm -q nginx >/dev/null 2>&1; then
+    dnf install -y nginx
 fi
 
 UUS="<h1>Hallatud</h1>"
-if [ "$(cat /var/www/html/index.html 2>/dev/null)" != "$UUS" ]; then
-    echo "$UUS" > /var/www/html/index.html
+if [ "$(cat /usr/share/nginx/html/index.html 2>/dev/null)" != "$UUS" ]; then
+    echo "$UUS" > /usr/share/nginx/html/index.html
 fi
 
 systemctl is-enabled nginx >/dev/null 2>&1 || systemctl enable nginx
 systemctl is-active nginx >/dev/null 2>&1 || systemctl start nginx
 ```
 
-Skript töötab, aga ainult Debiani peres (`dpkg`, `apt-get`). See ei ütle, mida ta muutis ja mida mitte. Iga uus erijuht nõuab uut `if`-i. Sama playbookina:
+Skript töötab, aga ainult RedHati peres (`rpm`, `dnf`). See ei ütle, mida ta muutis ja mida mitte. Iga uus erijuht nõuab uut `if`-i. Sama playbookina:
 
 ```yaml
 - name: Veebiserver
@@ -188,7 +187,7 @@ Skript töötab, aga ainult Debiani peres (`dpkg`, `apt-get`). See ei ütle, mid
 
     - name: Avaleht on paigas
       ansible.builtin.copy:
-        dest: /var/www/html/index.html
+        dest: /usr/share/nginx/html/index.html
         content: "<h1>Hallatud</h1>\n"
 
     - name: nginx käib ja käivitub buutimisel
@@ -357,17 +356,15 @@ Sellest tulenevad omadused, mis mõjutavad kogu edasist tööd.
 Ansible paigaldatakse ainult control node'i. Levinumad viisid:
 
 ```bash
-# Debian/Ubuntu distributsiooni pakett
-sudo apt update && sudo apt install -y ansible
-
-# RHEL/AlmaLinux
+# AlmaLinux (meie VM-id)
 sudo dnf install -y ansible-core
+ansible-galaxy collection install ansible.posix:1.5.4
 
 # pipx: kasutaja kodukausta, distributsioonist sõltumatu versioon
 pipx install --include-deps ansible
 ```
 
-`ansible-core` on mootor ja väike hulk sisseehitatud mooduleid (`ansible.builtin`). Pakett `ansible` sisaldab lisaks kollektsioone, näiteks `ansible.posix` ja `community.general`. Sellel kursusel piisab `ansible` paketist.
+`ansible-core` on mootor ja väike hulk sisseehitatud mooduleid (`ansible.builtin`). Pakett `ansible` sisaldab lisaks kollektsioone, näiteks `ansible.posix` ja `community.general`. AlmaLinuxis on tavarepos ainult `ansible-core`, seega vajalikud kollektsioonid paigaldad `ansible-galaxy`-ga.
 
 ```bash
 ansible --version
@@ -391,15 +388,17 @@ Praktiline on hoida `ansible.cfg` projekti kaustas, siis on seaded koos koodiga 
 inventory = inventory.ini
 forks = 10
 host_key_checking = True
-stdout_callback = yaml
+callback_result_format = yaml
 
 [ssh_connection]
 pipelining = True
 ```
 
-`inventory` lubab jätta käsust `-i inventory.ini` ära. `pipelining` vähendab SSH-ühenduste arvu ja kiirendab jooksu märgatavalt. `stdout_callback = yaml` teeb vigade väljundi loetavamaks.
+`inventory` lubab jätta käsust `-i inventory.ini` ära. `pipelining` vähendab SSH-ühenduste arvu ja kiirendab jooksu märgatavalt. `callback_result_format = yaml` teeb väljundi loetavamaks.
 
-⚠️ Kui `ansible.cfg` on kaustas, kuhu kõigil on kirjutusõigus (maailmaloetav kaust), ignoreerib Ansible seda turvakaalutlustel ja annab hoiatuse. WSL-is juhtub see, kui töötad Windowsi kettal (`/mnt/c/...`). Hoia töökaust Linuxi failisüsteemis, näiteks `~/`.
+!!! warning "Tähelepanu"
+
+    Kui `ansible.cfg` on kaustas, kuhu kõigil on kirjutusõigus (maailmaloetav kaust), ignoreerib Ansible seda turvakaalutlustel ja annab hoiatuse. WSL-is juhtub see, kui töötad Windowsi kettal (`/mnt/c/...`). Hoia töökaust Linuxi failisüsteemis, näiteks `~/`.
 
 ---
 
@@ -427,9 +426,9 @@ Masina rea järele saab kirjutada muutujaid, mis ütlevad, kuidas masinaga ühen
 
 ```ini
 [veeb]
-vm1 ansible_host=192.168.35.21 ansible_user=kasutaja
-vm2 ansible_host=192.168.35.22 ansible_user=kasutaja
-vm3 ansible_host=192.168.35.23 ansible_user=kasutaja ansible_port=2222
+vm1 ansible_host=192.168.125.21 ansible_user=kasutaja
+vm2 ansible_host=192.168.125.22 ansible_user=kasutaja
+vm3 ansible_host=192.168.125.23 ansible_user=kasutaja ansible_port=2222
 ```
 
 | Muutuja | Tähendus |
@@ -632,7 +631,7 @@ Vahe `command` ja `shell` vahel: `command` käivitab programmi otse, ilma shelli
 | Ülesanne | Käsk | Moodul |
 |---|---|---|
 | kasutaja olemas | `useradd deploy` | `ansible.builtin.user` |
-| pakett paigaldatud | `apt install nginx` | `ansible.builtin.package` |
+| pakett paigaldatud | `dnf install nginx` | `ansible.builtin.package` |
 | fail sisuga | `echo … > fail` | `ansible.builtin.copy` |
 | rida konfis | `echo … >> conf` | `ansible.builtin.lineinfile` |
 | teenus käib | `systemctl start nginx` | `ansible.builtin.service` |
@@ -707,11 +706,11 @@ Kõige sagedamini vajad neid:
 
 | Fakt | Näide väärtusest |
 |---|---|
-| `ansible_os_family` | `Debian`, `RedHat` |
-| `ansible_distribution` | `Ubuntu`, `AlmaLinux` |
-| `ansible_distribution_version` | `24.04`, `9.4` |
+| `ansible_os_family` | `RedHat` |
+| `ansible_distribution` | `AlmaLinux` |
+| `ansible_distribution_version` | `9.8` |
 | `ansible_hostname` | `hkhk-vm-17` |
-| `ansible_default_ipv4.address` | `192.168.35.21` |
+| `ansible_default_ipv4.address` | `192.168.125.21` |
 | `ansible_memtotal_mb` | `3915` |
 | `ansible_processor_vcpus` | `2` |
 
@@ -726,7 +725,7 @@ Muutujaid kasutatakse **Jinja2** süntaksiga, topeltloogeliste sulgude vahel:
 ```yaml
 - name: Avaleht näitab masina nime
   ansible.builtin.copy:
-    dest: /var/www/html/index.html
+    dest: /usr/share/nginx/html/index.html
     content: "<h1>{{ inventory_hostname }}</h1>\n"
 ```
 
@@ -734,15 +733,14 @@ Jinja2 lubab lihtsaid tingimusi ja filtreid:
 
 ```yaml
 vars:
-  veebi_juur: "{{ '/var/www/html' if ansible_os_family == 'Debian' else '/usr/share/nginx/html' }}"
-  sudo_grupp: "{{ 'sudo' if ansible_os_family == 'Debian' else 'wheel' }}"
+  os_nimi: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
   keskkond: "{{ env | default('test') }}"
   pealkiri: "{{ inventory_hostname | upper }}"
 ```
 
 `default` annab väärtuse, kui muutujat pole defineeritud. `upper` teeb suurtähed. Filtreid on sadu, ja teisel kohtumisel kasutame neid mallides.
 
-Näide lahendab probleemi, mis tekib kohe, kui masinad pole ühesugused: nginx serveerib Debiani peres faile kaustast `/var/www/html`, RedHati peres kaustast `/usr/share/nginx/html`. Sudo-grupi nimi on Debianis `sudo`, RedHatis `wheel`. Playbook ei tea, mis masinas ta on, enne kui faktid on kogutud. Pärast seda valib ta õige väärtuse ise.
+Tingimusi (`if … else …`) läheb vaja siis, kui masinad pole ühesugused, näiteks kui masinapargis on eri distributsioone. Meie kolm VM-i on kõik AlmaLinux, seega kasutame fakte peamiselt info näitamiseks: avalehel (A8) ja raportis (H4).
 
 ### `debug` ja muutujate vaatamine
 
@@ -751,19 +749,14 @@ Kui pole kindel, mis väärtus muutujal on, näita seda:
 ```yaml
 - name: Näita, mis juurkaust valiti
   ansible.builtin.debug:
-    var: veebi_juur
+    var: os_nimi
 ```
 
 ```
-ok: [vm1] => {
-    "veebi_juur": "/var/www/html"
-}
-ok: [vm2] => {
-    "veebi_juur": "/usr/share/nginx/html"
-}
+ok: [vm1] =>
+    os_nimi: AlmaLinux 9.8
 ```
 
-Tööl hoiab see sind eemal kahest halvast lahendusest: iga distributsiooni jaoks eraldi playbook, või `if`-id shelli skriptis. Üks playbook fakti järgi valitud väärtustega on hallatav ka siis, kui masinapargis on kolm eri OS-i.
 
 ---
 
@@ -777,7 +770,7 @@ Playbook on YAML-fail, milles on üks või mitu **play**'d. Play seob masinad ja
   become: true                       # sudo kõigile task'idele
   gather_facts: true                 # vaikimisi true
   vars:                              # muutujad
-    veebi_juur: "{{ '/var/www/html' if ansible_os_family == 'Debian' else '/usr/share/nginx/html' }}"
+    lehe_pealkiri: "Hallatud Ansible'iga"
   tasks:                             # mida teha, järjekorras
     - name: Kasutaja saidi on olemas
       ansible.builtin.user:
@@ -790,7 +783,7 @@ Playbook on YAML-fail, milles on üks või mitu **play**'d. Play seob masinad ja
 
     - name: Avaleht näitab masina nime
       ansible.builtin.copy:
-        dest: "{{ veebi_juur }}/index.html"
+        dest: /usr/share/nginx/html/index.html
         content: "<h1>{{ inventory_hostname }}</h1>\n"
 
     - name: nginx käib ja käivitub buutimisel
@@ -875,8 +868,8 @@ ssh-add ~/.ssh/id_ed25519
 ### Avaliku võtme kopeerimine
 
 ```bash
-ssh-copy-id -i ~/.ssh/id_ed25519.pub kasutaja@192.168.35.21
-ssh kasutaja@192.168.35.21 hostname
+ssh-copy-id -i ~/.ssh/id_ed25519.pub kasutaja@192.168.125.21
+ssh kasutaja@192.168.125.21 hostname
 ```
 
 `ssh-copy-id` küsib esimesel korral parooli, sest võtit veel pole. Pärast seda enam mitte.
@@ -884,7 +877,7 @@ ssh kasutaja@192.168.35.21 hostname
 Kui `ssh-copy-id` pole saadaval (näiteks Windowsi PowerShellis), teeb sama:
 
 ```bash
-cat ~/.ssh/id_ed25519.pub | ssh kasutaja@192.168.35.21 \
+cat ~/.ssh/id_ed25519.pub | ssh kasutaja@192.168.125.21 \
   "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
 ```
 
@@ -896,12 +889,12 @@ SSH-server on õiguste suhtes range. Kui `~/.ssh` või `authorized_keys` on teis
 
 ```
 Host vm1
-    HostName 192.168.35.21
+    HostName 192.168.125.21
     User kasutaja
     IdentityFile ~/.ssh/id_ed25519
 
 Host vm2
-    HostName 192.168.35.22
+    HostName 192.168.125.22
     User kasutaja
     IdentityFile ~/.ssh/id_ed25519
 
@@ -925,7 +918,7 @@ Laborikeskkonnas, kus VM-e ehitatakse uuesti, eemaldad vana kirje:
 
 ```bash
 ssh-keygen -R vm1
-ssh-keygen -R 192.168.35.21
+ssh-keygen -R 192.168.125.21
 ```
 
 Toodangus on see hoiatus põhjus peatuda ja uurida, sest see võib tähendada, et keegi on ühenduse vahele.
@@ -936,9 +929,13 @@ Ansible küsib samuti host key kinnitust, ja kui masinaid on palju, peatub jooks
 ssh-keyscan vm1 vm2 vm3 >> ~/.ssh/known_hosts
 ```
 
-⚠️ `host_key_checking = False` `ansible.cfg`-s lülitab kontrolli välja. Laboris on see mugav, toodangus mitte.
+!!! warning "Tähelepanu"
 
-⚠️ Privaatvõti ei käi Giti, ei käi jagatud kausta ega saadeta vestlusesse. Kui see lekib, loo uus võtmepaar ja eemalda vana avalik võti kõigist `authorized_keys` failidest. Esimese kodutöö harjutus H1 teeb seda Ansible'iga.
+    `host_key_checking = False` `ansible.cfg`-s lülitab kontrolli välja. Laboris on see mugav, toodangus mitte.
+
+!!! warning "Tähelepanu"
+
+    Privaatvõti ei käi Giti, ei käi jagatud kausta ega saadeta vestlusesse. Kui see lekib, loo uus võtmepaar ja eemalda vana avalik võti kõigist `authorized_keys` failidest. Esimese kodutöö harjutus H1 teeb seda Ansible'iga.
 
 ### Tüüpilised SSH-vead
 
@@ -971,8 +968,8 @@ flowchart LR
 
 ```
 TASK [Avaleht näitab masina nime] *****************************
---- before: /var/www/html/index.html
-+++ after: /var/www/html/index.html
+--- before: /usr/share/nginx/html/index.html
++++ after: /usr/share/nginx/html/index.html
 @@ -1 +1 @@
 -<h1>Tere käsitsi</h1>
 +<h1>vm1</h1>
@@ -1030,9 +1027,9 @@ Iga muudatuse juures:
 | `mapping values are not allowed` | YAML: koolon väärtuses | jutumärgid |
 | `couldn't resolve module/action` | mooduli nimi vale või kollektsioon puudub | `ansible-doc -l \| grep …` |
 | `Permission denied` task'is | `become: true` puudub | lisa play tasemele |
-| `Could not get lock /var/lib/dpkg/lock` | taustal käib teine apt | oota, korda |
+| `Waiting for process ... dnf` | taustal käib teine dnf | oota |
 | task on igal jooksul `changed` | `command`/`shell` mooduli asemel | vaheta moodul |
-| `curl` näitab vaikelehte | fail läks vale kausta | `debug: var=veebi_juur` |
+| `curl` näitab vaikelehte | fail läks vale kausta | `dest` peab olema `/usr/share/nginx/html/index.html` |
 | `UNREACHABLE` | SSH | `ssh vm1 hostname`, siis `-vvv` |
 
 Veaotsingu järjekord on alati sama: loe veateadet algusest lõpuni, korda käsku `-v`-ga, proovi sama asja käsitsi sihtmasinas. Enamik vigu on kirjas veateate esimeses reas.
@@ -1091,7 +1088,7 @@ Veaotsingu järjekord on alati sama: loe veateadet algusest lõpuni, korda käsk
 | `ansible-lint` | <https://ansible.readthedocs.io/projects/lint/> |
 | Pikem Ansible'i materjal (IT automatiseerimise kursus) | <https://hkhk-automation.github.io/devops/week03/lecture/> |
 
-**Versioonid:** materjal eeldab `ansible-core` 2.15 või uuemat. Versiooni näed käsuga `ansible --version`.
+**Versioonid:** materjal on testitud `ansible-core` 2.14-ga (AlmaLinux 9). Versiooni näed käsuga `ansible --version`.
 
 ---
 

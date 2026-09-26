@@ -75,7 +75,7 @@ ansible --version | head -3
       configured module search path = [...]
     ```
 
-Versioonid võivad veidi erineda. Oluline on, et `ansible` vastab. `ansible.posix` kollektsiooni (tulemüüri moodul) läheb vaja K1 B-osas. Versioon 1.5.4, sest uuemad ei toeta AlmaLinuxi `ansible-core 2.14`-t.
+Versioonid võivad veidi erineda, peaasi et `ansible` vastab. `ansible.posix` (tulemüüri moodul) on versioon 1.5.4, sest uuemad ei toeta AlmaLinuxi `ansible-core 2.14`-t.
 
 ## 3 · SSH-võti
 
