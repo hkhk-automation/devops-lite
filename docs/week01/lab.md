@@ -123,7 +123,7 @@ Kontrolltabeli näide:
 
 Enne automatiseerimist pead teadma, mida masin peab tegema. Kontrolltabeli read muutuvad A4-s playbooki task'ideks, ja kontrolliveerg ütleb, mida moodul iga task'i juures ise kontrollib.
 
-!!! question "Mõtle"
+??? question "Mõtle (vabatahtlik)"
 
     Kui peaksid sama tegema kümnele masinale, mitmendal ununeks mõni samm? Milline samm ununeks kõige tõenäolisemalt ja miks just see?
 
@@ -165,7 +165,7 @@ cat /srv/raport/conf
 
 Skript andis kahest veast teada, aga duplikaatrida tekkis vaikselt. Skripti ohutuks tegemiseks peaks iga rea ette kirjutama kontrolli (`id … ||`, `mkdir -p`, `grep -qx … ||`), ja iga uus erijuht tähendab uut `if`-i. Ansible'i moodulid teevad need kontrollid ise. A4-s kirjutad sama asja playbookina ja näed vahet.
 
-!!! question "Mõtle"
+??? question "Mõtle (vabatahtlik)"
 
     Kui see skript jookseks igal ööl cronist, mitu rida `seade=1` oleks failis kuu aja pärast? Kas keegi märkaks?
 
@@ -265,7 +265,7 @@ ansible kohalik -b -m package -a "name=tree state=present"
 
 Moodul (`ping`, `setup`, `package`) tagastab struktureeritud info ja teab, kas ta midagi muutis. `command` tagastab ainult teksti ja on alati `CHANGED`. Fakte (`ansible_distribution` jt) kasutad A8-s avalehel.
 
-!!! question "Mõtle"
+??? question "Mõtle (vabatahtlik)"
 
     Kui tahad avalehele kirjutada masina distributsiooni ja versiooni, kumb annab selleks info: `setup` või `command`? Miks?
 
@@ -469,7 +469,7 @@ curl -s localhost
 
 Tootmises vaatad enne muutust, mida see teeks. `--diff` näitab täpselt, mis rida muutub, ja see on see, mida kolleeg code review's näha tahab.
 
-!!! question "Mõtle"
+??? question "Mõtle (vabatahtlik)"
 
     Lisa ajutiselt tagasi `command: date` task ja jooksuta `--check`. Mida näitab väljund selle task'i kohta? Miks? Eemalda task pärast uuesti, automaatne kontroll K3 ei luba `command`-i.
 
@@ -510,7 +510,7 @@ curl -s localhost
 
 Playbook parandas ainult selle, mis triivis, ja sa ei pidanud talle ütlema, mis katki on. `--check` üksi on drift'i avastamise tööriist: nii saab öösel kontrollida kõiki masinaid ilma midagi muutmata.
 
-!!! question "Mõtle"
+??? question "Mõtle (vabatahtlik)"
 
     Mis oleks juhtunud, kui keegi oleks A7-s nginx-i paketi eemaldanud (`dnf remove nginx`)? Mitu `changed`-i? Kas avaleht oleks alles?
 

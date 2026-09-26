@@ -49,25 +49,33 @@ Iga vastus 3–6 lauset oma sõnadega. Koopia dokumentatsioonist ei loe.
 
 ## II · Harjutused
 
-Kõik harjutused käivad grupi `veeb` vastu. Iga playbooki puhul sama töökäik nagu klassis:
+Kõik harjutused käivad grupi `veeb` vastu.
 
-1. `ansible-playbook <fail>.yml --check --diff`
-2. `ansible-playbook <fail>.yml --limit vm1`
-3. `ansible-playbook <fail>.yml`
-4. teine jooks tõendiks: `ansible-playbook <fail>.yml | tee logid/<fail>_teine_jooks.txt`
+!!! tip "Soovitatav töökäik iga playbooki puhul"
+
+    1. `ansible-playbook <fail>.yml --check --diff`
+    2. `ansible-playbook <fail>.yml --limit vm1`
+    3. `ansible-playbook <fail>.yml`
+    4. teine jooks tõendiks: `ansible-playbook <fail>.yml | tee logid/<fail>_teine_jooks.txt`
 
 ### H1 · Loo kasutajad ja ligipääs · 10 p
 
 Selle ülesande lõpuks on igas masinas kasutaja `deploy`, kes pääseb võtmega sisse ja saab sudo't ilma paroolita.
 
-Igas `veeb`-grupi masinas:
+Playbook `admin.yml` viib iga `veeb`-grupi masina olekusse:
 
-- kasutajad `deploy` ja `monitor` luuakse ühe task'iga, mis käib läbi nimekirja (`loop`);
-- mõlemal on sinu avalik SSH-võti (`ansible.posix.authorized_key`), nii et `ssh deploy@vm1` töötab;
-- `deploy` kuulub gruppi `wheel`;
-- `deploy` saab sudo't ilma paroolita: fail `/etc/sudoers.d/deploy` sisuga `deploy ALL=(ALL) NOPASSWD: ALL` (`copy`, `mode: "0440"`, `validate: visudo -cf %s`);
-- `chrony` on paigaldatud ja teenus käib (AlmaLinuxis on teenuse nimi `chronyd`);
+- kasutajad `deploy` ja `monitor` on olemas, mõlemad luuakse **ühe** task'iga;
+- mõlemal on sinu avalik SSH-võti;
+- `deploy` on grupis `wheel` ja saab sudo't ilma paroolita;
+- kellaaja teenus `chrony` on paigaldatud ja käib;
 - `/etc/motd` sisaldab `Hallatud Ansible'iga - <masina nimi>`.
+
+??? tip "Vihje: moodulid ja parameetrid"
+
+    - üks task mitmele kasutajale: `loop`;
+    - võti: `ansible.posix.authorized_key`;
+    - paroolita sudo: fail `/etc/sudoers.d/deploy` sisuga `deploy ALL=(ALL) NOPASSWD: ALL` (`copy`, `mode: "0440"`, `validate: visudo -cf %s`);
+    - AlmaLinuxis on teenuse nimi `chronyd`, paketi nimi `chrony`.
 
 Valmis, kui:
 
@@ -80,17 +88,25 @@ Esitad: `admin.yml`, `logid/admin_teine_jooks.txt`
 
 Selle ülesande lõpuks ei saa masinatesse sisse root'ina ega parooliga, ainult võtmega.
 
-- `/etc/ssh/sshd_config`-is on `PermitRootLogin no` ja `PasswordAuthentication no` (`lineinfile`, uuri `regexp`);
-- enne rakendamist kontrollitakse konfi süntaksit (`validate: sshd -t -f %s`);
-- `sshd` taaskäivitatakse ainult siis, kui konf muutus (uuri `notify` ja `handlers`).
+Playbook `hardening.yml`:
 
-!!! warning "Võid end masinast välja lukustada"
+- keelab SSH-s root'i sisselogimise ja parooliga sisselogimise;
+- kontrollib enne rakendamist, et konf on korrektne;
+- taaskäivitab `sshd` ainult siis, kui konf muutus.
+
+!!! warning "Tähelepanu: võid end masinast välja lukustada"
 
     1. Hoia teine SSH-sessioon lahti.
     2. Jooksuta esmalt `--check --diff`, siis `--limit vm1`.
     3. Kontrolli uuest terminalist, et sisse saad. Alles siis kõigil.
 
-    Kui lukustasid end välja, kirjuta README-sse, mis juhtus ja kuidas said tagasi. See on väärtuslikum kui töö, mis kohe õnnestus.
+    Kui lukustasid end välja, kirjuta README-sse, mis juhtus ja kuidas said tagasi.
+
+??? tip "Vihje: moodulid ja parameetrid"
+
+    - `/etc/ssh/sshd_config`: `PermitRootLogin no` ja `PasswordAuthentication no` (`lineinfile`, uuri `regexp`);
+    - süntaksikontroll: `validate: sshd -t -f %s`;
+    - taaskäivitus ainult muutusel: `notify` ja `handlers`.
 
 Valmis, kui:
 
@@ -104,14 +120,17 @@ Esitad: `hardening.yml`, `logid/hardening_teine_jooks.txt`
 
 Selle ülesande lõpuks on vajalikud paketid igas masinas olemas ja keelatud paketid puuduvad.
 
-- `vars` all kaks nimekirja: `paigalda` (vähemalt `curl`, `git`, `tree`, `wget`, `tar`) ja `eemalda` (vähemalt `telnet`);
-- üks task paigaldab esimese nimekirja, teine tagab, et teise nimekirja paketid puuduvad (`state: absent`).
+Playbook `baas.yml`:
 
-Paigalda `telnet` käsitsi ühte masinasse ja jooksuta playbook.
+- paigaldab nimekirja `paigalda`: vähemalt `curl`, `git`, `tree`, `wget`, `tar`;
+- tagab, et nimekirja `eemalda` paketid puuduvad: vähemalt `telnet`;
+- mõlemad nimekirjad on muutujad, mitte task'i sees.
 
-!!! question "Mõtle"
+Kontroll: paigalda `telnet` käsitsi ühte masinasse ja jooksuta playbook. `telnet` peab kaduma ja teised masinad jääma `changed=0`.
 
-    Mitu `changed`-i tuli ja millises masinas? Miks just nii palju?
+??? tip "Vihje: moodulid ja parameetrid"
+
+    `vars` plokk kahe nimekirjaga; `ansible.builtin.package` võtab `name`-ile terve nimekirja; puudumine on `state: absent`.
 
 Valmis, kui:
 
@@ -124,8 +143,14 @@ Esitad: `baas.yml`, `logid/baas_teine_jooks.txt`
 
 Selle ülesande lõpuks on vm1-s iga masina kohta faktidest koostatud raport.
 
-- igas masinas fail `/tmp/raport.txt`: masina nimi, distributsioon ja versioon, IP-aadress, mälu MB-des, protsessorite arv (kõik faktidest);
-- fail tuuakse control node'i kausta `raportid/` (`ansible.builtin.fetch`, uuri `flat: true`), iga masina raport eraldi failis `raportid/{{ inventory_hostname }}.txt`.
+Playbook `raport.yml`:
+
+- loob igas masinas faili `/tmp/raport.txt`: masina nimi, distributsioon ja versioon, IP-aadress, mälu MB-des, protsessorite arv, kõik faktidest;
+- toob raportid vm1 kausta `raportid/`, iga masina oma eraldi failis.
+
+??? tip "Vihje: moodulid ja parameetrid"
+
+    Faili toomine: `ansible.builtin.fetch`, uuri `flat: true`. Failinimi inventari nime järgi: `raportid/{{ inventory_hostname }}.txt`, muidu kirjutavad raportid üksteist üle.
 
 Valmis, kui:
 
@@ -137,12 +162,18 @@ Esitad: `raport.yml`, `raportid/`
 
 Selle ülesande lõpuks tehakse igas masinas igal ööl `/etc` varukoopia.
 
-Igas masinas:
+Playbook `cron.yml` tagab igas masinas:
 
-- kaust `/var/backups` on olemas (AlmaLinuxis vaikimisi puudub);
-- pakett `tar` on paigaldatud (AlmaLinuxi pilvepildis vaikimisi puudub);
-- skript `/usr/local/bin/varunda.sh` (`copy`, `mode: "0755"`) pakib `/etc` kausta `/var/backups/etc-<kuupäev>.tar.gz`;
-- cron-töö käivitab skripti iga päev kell 02:30 (`ansible.builtin.cron`).
+- skripti `/usr/local/bin/varunda.sh`, mis pakib `/etc` faili `/var/backups/etc-<kuupäev>.tar.gz`;
+- cron-töö, mis käivitab skripti iga päev kell 02:30.
+
+!!! warning "Tähelepanu: AlmaLinuxis puudub kaks asja"
+
+    Kausta `/var/backups` ja paketti `tar` pole vaikimisi olemas. Ilma nendeta skript ei tee midagi ega anna ka viga. Playbook peab need looma.
+
+??? tip "Vihje: moodulid ja parameetrid"
+
+    Kaust: `ansible.builtin.file` + `state: directory`. Skript: `ansible.builtin.copy` + `mode: "0755"`. Cron: `ansible.builtin.cron` (`name`, `minute`, `hour`, `job`).
 
 Kontrolli vm1-s:
 
@@ -160,11 +191,7 @@ ssh -t vm1 sudo crontab -l -u root
     30 2 * * * /usr/local/bin/varunda.sh
     ```
 
-    Esimene käsk ei trüki midagi. Teine näitab arhiivi tänase kuupäevaga, kolmas üht cron-rida.
-
-!!! question "Mõtle"
-
-    Jooksuta playbooki kaks korda. Kas cron-rida on siis üks või kaks korda? Mis teeb `ansible.builtin.cron`-i idempotentseks?
+    Arhiiv tänase kuupäevaga ja täpselt üks cron-rida, ka pärast playbooki teist jooksu.
 
 Valmis, kui:
 
@@ -178,10 +205,10 @@ Esitad: `cron.yml`, `logid/cron_teine_jooks.txt`
 
 Selle ülesande lõpuks oskad `--check`-iga leida, mis masinates on midagi käsitsi muudetud, ja parandad selle playbookidega.
 
-1. Tekita igasse masinasse erinev drift: ühes kustuta `monitor`-kasutaja, teises muuda `/etc/motd` sisu, kolmandas peata `chronyd`.
-2. Jooksuta kõik oma playbookid `--check` režiimis ja salvesta väljund faili `logid/drift_check.txt`. Kas iga drift tuli välja? Millise playbooki järgi?
+1. Tekita igasse masinasse erinev drift: ühes kustuta kasutaja `monitor`, teises muuda `/etc/motd` sisu, kolmandas peata `chronyd`.
+2. Jooksuta kõik oma playbookid `--check` režiimis ja salvesta väljund faili `logid/drift_check.txt`.
 3. Paranda drift päris jooksuga.
-4. Kirjuta `vastused.md`-sse lõik: kui peaksid seda kontrolli igal ööl automaatselt jooksutama, kuidas see välja näeks ja kes saaks teate?
+4. Kirjuta `vastused.md`-sse lõik: kas iga drift tuli `--check`-iga välja ja millise playbooki järgi? Kui see kontroll jookseks igal ööl automaatselt, kes peaks teate saama?
 
 Esitad: `logid/drift_check.txt`, lõik `vastused.md`-s
 
