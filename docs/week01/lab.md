@@ -10,12 +10,12 @@ flowchart LR
     CN -->|SSH-võti| V1[vm1 ise]
     CN -->|SSH-võti| V2[vm2]
     CN -->|SSH-võti| V3[vm3]
-    CN -->|git push| GH[GitHub<br>kontroll roheline]
+    CN -->|git push| GH[GitHub<br>Autograde]
 ```
 
 Praktikumil on kaks osa:
 
-- **A · Juhendatud:** kõik ühel masinal (`localhost`), samm-sammult. Iga samm on kujul **Tegevus → Oodatav tulemus → Miks → Tõend**.
+- **A · Juhendatud:** kõik ühel masinal (`localhost`), samm-sammult. Oodatava tulemuse näed iga sammu juures kokkuvolditud plokis: tee enne ise, siis võrdle.
 - **B · Iseseisev:** sama oskus kolmel VM-il. Antud on eesmärk ja piirangud, lahenduse leiad ise. Vihjed on kinnistes plokkides.
 
 Loengu vastavad peatükid on iga sammu juures viidatud. Kui mõni mõiste on udune, ava [loeng](lecture.md) samal ajal teises aknas.
@@ -48,14 +48,14 @@ Juhendaja annab sulle kolm IP-d, kasutajanime ja parooli. Kirjuta need üles:
 | vm2 | | |
 | vm3 | | |
 
-**Tegevus:** ühendu Windowsist vm1-ga. Kaks võimalust:
+Ühendu Windowsist vm1-ga. Kaks võimalust:
 
 - **VS Code:** Remote-SSH laiendus → `F1` → *Remote-SSH: Connect to Host* → `<kasutaja>@<vm1-ip>`. Terminal (`Ctrl+ö`) avaneb otse vm1-s, failid näed külgpaanil.
 - **PowerShell:** `ssh <kasutaja>@<vm1-ip>`
 
 Esimesel ühendumisel küsitakse host key kinnitust (`yes`) ja parooli.
 
-**Tegevus:** vaheta parool ja anna masinatele nimed. Juhendajalt saadud parool on kõigil tudengitel sama, ja masinad on ühes võrgus. Vaheta see kõigis kolmes masinas **samaks** uueks parooliks, sest Ansible küsib sudo parooli ühe korra ja kasutab seda kõigil kolmel.
+Vaheta parool ja anna masinatele nimed. Juhendajalt saadud parool on kõigil tudengitel sama, ja masinad on ühes võrgus. Vaheta see kõigis kolmes masinas **samaks** uueks parooliks, sest Ansible küsib sudo parooli ühe korra ja kasutab seda kõigil kolmel.
 
 Masinatel pole veel nime (prompt näitab `localhost`). Nimi aitab sul alati näha, kus oled, ja teeb Ansible'i faktid loetavaks.
 
@@ -69,11 +69,11 @@ exec bash
 
 `passwd` küsib esmalt vana parooli, siis kaks korda uut. `sudo` küsib pärast seda juba uut parooli. Liiga lihtsa parooli lükkab AlmaLinux tagasi (`BAD PASSWORD`), vali vähemalt 8 märki tähtede ja numbritega. `ssh` küsib enne seda vm2 ja vm3 host key kinnitust (`yes`) ja vana parooli. Uus parool ei lähe kunagi üheski repo faili.
 
-**Oodatav tulemus:** prompt on `<kasutaja>@vm1`. Kõik järgmised käsud käivad vm1-s, mitte Windowsis.
+??? success "Oodatav tulemus"
+
+    Prompt on `<kasutaja>@vm1`. Kõik järgmised käsud käivad vm1-s, mitte Windowsis.
 
 ### 0.2 Tööriistad vm1-s
-
-**Tegevus:**
 
 ```bash
 sudo dnf install -y git ansible-core
@@ -82,14 +82,14 @@ git --version
 ansible --version | head -3
 ```
 
-**Oodatav tulemus:**
+??? success "Oodatav tulemus"
 
-```
-git version 2.52.0
-ansible [core 2.14.18]
-  config file = /etc/ansible/ansible.cfg
-  configured module search path = [...]
-```
+    ```
+    git version 2.52.0
+    ansible [core 2.14.18]
+      config file = /etc/ansible/ansible.cfg
+      configured module search path = [...]
+    ```
 
 Versioonid võivad veidi erineda. Oluline on, et `ansible` vastab. `ansible.posix` kollektsiooni (tulemüüri moodul) läheb vaja osas B. Versioon 1.5.4, sest uuemad ei toeta AlmaLinuxi `ansible-core 2.14`-t.
 
@@ -97,18 +97,20 @@ Versioonid võivad veidi erineda. Oluline on, et `ansible` vastab. `ansible.posi
 
 Üks võtmepaar vm1-s teeb kaks asja: sellega kloonid oma privaatse repo GitHubist ja sellega ühendub Ansible osas B vm2 ja vm3 külge. Parooli pole kummalgi juhul vaja.
 
-**Tegevus:** loo võti. Vajuta kõigi küsimuste peale Enter:
+Loo võti. Vajuta kõigi küsimuste peale Enter:
 
 ```bash
 ssh-keygen -t ed25519 -C "<eesnimi>@vm1"
 cat ~/.ssh/id_ed25519.pub
 ```
 
-**Oodatav tulemus:** üks rida, mis algab `ssh-ed25519 AAAA...` ja lõpeb `<eesnimi>@vm1`. See on **avalik võti**, seda võib jagada. Fail `~/.ssh/id_ed25519` (ilma `.pub`-ita) on **privaatvõti**, see ei lahku kunagi vm1-st.
+??? success "Oodatav tulemus"
+
+    Üks rida, mis algab `ssh-ed25519 AAAA...` ja lõpeb `<eesnimi>@vm1`. See on **avalik võti**, seda võib jagada. Fail `~/.ssh/id_ed25519` (ilma `.pub`-ita) on **privaatvõti**, see ei lahku kunagi vm1-st.
 
 ### 0.4 Võti GitHubi ja repo kloonimine
 
-**Tegevus:** lisa avalik võti GitHubi:
+Lisa avalik võti GitHubi:
 
 1. GitHub → paremal üleval profiilipilt → **Settings** → **SSH and GPG keys** → **New SSH key**.
 2. *Title:* `vm1`, *Key type:* Authentication Key, *Key:* kleebi `cat` väljundist kogu rida.
@@ -120,13 +122,15 @@ Kontrolli vm1-s:
 ssh -T git@github.com
 ```
 
-**Oodatav tulemus:** esimesel korral kinnita `yes`, siis:
+??? success "Oodatav tulemus"
 
-```
-Hi <sinu-github-kasutaja>! You've successfully authenticated, but GitHub does not provide shell access.
-```
+    Esimesel korral kinnita `yes`, siis:
 
-**Tegevus:** seadista Git ja klooni repo. Ava Classroom 50 link, mille juhendaja jagas, ja nõustu ülesandega. Sulle tekib privaatne repo organisatsioonis `hkhk-automation`. Repo lehel vajuta **Code** → vahekaart **SSH** → kopeeri aadress (algab `git@github.com:`).
+    ```
+    Hi <sinu-github-kasutaja>! You've successfully authenticated, but GitHub does not provide shell access.
+    ```
+
+Seadista Git ja klooni repo. Ava Classroom 50 link, mille juhendaja jagas, ja nõustu ülesandega. Sulle tekib privaatne repo organisatsioonis `hkhk-automation`. Repo lehel vajuta **Code** → vahekaart **SSH** → kopeeri aadress (algab `git@github.com:`).
 
 ```bash
 git config --global user.name "Eesnimi Perenimi"
@@ -137,11 +141,11 @@ cd <sinu-repo>
 ls
 ```
 
-**Oodatav tulemus:**
+??? success "Oodatav tulemus"
 
-```
-README.md  ULESANNE.md  logid
-```
+    ```
+    README.md  ULESANNE.md  logid
+    ```
 
 Kõik tänased failid lähevad selle repo juurkausta. `git push` töötab sama võtmega, parooli ega tokenit ei küsita.
 
@@ -169,7 +173,7 @@ Lõpuks on repos:
 
 *Loeng §1–§2*
 
-**Tegevus:** seadista `localhost` käsitsi veebiserveriks. Iga käsu järel kirjuta vihikusse või faili `kontrolltabel.md` rida: käsk | tulemus, mis pidi tekkima | kuidas kontrollid.
+Seadista `localhost` käsitsi veebiserveriks. Iga käsu järel kirjuta vihikusse või faili `kontrolltabel.md` rida: käsk | tulemus, mis pidi tekkima | kuidas kontrollid.
 
 ```bash
 sudo useradd -m saidi
@@ -187,19 +191,17 @@ Kontrolltabeli näide:
 | `tee index.html` | avaleht sisuga | `cat /usr/share/nginx/html/index.html` |
 | `systemctl enable --now` | teenus käib ja käivitub buutimisel | `systemctl is-active nginx`, `systemctl is-enabled nginx` |
 
-**Oodatav tulemus:**
+??? success "Oodatav tulemus"
 
-```bash
-curl -s localhost
-```
+    ```bash
+    curl -s localhost
+    ```
 
-```
-<h1>Tere käsitsi</h1>
-```
+    ```
+    <h1>Tere käsitsi</h1>
+    ```
 
-**Miks:** enne automatiseerimist pead teadma, mida masin peab tegema. Kontrolltabeli read muutuvad A4-s playbooki task'ideks, ja kontrolliveerg ütleb, mida moodul iga task'i juures ise kontrollib.
-
-**Tõend:** kontrolltabel, 4 rida.
+Enne automatiseerimist pead teadma, mida masin peab tegema. Kontrolltabeli read muutuvad A4-s playbooki task'ideks, ja kontrolliveerg ütleb, mida moodul iga task'i juures ise kontrollib.
 
 💭 Kui peaksid sama tegema kümnele masinale, mitmendal ununeks mõni samm? Milline samm ununeks kõige tõenäolisemalt ja miks just see?
 
@@ -211,7 +213,7 @@ curl -s localhost
 
 Enne Ansible'it vaata korra, mis juhtub, kui sama töö teeb tavaline shelli skript. See on lühike demo, mitte skriptimise harjutus: Bash on sellel kursusel eeldus.
 
-**Tegevus:** loo repo juurkausta fail `halb.sh`:
+Loo repo juurkausta fail `halb.sh`:
 
 ```bash
 #!/usr/bin/env bash
@@ -228,18 +230,16 @@ sudo bash halb.sh
 cat /srv/raport/conf
 ```
 
-**Oodatav tulemus:**
+??? success "Oodatav tulemus"
 
-```
-useradd: user 'raporteerija' already exists
-mkdir: cannot create directory '/srv/raport': File exists
-seade=1
-seade=1
-```
+    ```
+    useradd: user 'raporteerija' already exists
+    mkdir: cannot create directory '/srv/raport': File exists
+    seade=1
+    seade=1
+    ```
 
-**Miks:** skript andis kahest veast teada, aga duplikaatrida tekkis vaikselt. Skripti ohutuks tegemiseks peaks iga rea ette kirjutama kontrolli (`id … ||`, `mkdir -p`, `grep -qx … ||`), ja iga uus erijuht tähendab uut `if`-i. Ansible'i moodulid teevad need kontrollid ise. A4-s kirjutad sama asja playbookina ja näed vahet.
-
-**Tõend:** `halb.sh` repos.
+Skript andis kahest veast teada, aga duplikaatrida tekkis vaikselt. Skripti ohutuks tegemiseks peaks iga rea ette kirjutama kontrolli (`id … ||`, `mkdir -p`, `grep -qx … ||`), ja iga uus erijuht tähendab uut `if`-i. Ansible'i moodulid teevad need kontrollid ise. A4-s kirjutad sama asja playbookina ja näed vahet.
 
 💭 Kui see skript jookseks igal ööl cronist, mitu rida `seade=1` oleks failis kuu aja pärast? Kas keegi märkaks?
 
@@ -256,7 +256,7 @@ sudo rm -rf /srv/raport
 
 *Loeng §7–§9*
 
-**Tegevus:** loo `inventory.ini`:
+Loo `inventory.ini`:
 
 ```ini
 [kohalik]
@@ -286,17 +286,17 @@ ansible --version | grep "config file"
 ansible-inventory --graph
 ```
 
-**Oodatav tulemus:**
+??? success "Oodatav tulemus"
 
-```
-  config file = /home/<sina>/<sinu-repo>/ansible.cfg
-@all:
-  |--@ungrouped:
-  |--@kohalik:
-  |  |--localhost
-```
+    ```
+      config file = /home/<sina>/<sinu-repo>/ansible.cfg
+    @all:
+      |--@ungrouped:
+      |--@kohalik:
+      |  |--localhost
+    ```
 
-**Tegevus:** esimesed ad-hoc käsud:
+Esimesed ad-hoc käsud:
 
 ```bash
 ansible kohalik -m ping
@@ -305,38 +305,38 @@ ansible kohalik -m setup -a "filter=ansible_os_family"
 ansible kohalik -m command -a "uptime"
 ```
 
-**Oodatav tulemus:**
+??? success "Oodatav tulemus"
 
-```
-localhost | SUCCESS =>
-    changed: false
-    ping: pong
-localhost | SUCCESS =>
-    ansible_facts:
-        ansible_distribution: AlmaLinux
-        ...
-        ansible_distribution_version: '9.8'
-localhost | SUCCESS =>
-    ansible_facts:
-        ansible_os_family: RedHat
-localhost | CHANGED | rc=0 >>
- 10:42:17 up  1:03,  1 user,  load average: 0.08, 0.05, 0.01
-```
+    ```
+    localhost | SUCCESS =>
+        changed: false
+        ping: pong
+    localhost | SUCCESS =>
+        ansible_facts:
+            ansible_distribution: AlmaLinux
+            ...
+            ansible_distribution_version: '9.8'
+    localhost | SUCCESS =>
+        ansible_facts:
+            ansible_os_family: RedHat
+    localhost | CHANGED | rc=0 >>
+     10:42:17 up  1:03,  1 user,  load average: 0.08, 0.05, 0.01
+    ```
 
 Pane tähele viimast rida: `uptime` ei muuda midagi, aga Ansible märgib selle `CHANGED`-ks, sest `command` ei tea, mida käsk tegi.
 
-**Tegevus:** ad-hoc käsk, mis muudab midagi:
+Ad-hoc käsk, mis muudab midagi:
 
 ```bash
 ansible kohalik -b -m package -a "name=tree state=present"
 ansible kohalik -b -m package -a "name=tree state=present"
 ```
 
-**Oodatav tulemus:** esimene kord `CHANGED`, teine kord `SUCCESS` ja `"changed": false`.
+??? success "Oodatav tulemus"
 
-**Miks:** moodul (`ping`, `setup`, `package`) tagastab struktureeritud info ja teab, kas ta midagi muutis. `command` tagastab ainult teksti ja on alati `CHANGED`. `ansible_os_family` läheb vaja osas B.
+    Esimene kord `CHANGED`, teine kord `SUCCESS` ja `"changed": false`.
 
-**Tõend:** `inventory.ini` ja `ansible.cfg` repos.
+Moodul (`ping`, `setup`, `package`) tagastab struktureeritud info ja teab, kas ta midagi muutis. `command` tagastab ainult teksti ja on alati `CHANGED`. `ansible_os_family` läheb vaja osas B.
 
 💭 Kui tahad playbookis öelda "kui masin on RedHati perest, tee X", kumb annab selleks info: `setup` või `command`? Miks?
 
@@ -348,7 +348,7 @@ ansible kohalik -b -m package -a "name=tree state=present"
 
 Nüüd paned A1 käsitsitöö kirja soovitud olekuna. Ehita playbook **üks task korraga** ja jooksuta iga lisanduse järel. Nii tead alati, milline task vea tekitas.
 
-**Tegevus, samm 1:** loo `bootstrap.yml` ühe task'iga:
+**Samm 1.** Loo `bootstrap.yml` ühe task'iga:
 
 ```yaml
 - name: Bootstrap veebiserver
@@ -367,15 +367,15 @@ ansible-playbook bootstrap.yml --syntax-check
 ansible-playbook bootstrap.yml --list-tasks
 ```
 
-**Oodatav tulemus:**
+??? success "Oodatav tulemus"
 
-```
-playbook: bootstrap.yml
+    ```
+    playbook: bootstrap.yml
 
-  play #1 (kohalik): Bootstrap veebiserver	TAGS: []
-    tasks:
-      Kasutaja saidi on olemas	TAGS: []
-```
+      play #1 (kohalik): Bootstrap veebiserver	TAGS: []
+        tasks:
+          Kasutaja saidi on olemas	TAGS: []
+    ```
 
 Jooksuta:
 
@@ -393,7 +393,7 @@ localhost : ok=2  changed=0  unreachable=0  failed=0  skipped=0
 
 `ok`, sest kasutaja on A1-st juba olemas. `ok=2` sisaldab ka faktide kogumist.
 
-**Tegevus, samm 2–4:** lisa ükshaaval ja jooksuta iga lisanduse järel. Parameetrid leiad `ansible-doc`-ist:
+**Sammud 2–4.** Lisa ükshaaval ja jooksuta iga lisanduse järel. Parameetrid leiad `ansible-doc`-ist:
 
 ```bash
 ansible-doc -s ansible.builtin.package
@@ -421,21 +421,19 @@ ansible-playbook bootstrap.yml
 curl -s localhost
 ```
 
-**Oodatav tulemus:**
+??? success "Oodatav tulemus"
 
-```
-TASK [Avaleht on paigas] **************************************
-changed: [localhost]
+    ```
+    TASK [Avaleht on paigas] **************************************
+    changed: [localhost]
 
-PLAY RECAP ****************************************************
-localhost : ok=5  changed=1  unreachable=0  failed=0  skipped=0
+    PLAY RECAP ****************************************************
+    localhost : ok=5  changed=1  unreachable=0  failed=0  skipped=0
 
-<h1>Hallatud Ansible'iga</h1>
-```
+    <h1>Hallatud Ansible'iga</h1>
+    ```
 
-**Miks:** ainult avalehe sisu erines käsitsi tehtust. Kõik muu oli juba soovitud olekus, ja moodulid tuvastasid selle ise.
-
-**Tõend:** täidetud ennustustabel vihikus, `bootstrap.yml` repos.
+Ainult avalehe sisu erines käsitsi tehtust. Kõik muu oli juba soovitud olekus, ja moodulid tuvastasid selle ise.
 
 💡 `Permission denied` või `You need to be root`: `become: true` puudub. `Missing sudo password`: `ansible.cfg`-s puudub `become_ask_pass = True`. `Waiting for process ... dnf`: taustal käib teine dnf, oota. `this task has extra params`: parameeter on vale taandega (loeng §10).
 
@@ -445,22 +443,22 @@ localhost : ok=5  changed=1  unreachable=0  failed=0  skipped=0
 
 *Loeng §5*
 
-**Tegevus:** jooksuta playbook kohe uuesti ja salvesta väljund:
+Jooksuta playbook kohe uuesti ja salvesta väljund:
 
 ```bash
 ansible-playbook bootstrap.yml | tee logid/teine_jooks.txt
 ```
 
-**Oodatav tulemus:**
+??? success "Oodatav tulemus"
 
-```
-PLAY RECAP ****************************************************
-localhost : ok=5  changed=0  unreachable=0  failed=0  skipped=0
-```
+    ```
+    PLAY RECAP ****************************************************
+    localhost : ok=5  changed=0  unreachable=0  failed=0  skipped=0
+    ```
 
-**Miks:** see on idempotentsuse tõend: masin on juba soovitud olekus ja kirjeldus ei tee midagi. Automaatne kontroll vaatab seda faili.
+See on idempotentsuse tõend: masin on juba soovitud olekus ja kirjeldus ei tee midagi. Automaatne kontroll vaatab seda faili.
 
-**Tegevus:** lisa playbooki lõppu ajutine task:
+Lisa playbooki lõppu ajutine task:
 
 ```yaml
     - name: Ajutine katse
@@ -469,9 +467,11 @@ localhost : ok=5  changed=0  unreachable=0  failed=0  skipped=0
 
 Jooksuta kaks korda.
 
-**Oodatav tulemus:** mõlemal korral `changed=1`. `command` on igal jooksul `changed`, kuigi `date` ei muuda midagi.
+??? success "Oodatav tulemus"
 
-**Tegevus:** muuda task'i, et see oleks idempotentne `creates` abil:
+    Mõlemal korral `changed=1`. `command` on igal jooksul `changed`, kuigi `date` ei muuda midagi.
+
+Muuda task'i, et see oleks idempotentne `creates` abil:
 
 ```yaml
     - name: Märgi, et bootstrap on tehtud
@@ -484,9 +484,7 @@ Jooksuta kaks korda. Esimene `changed`, teine `ok`.
 
 Seejärel eemalda katse-task ja jooksuta veel kord, kuni `PLAY RECAP` on `changed=0`. Salvesta see uuesti `logid/teine_jooks.txt`-sse.
 
-**Miks:** toores käsk ei tea olekut. Kui moodulit pole, teeb `creates` käsu idempotentseks: käsku ei käivitata, kui fail on juba olemas. Päris töös kasuta moodulit, kui see on olemas (`ansible.builtin.file` + `state: touch` teeks sama).
-
-**Tõend:** `logid/teine_jooks.txt` ilma katse-task'ita, `changed=0`.
+Toores käsk ei tea olekut. Kui moodulit pole, teeb `creates` käsu idempotentseks: käsku ei käivitata, kui fail on juba olemas. Päris töös kasuta moodulit, kui see on olemas (`ansible.builtin.file` + `state: touch` teeks sama).
 
 ---
 
@@ -494,40 +492,40 @@ Seejärel eemalda katse-task ja jooksuta veel kord, kuni `PLAY RECAP` on `change
 
 *Loeng §16*
 
-**Tegevus:** muuda `bootstrap.yml`-is avalehe teksti, näiteks `<h1>Versioon 2</h1>\n`. Jooksuta kuivalt:
+Muuda `bootstrap.yml`-is avalehe teksti, näiteks `<h1>Versioon 2</h1>\n`. Jooksuta kuivalt:
 
 ```bash
 ansible-playbook bootstrap.yml --check --diff
 curl -s localhost
 ```
 
-**Oodatav tulemus:**
+??? success "Oodatav tulemus"
 
-```
-TASK [Avaleht on paigas] **************************************
---- before: /usr/share/nginx/html/index.html
-+++ after: /usr/share/nginx/html/index.html
-@@ -1 +1 @@
--<h1>Hallatud Ansible'iga</h1>
-+<h1>Versioon 2</h1>
-changed: [localhost]
+    ```
+    TASK [Avaleht on paigas] **************************************
+    --- before: /usr/share/nginx/html/index.html
+    +++ after: /usr/share/nginx/html/index.html
+    @@ -1 +1 @@
+    -<h1>Hallatud Ansible'iga</h1>
+    +<h1>Versioon 2</h1>
+    changed: [localhost]
 
-PLAY RECAP ****************************************************
-localhost : ok=5  changed=1  unreachable=0  failed=0  skipped=0
+    PLAY RECAP ****************************************************
+    localhost : ok=5  changed=1  unreachable=0  failed=0  skipped=0
 
-<h1>Hallatud Ansible'iga</h1>
-```
+    <h1>Hallatud Ansible'iga</h1>
+    ```
 
 `changed=1`, aga `curl` näitab vana lehte. Midagi ei muudetud.
 
-**Tegevus:** jooksuta päriselt ja kontrolli:
+Jooksuta päriselt ja kontrolli:
 
 ```bash
 ansible-playbook bootstrap.yml
 curl -s localhost
 ```
 
-**Miks:** tootmises vaatad enne muutust, mida see teeks. `--diff` näitab täpselt, mis rida muutub, ja see on see, mida kolleeg code review's näha tahab.
+Tootmises vaatad enne muutust, mida see teeks. `--diff` näitab täpselt, mis rida muutub, ja see on see, mida kolleeg code review's näha tahab.
 
 💭 Lisa ajutiselt tagasi `command: date` task ja jooksuta `--check`. Mida näitab väljund selle task'i kohta? Miks? **Eemalda task pärast uuesti**, automaatne kontroll K3 ei luba `command`-i.
 
@@ -537,7 +535,7 @@ curl -s localhost
 
 *Loeng §16*
 
-**Tegevus:** tekita kolm kõrvalekallet, nagu teeks kolleeg öösel käsitsi:
+Tekita kolm kõrvalekallet, nagu teeks kolleeg öösel käsitsi:
 
 ```bash
 sudo rm /usr/share/nginx/html/index.html
@@ -560,11 +558,11 @@ ansible-playbook bootstrap.yml
 curl -s localhost
 ```
 
-**Oodatav tulemus:** `--check` näitab 3 `changed`-i ilma midagi parandamata. Päris jooks näitab samuti 3 `changed`-i, `nginx on paigaldatud` jääb `ok`. `curl` vastab uuesti.
+??? success "Oodatav tulemus"
 
-**Miks:** playbook parandas ainult selle, mis triivis, ja sa ei pidanud talle ütlema, mis katki on. `--check` üksi on drift'i avastamise tööriist: nii saab öösel kontrollida kõiki masinaid ilma midagi muutmata.
+    `--check` näitab 3 `changed`-i ilma midagi parandamata. Päris jooks näitab samuti 3 `changed`-i, `nginx on paigaldatud` jääb `ok`. `curl` vastab uuesti.
 
-**Tõend:** vihikus ennustus ja tegelik tulemus.
+Playbook parandas ainult selle, mis triivis, ja sa ei pidanud talle ütlema, mis katki on. `--check` üksi on drift'i avastamise tööriist: nii saab öösel kontrollida kõiki masinaid ilma midagi muutmata.
 
 💭 Mis oleks juhtunud, kui keegi oleks A7-s nginx-i paketi eemaldanud (`dnf remove nginx`)? Mitu `changed`-i? Kas avaleht oleks alles?
 
@@ -574,7 +572,7 @@ curl -s localhost
 
 *Loeng §13*
 
-**Tegevus:** lisa play'le `vars` plokk ja kasuta muutujat avalehel:
+Lisa play'le `vars` plokk ja kasuta muutujat avalehel:
 
 ```yaml
 - name: Bootstrap veebiserver
@@ -600,17 +598,17 @@ ansible-playbook bootstrap.yml
 curl -s localhost
 ```
 
-**Oodatav tulemus:**
+??? success "Oodatav tulemus"
 
-```
-TASK [Näita fakte, mida lehel kasutame] ***********************
-ok: [localhost] =>
-    msg: localhost / AlmaLinux 9.8
+    ```
+    TASK [Näita fakte, mida lehel kasutame] ***********************
+    ok: [localhost] =>
+        msg: localhost / AlmaLinux 9.8
 
-<h1>Hallatud Ansible'iga</h1><p>localhost, AlmaLinux</p>
-```
+    <h1>Hallatud Ansible'iga</h1><p>localhost, AlmaLinux</p>
+    ```
 
-**Tegevus:** kirjuta muutuja üle käsurealt, ilma faili muutmata:
+Kirjuta muutuja üle käsurealt, ilma faili muutmata:
 
 ```bash
 ansible-playbook bootstrap.yml -e "lehe_pealkiri=Test"
@@ -619,7 +617,7 @@ curl -s localhost
 
 Seejärel jooksuta ilma `-e`-ta, et leht saaks tagasi soovitud oleku.
 
-**Miks:** muutuja teeb playbooki taaskasutatavaks. `-e` (extra vars) on kõige kõrgema prioriteediga ja kirjutab üle kõik muu. Teisel kohtumisel paneme muutujad gruppide kaupa failidesse.
+Muutuja teeb playbooki taaskasutatavaks. `-e` (extra vars) on kõige kõrgema prioriteediga ja kirjutab üle kõik muu. Teisel kohtumisel paneme muutujad gruppide kaupa failidesse.
 
 ---
 
