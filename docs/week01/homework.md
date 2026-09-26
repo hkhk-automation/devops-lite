@@ -30,20 +30,15 @@ Enne küsimusi loe läbi:
 
 ### Uuri mooduleid → `markmed.md`
 
-Ava `ansible-doc`-iga moodulid `user`, `lineinfile` ja `service`. Kirjuta iga kohta kolm parameetrit, mida klassis ei kasutanud, ja ühe lausega, milleks need on. Näiteks `user`: `shell`, `groups` + `append`, `state: absent` + `remove`.
+Ava `ansible-doc`-iga moodulid `user` ja `service`. Kirjuta kummagi kohta kolm parameetrit, mida klassis ei kasutanud, ja ühe lausega, milleks need on. Näiteks `user`: `shell`, `groups` + `append`, `state: absent` + `remove`.
 
 ### Vasta küsimustele → `vastused.md`
 
-Iga vastus 3–6 lauset oma sõnadega. Koopia dokumentatsioonist ei loe.
+Iga vastus 2–4 lauset oma sõnadega.
 
-1. Võta cron-töö, mis teeb igal ööl andmebaasist varukoopia. Nimeta selle viis osa automatiseerimise mudeli järgi. Mis on selle töö tõend ja kas see on kuskil nähtav? (§3)
-2. Miks on `useradd deploy` shelli skriptis ohtlikum kui `ansible.builtin.user`? Mis juhtub kummagagi teisel jooksul ja kumma viga märkad? (§5)
-3. Miks ei pea managed node'is Ansible paigaldatud olema? Mis peab seal olema? (§6)
-4. Mis vahe on `inventory_hostname`-il ja `ansible_hostname`-il? Too näide, kus need erinevad. (§13)
-5. `PLAY RECAP` näitab ühel masinal `unreachable=1`, teistel `changed=0`. Mida sa selle masina olekust tead? Mida teed järgmiseks? (§14)
-6. Kolleeg jätab `--check` vahele, sest "playbook on testitud". Millal läheb see valesti? Millal näitab `--check` ise valesti? (§16)
-7. Mis vahe on privaat- ja avalikul võtmel? Kuhu kumbki käib? Mida teed, kui privaatvõti lekib? (§15)
-8. Kirjelda üht triivi juhtumit oma VM-idest, koduarvutist või väljamõeldut, aga realistlikku. Mis oli põhjus ja kuidas oleks playbook selle leidnud?
+1. Miks on `useradd deploy` shelli skriptis ohtlikum kui `ansible.builtin.user`? Mis juhtub kummagagi teisel jooksul? (A2, loeng §5)
+2. `PLAY RECAP` näitab ühel masinal `unreachable=1`, teistel `changed=0`. Mida sa selle masina olekust tead ja mida teed järgmiseks? (loeng §14)
+3. Mis vahe on privaat- ja avalikul võtmel? Kuhu kumbki käib ja mida teed, kui privaatvõti lekib? (loeng §15)
 
 ---
 
