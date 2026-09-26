@@ -113,7 +113,7 @@ logid/
 
 Kõik tänased failid lähevad selle repo juurkausta.
 
-**Kontrollnimekiri:** ava oma repo GitHubis → **Actions** → **Ava ülesanded** → **Run workflow**. Repo **Issues** alla tekib iga praktikumi ja kodutöö osa kohta issue. Sule issue, kui osa on tehtud. Kui jääd kinni, ava uus issue mallist **Vajan abi**. Lõpuks on struktuur selline:
+**Kontrollnimekiri:** kui oled invite'i vastu võtnud, avab juhendaja su repo **Issues** alla iga praktikumi ja kodutöö osa kohta issue. Samad kaardid on kursuse tahvlil (GitHubi org `hkhk-automation` → Projects), vaade **Minu tööd**. Sule issue, kui osa on tehtud. Kui jääd kinni, ava uus issue mallist **Vajan abi**. Lõpuks on struktuur selline:
 
 ```
 <sinu-repo>/
