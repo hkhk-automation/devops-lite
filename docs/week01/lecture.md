@@ -20,19 +20,25 @@ Pärast seda loengut oskad:
 
 ## 1. Kolm serverit ja üks unustatud samm
 
-Väike Eesti e-pood valmistub jõulukampaaniaks. Seni on üks veebiserver, nüüd on vaja kolme. Administraator seadistab esimese käsitsi: loob teenusekasutaja, paigaldab nginx-i, kopeerib avalehe, lülitab teenuse sisse. Pool tundi ja töötab. Teine server läheb kiiremini, sest käsud on shelli ajaloos. Kolmanda juures helistab keegi vahele, ja `systemctl enable nginx` jääb tegemata.
+Väike Eesti e-pood valmistub jõulukampaaniaks. Seni on üks veebiserver, nüüd on vaja kolme. Administraator seadistab esimese käsitsi: loob teenusekasutaja, paigaldab nginx-i, kopeerib avalehe, lülitab teenuse sisse. Pool tundi ja töötab. Teine server läheb kiiremini, sest käsud on shelli ajaloos. Kolmanda juures heliseb telefon ja `systemctl enable nginx` jääb tegemata.
 
 Kõik kolm töötavad. Koormusjaotur saadab liiklust kõigile kolmele, testid on rohelised, kampaania läheb käima.
 
-Kolm nädalat hiljem tehakse turvauuendusi ja serverid taaskäivitatakse. Kaks tulevad üles, kolmas mitte: nginx ei käivitu buutimisel, sest keegi ei lülitanud seda sisse. Koormusjaoturi tervisekontroll märkab, et üks server ei vasta, ja võtab selle rotatsioonist välja. Kampaania tipptunnil on kolmandik võimsusest puudu. Põhjuse leidmiseks kulub tund, sest "kõik serverid on ju samamoodi seadistatud".
+Kolm nädalat hiljem tulevad turvauuendused ja serverid taaskäivitatakse. Kaks tulevad üles, kolmas mitte. Seal ei käivitu nginx buutimisel, sest keegi ei lülitanud seda sisse.
 
-Kolleeg lahendaks sama ülesande teisiti. Ta kirjutab ühe faili, mis ütleb: "neis kolmes masinas peab olema kasutaja `saidi`, pakett `nginx`, see avaleht, ja nginx peab käima ning buutimisel käivituma". Seejärel käivitab faili kõigi kolme vastu korraga. Kui homme lisandub neljas server, lisab ta inventari ühe rea. Kui keegi on vahepeal ühes masinas midagi muutnud, näitab järgmine käivitus täpselt, mis erines, ja parandab selle.
+Koormusjaoturi tervisekontroll märkab, et üks server ei vasta, ja võtab selle rotatsioonist välja. Kampaania tipptunnil on kolmandik võimsusest puudu. Põhjuse otsimine võtab tunni, sest "kõik serverid on ju samamoodi seadistatud".
 
-Sellel kursusel õpime seda teist töökäiku: süsteemi olek on kirjas koodis, kood on Gitis, ja iga muutus käib läbi koodi. Ansible on esimene tööriist, millega seda teeme, sest selle eeldused on kõige väiksemad. Sihtmasinas on vaja ainult SSH-d ja Pythonit, mis tavalises Linuxi serveris on juba olemas.
+Kolleeg teeks sama tööd teisiti. Ta kirjutab ühe faili, mis ütleb: "neis kolmes masinas peab olema kasutaja `saidi`, pakett `nginx`, see avaleht, ja nginx peab käima ning buutimisel käivituma". Siis käivitab ta selle faili kõigi kolme vastu korraga.
+
+Kui homme tuleb juurde neljas server, lisab ta inventari ühe rea. Kui keegi on vahepeal mõnes masinas midagi muutnud, näitab järgmine käivitus täpselt, mis erineb. Ja parandab selle ära.
+
+Sellel kursusel õpid just seda teist teed. Süsteemi olek on kirjas koodis, kood on Gitis ja iga muudatus käib koodi kaudu. Alustame Ansible'iga, sest sellega on kõige lihtsam alustada. Sihtmasinas on vaja ainult SSH-d ja Pythonit, ja need on tavalises Linuxi serveris juba olemas.
 
 ### Mis on Ansible
 
-**Ansible** on avatud lähtekoodiga automatiseerimistööriist, millega kirjeldad serverite soovitud olekut tekstifailides ja rakendad seda paljudele masinatele korraga. Selle lõi Michael DeHaan 2012. aastal, 2015. aastast arendab seda Red Hat. Ansible on kirjutatud Pythonis, kirjeldused on YAML-failid, ja masinatega ühendub ta üle SSH (Windowsi masinatega üle WinRM-i või SSH).
+**Ansible** on avatud lähtekoodiga automatiseerimistööriist. Kirjeldad tekstifailis, milline server peab olema, ja Ansible viib selle olekusse palju masinaid korraga. Ansible'i tegi 2012. aastal Michael DeHaan, alates 2015. aastast arendab seda Red Hat.
+
+Ansible ise on kirjutatud Pythonis ja kirjeldused on YAML-failides. Masinatega ühendub ta üle SSH (Windowsi masinatega üle WinRM-i või SSH).
 
 ??? note "Ansible'it kasutatakse neljaks asjaks"
 
@@ -43,7 +49,7 @@ Sellel kursusel õpime seda teist töökäiku: süsteemi olek on kirjas koodis, 
     | mitmesammuline muudatus (orkestreerimine) | võta server koormusjaoturist välja, uuenda, kontrolli, pane tagasi, järgmine |
     | ühekordsed toimingud paljudes masinates | kontrolli kõigis serverites kettaruumi või taaskäivita teenus |
 
-Ansible töötab juba olemasolevate masinatega. Masinate loomine (virtuaalmasinad, pilveressursid) on Terraformi töö, mis tuleb viiendal kohtumisel. Rakenduse pakkimine konteinerisse on Dockeri töö, mis tuleb kolmandal. Tavaline tööjaotus on: Terraform loob masina, Ansible seadistab selle, ja rakendus jookseb kas otse masinas või konteineris.
+Ansible töötab masinatega, mis on juba olemas. Uusi masinaid (virtuaalmasinad, pilveressursid) loob Terraform, see tuleb viiendal kohtumisel. Rakenduse paneb konteinerisse Docker, see tuleb kolmandal. Tavaliselt jaguneb töö nii: Terraform loob masina, Ansible seadistab selle ja rakendus jookseb kas otse masinas või konteineris.
 
 ??? note "Ansible'i sõnavara, mida täna kasutame"
 
@@ -61,7 +67,9 @@ Ansible töötab juba olemasolevate masinatega. Masinate loomine (virtuaalmasina
 
 Järgmisel kohtumisel lisanduvad **roll** (taaskasutatav task'ide, mallide ja muutujate kogum) ja **Vault** (krüptitud saladused).
 
-Ansible pole ainus tööriist sellele tööle. Puppet, Chef ja SaltStack lahendavad sama probleemi, aga vajavad üldjuhul igasse masinasse agenti ja keskserverit. Ansible'i eelis on väike alguskulu: paigaldad ühe masinasse ja saad kohe hallata kõiki, kuhu SSH-ga ligi pääsed. Sellest, mida see agentless-lähenemine tähendab, räägime §6-s.
+??? info "Teised tööriistad: Puppet, Chef, SaltStack"
+
+    Ansible pole ainus selline tööriist. Puppet, Chef ja SaltStack teevad sama tööd, aga tavaliselt on neil vaja igasse masinasse agenti ja lisaks keskserverit. Ansible'iga saad kiiresti alustada: paigaldad selle ühte masinasse ja saad kohe hallata kõiki, kuhu SSH-ga ligi pääsed. Mida see agentless tähendab, vaatame §6-s.
 
 *Allikad: [Ansible: getting started](https://docs.ansible.com/ansible/latest/getting_started/) · raamat: Meijer, Hochstein, Moser, *Ansible: Up and Running*, 3. tr, ptk 1–4*
 
@@ -69,7 +77,7 @@ Ansible pole ainus tööriist sellele tööle. Puppet, Chef ja SaltStack lahenda
 
 ## 2. Konfiguratsiooni triiv
 
-Eelmises loos kirjeldatud nähtust nimetatakse **konfiguratsiooni triiviks** (configuration drift): masinad, mis pidid olema identsed, erinevad üksteisest väikestes asjades, mida keegi ei märka enne, kui need midagi katki teevad.
+Eelmise loo probleemil on nimi: **konfiguratsiooni triiv** (configuration drift). Masinad pidid olema ühesugused, aga nad erinevad väikestes asjades. Keegi ei märka neid enne, kui midagi katki läheb.
 
 ??? note "Triivil on neli tüüpilist põhjust"
 
@@ -80,17 +88,17 @@ Eelmises loos kirjeldatud nähtust nimetatakse **konfiguratsiooni triiviks** (co
     | öine käsitsi parandus | `max_connections` tõsteti ühes masinas, teistes mitte |
     | keegi ei pannud kirja | "Andres muutis midagi, aga ta on puhkusel" |
 
-Triiv kasvab ajaga. Esimesel päeval on serverid peaaegu identsed. Pool aastat hiljem on igaühel oma ajalugu: erinevad paketiversioonid, käsitsi lisatud cron-read, ajutised failid, mis jäid alles. Selliseid servereid nimetatakse inglise keeles **snowflake server**: igaüks on ainulaadne, keegi ei tea täpselt, mis seal on, ja keegi ei julge seda uuesti paigaldada.
+Triiv kasvab ajaga. Esimesel päeval on serverid peaaegu identsed. Pool aastat hiljem on igaühel oma ajalugu: erinevad paketiversioonid, käsitsi lisatud cron-read, ajutised failid, mis jäid alles. Sellist serverit kutsutakse inglise keeles **snowflake server**. Igaüks on isemoodi. Keegi ei tea täpselt, mis seal sees on, ja keegi ei julge seda uuesti paigaldada.
 
-Vastupidine lähenemine on käsitleda servereid asendatavatena. Kui serveri olek on koodis kirjas, saab selle igal ajal uuesti ehitada, ja rikkis masina parandamise asemel saab selle asendada. Tööl tähendab see, et öine intsident lõpeb käsuga "ehita uus", mitte kolmetunnise veaotsinguga.
+Teine võimalus on vaadata servereid kui asendatavaid. Kui serveri olek on koodis kirjas, saad selle igal ajal uuesti ehitada. Katkist masinat ei pea parandama, selle saab välja vahetada. Päriselt tähendab see, et öine intsident lõpeb käsuga "ehita uus", mitte kolmetunnise veaotsinguga.
 
-Triivi ei saa ära hoida käsitsi distsipliiniga. Inimesed unustavad, helistavad telefonid, on kiire. Triivi saab ära hoida ainult siis, kui masina olek on kirjas kohas, mis ei unusta, ja seda kirjeldust rakendatakse korduvalt.
+Triivi ei hoia ära see, et oled käsitsi eriti hoolikas. Inimesed unustavad, telefon heliseb, on kiire. Aitab ainult see, kui masina olek on kirjas kohas, mis ei unusta. Ja seda kirjeldust rakendatakse ikka ja jälle.
 
 ---
 
 ## 3. Automatiseerimise üldmudel
 
-Iga automatiseerimissüsteem, olgu see cron-skript, Ansible, Terraform, CI-konveier või Kubernetes, koosneb samadest osadest:
+Kõik automatiseerimise süsteemid koosnevad samadest osadest. Pole vahet, kas see on cron-skript, Ansible, Terraform, CI-konveier või Kubernetes:
 
 ```mermaid
 flowchart LR
@@ -103,7 +111,24 @@ flowchart LR
 
 **Käivitaja** paneb protsessi käima: inimene käsurealt, `git push`, cron, monitooringu häire, webhook. **Sisend** on kood, muutujad, masinate nimekiri ja saladused. **Soovitud olek** on kirjeldus sellest, milline süsteem peab olema. **Praegune olek** on see, milline süsteem tegelikult on. **Täitmine** võrdleb kaht olekut ja teeb vahe kinni. **Tõend** on väljund, millest näed, mis juhtus: logi, plaan, testitulemus, Ansible'i `changed`/`ok`.
 
-Mudelist on kasu, sest see teeb võõra tööriista loetavaks. Sama raam sobib kõigile tööriistadele, mida kursusel kasutame:
+Selle mudeliga saad aru ka tööriistast, mida sa veel ei tunne. Sama skeem sobib kõigile tööriistadele, mida kursusel kasutame:
+
+<figure class="lx" markdown="0" style="max-width:100%;margin:.8em auto">
+<svg viewBox="0 0 740 106" role="img" aria-label="Automatiseerimise mudel" xmlns="http://www.w3.org/2000/svg">
+<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
+<defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="box" x="4" y="20" width="130" height="48" rx="6"/><text class="b" x="69.0" y="41.0" text-anchor="middle">Käivitaja</text><text class="s" x="69.0" y="56.0" text-anchor="middle">inimene, cron, push</text>
+<line class="a" x1="134" y1="44" x2="152" y2="44" marker-end="url(#lxa)"/>
+<rect class="box" x="154" y="20" width="130" height="48" rx="6"/><text class="b" x="219.0" y="41.0" text-anchor="middle">Soovitud olek</text><text class="s" x="219.0" y="56.0" text-anchor="middle">kood Gitis</text>
+<line class="a" x1="284" y1="44" x2="302" y2="44" marker-end="url(#lxa)"/>
+<rect class="hi" x="304" y="20" width="130" height="48" rx="6"/><text class="b" x="369.0" y="41.0" text-anchor="middle">Tööriist</text><text class="s" x="369.0" y="56.0" text-anchor="middle">Ansible</text>
+<line class="a" x1="434" y1="44" x2="452" y2="44" marker-end="url(#lxa)"/>
+<rect class="box" x="454" y="20" width="130" height="48" rx="6"/><text class="b" x="519.0" y="41.0" text-anchor="middle">Praegune olek</text><text class="s" x="519.0" y="56.0" text-anchor="middle">masin</text>
+<line class="a" x1="584" y1="44" x2="602" y2="44" marker-end="url(#lxa)"/>
+<rect class="box" x="604" y="20" width="130" height="48" rx="6"/><text class="b" x="669.0" y="41.0" text-anchor="middle">Tõend</text><text class="s" x="669.0" y="56.0" text-anchor="middle">changed=0, logi</text>
+<text class="s" x="365" y="95" text-anchor="middle">Tööriist võrdleb soovitud olekut praegusega ja muudab ainult seda, mis erineb.</text>
+</svg>
+</figure>
 
 ??? note "Sama mudel eri tööriistades"
 
@@ -116,7 +141,7 @@ Mudelist on kasu, sest see teeb võõra tööriista loetavaks. Sama raam sobib k
     | Terraform | `terraform apply` | `.tf` failid | state + päris ressursid | `plan` väljund |
     | Kubernetes | pidevalt | manifest | jooksvad Pod'id | `kubectl get` |
 
-Tõend on osa, mis kõige sagedamini ununeb. Cron-skript, mis kirjutab vea `/dev/null`-i, on automatiseeritud, aga keegi ei tea, kas see töötab. Ansible annab tõendi igal jooksul, ja kursuse jooksul kasutame seda tõendit ka esitamiseks: `logid/teine_jooks.txt` failis olev `changed=0` näitab, et sinu kirjeldus on idempotentne.
+Kõige sagedamini ununeb tõend. Kui cron-skript kirjutab vead `/dev/null`-i, on see küll automatiseeritud, aga keegi ei tea, kas see töötab. Ansible annab tõendi igal jooksul. Kursusel esitad selle tõendi ka oma tööga: `changed=0` failis `logid/teine_jooks.txt` näitab, et sinu kirjeldus on idempotentne.
 
 ??? question "Kordamisküsimus"
 
@@ -134,7 +159,7 @@ chown root:root /etc/skel/.ssh
 chmod 700 /etc/skel/.ssh
 ```
 
-See on **imperatiivne** lähenemine: ütled, mida teha ja mis järjekorras. Sina vastutad, et kõik kolm sammu jooksevad ja et need jooksevad õiges masinas.
+See on **imperatiivne** viis: ütled, mida teha ja mis järjekorras. Sinu asi on hoolitseda, et kõik kolm sammu tehakse ja et need tehakse õiges masinas.
 
 Ansible'is kirjeldad sama tulemust **deklaratiivselt**, ühe task'ina:
 
@@ -148,9 +173,9 @@ Ansible'is kirjeldad sama tulemust **deklaratiivselt**, ühe task'ina:
     mode: "0700"
 ```
 
-Siin ei ole ühtegi tegusõna. Task kirjeldab, milline kaust peab olema, ja `file`-moodul otsustab ise, mida teha. Kui kaust on olemas õigete õigustega, ei tee moodul midagi. Kui õigused on valed, parandab ainult õigused. Kui kausta pole, loob selle.
+Siin ei ole ühtegi tegusõna. Task kirjeldab, milline kaust peab olema. `file`-moodul otsustab ise, mida teha. Kui kaust on olemas õigete õigustega, ei tee moodul midagi. Kui õigused on valed, parandab ainult õigused. Kui kausta pole, loob selle.
 
-Vahe tuleb selgemini välja suurema näite puhul. Siin on shelli skript, mis püüab nginx-i paigaldamist teha ohutult korratavaks:
+Suurema näitega on vahe paremini näha. See shelli skript püüab nginx-i paigalduse teha selliseks, et seda saaks ohutult korrata:
 
 ```bash
 #!/usr/bin/env bash
@@ -173,7 +198,7 @@ systemctl is-enabled nginx >/dev/null 2>&1 || systemctl enable nginx
 systemctl is-active nginx >/dev/null 2>&1 || systemctl start nginx
 ```
 
-Skript töötab, aga ainult RedHati peres (`rpm`, `dnf`). See ei ütle, mida ta muutis ja mida mitte. Iga uus erijuht nõuab uut `if`-i. Sama playbookina:
+Skript töötab, aga ainult RedHati peres (`rpm`, `dnf`). Ta ei ütle, mida muutis ja mida mitte. Iga uue erijuhu jaoks on vaja uut `if`-i. Sama asi playbookina:
 
 ```yaml
 - name: Veebiserver
@@ -201,15 +226,15 @@ Skript töötab, aga ainult RedHati peres (`rpm`, `dnf`). See ei ütle, mida ta 
         enabled: true
 ```
 
-Kõik kontrollid, mis skriptis olid `if`-idena, on moodulite sees. `package` kasutab masina enda paketihaldurit, AlmaLinuxis `dnf`-i. Väljundis näed iga rea kohta, kas see muutis midagi.
+Skripti `if`-id on nüüd moodulite sees. `package` kasutab masina enda paketihaldurit, AlmaLinuxis `dnf`-i. Väljundis näed iga rea kohta, kas see muutis midagi.
 
-Tööl tähendab see, et playbooki loetakse nagu serveri kirjeldust. Uus kolleeg, kes tahab teada, kuidas veebiserverid on seadistatud, avab `bootstrap.yml`-i ega pea läbi käima kellegi shelli ajalugu.
+Playbooki saab lugeda nagu serveri kirjeldust. Kui uus kolleeg tahab teada, kuidas veebiserverid on seadistatud, avab ta `bootstrap.yml`-i. Kellegi shelli ajalugu ta läbi kaevama ei pea.
 
 ---
 
 ## 5. Idempotentsus
 
-Deklaratiivsusest tuleneb omadus, mida nimetatakse **idempotentsuseks**: sama operatsioon annab sama tulemuse, ükskõik mitu korda seda käivitad.
+Deklaratiivsusest tuleb **idempotentsus**: sama tegevus annab sama tulemuse, ükskõik mitu korda sa seda käivitad.
 
 Vaata, mis juhtub, kui käivitad lihtsa shelli skripti kaks korda:
 
@@ -239,7 +264,7 @@ seade=1
 seade=1
 ```
 
-Kaks esimest viga on vähemalt nähtavad. Kolmas rida viga ei anna: ta lisab faili teise rea `seade=1`. Kui rakendus loeb konfi ja kaks sama võtmega rida ajavad selle segadusse, on viga olemas, aga ükski logi seda ei näita.
+Kaks esimest viga on vähemalt näha. Kolmas rida viga ei anna, vaid lisab faili teise rea `seade=1`. Kui rakendus loeb konfi ja kaks sama võtmega rida ajavad selle segadusse, siis on viga olemas. Aga ükski logi seda ei näita.
 
 Skripti saab idempotentseks teha, kui lisad iga sammu ette kontrolli:
 
@@ -252,7 +277,7 @@ touch /srv/raport/conf
 grep -qx 'seade=1' /srv/raport/conf || echo "seade=1" >> /srv/raport/conf
 ```
 
-Kolmest reast sai viis, ja iga uus rida nõuab mõtlemist: mis on õige kontroll, mis juhtub, kui fail puudub. Ansible'i moodulid sisaldavad neid kontrolle juba:
+Kolmest reast sai viis. Iga uue rea juures pead mõtlema: mis on õige kontroll, mis juhtub, kui faili pole? Ansible'i moodulites on need kontrollid juba olemas:
 
 ```yaml
 - ansible.builtin.user:
@@ -266,13 +291,30 @@ Kolmest reast sai viis, ja iga uus rida nõuab mõtlemist: mis on õige kontroll
     create: true
 ```
 
-Idempotentsus on vajalik, sest automatiseerimist käivitatakse korduvalt:
+Idempotentsust on vaja, sest automaatikat käivitatakse ikka ja jälle:
 
 - **ajastatult**, et hoida masinaid joonel;
-- **pärast katkestust**, kui eelmine jooks kukkus poole peal, ja idempotentne kirjeldus teeb ainult puuduva;
+- **pärast katkestust**, kui eelmine jooks kukkus poole peal ja idempotentne kirjeldus teeb ära ainult puuduva osa;
 - **arenduse ajal**, kus sama playbooki jooksutad kümneid kordi järjest.
 
 Iga kord peab jooks olema ohutu.
+
+<figure class="lx" markdown="0" style="max-width:100%;margin:.8em auto">
+<svg viewBox="0 0 720 104" role="img" aria-label="Skript vs moodul teisel jooksul" xmlns="http://www.w3.org/2000/svg">
+<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
+<defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<text class="t" x="170" y="14" text-anchor="middle">Skript: tegevused</text>
+<text class="t" x="530" y="14" text-anchor="middle">Moodul: soovitud olek</text>
+<rect class="box" x="20" y="26" width="140" height="44" rx="6"/><text class="b" x="90.0" y="45.0" text-anchor="middle">1. jooks</text><text class="c" x="90.0" y="60.0" text-anchor="middle">conf: seade=1</text>
+<line class="a" x1="160" y1="48" x2="196" y2="48" marker-end="url(#lxa)"/>
+<rect class="bad" x="200" y="26" width="140" height="44" rx="6"/><text class="b" x="270.0" y="45.0" text-anchor="middle">2. jooks</text><text class="c" x="270.0" y="60.0" text-anchor="middle">seade=1 kaks korda</text>
+<rect class="box" x="380" y="26" width="140" height="44" rx="6"/><text class="b" x="450.0" y="45.0" text-anchor="middle">1. jooks</text><text class="c" x="450.0" y="60.0" text-anchor="middle">changed=1</text>
+<line class="a" x1="520" y1="48" x2="556" y2="48" marker-end="url(#lxa)"/>
+<rect class="ok" x="560" y="26" width="140" height="44" rx="6"/><text class="b" x="630.0" y="45.0" text-anchor="middle">2. jooks</text><text class="c" x="630.0" y="60.0" text-anchor="middle">changed=0</text>
+<text class="s" x="180" y="92" text-anchor="middle">teeb iga kord sama tegevuse uuesti</text>
+<text class="s" x="540" y="92" text-anchor="middle">kontrollib enne, muudab ainult vajadusel</text>
+</svg>
+</figure>
 
 ### Kuidas Ansible idempotentsust näitab
 
@@ -286,18 +328,18 @@ Iga kord peab jooks olema ohutu.
     | `skipped` | task jäeti vahele (nt tingimus ei kehtinud või `--check` all `command`) |
     | `unreachable` | masinani ei saadud ühendust |
 
-Korralik playbook annab värskes masinas esimesel jooksul mitu `changed`-i ja teisel jooksul kohe järel `changed=0`. See `changed=0` on tõend, et kirjeldus on idempotentne.
+Hea playbook annab värskes masinas esimesel jooksul mitu `changed`-i. Kui jooksutad seda kohe uuesti, näed `changed=0`. See `changed=0` on tõend, et kirjeldus on idempotentne.
 
 ### Kui task on igal jooksul `changed`
 
-Kui mõni task on igal jooksul `changed`, ei kirjelda see olekut, vaid teeb tegevust. Tavaliselt on põhjus `command` või `shell` seal, kus oleks pidanud olema päris moodul:
+Kui mõni task on igal jooksul `changed`, siis see ei kirjelda olekut, vaid teeb tegevust. Tavaliselt on põhjus selles, et päris mooduli asemel on kasutatud `command`-i või `shell`-i:
 
 ```yaml
 - name: Halb: igal jooksul changed
   ansible.builtin.command: useradd -m deploy
 ```
 
-See task annab teisel jooksul isegi `failed`, sest `useradd` lõpetab veakoodiga. Kui moodulit tõesti pole, saab `command`-i teha idempotentseks kahel viisil. `creates` ütleb, et käsku pole vaja, kui fail on juba olemas:
+Teisel jooksul annab see task lausa `failed`, sest `useradd` lõpetab veakoodiga. Kui moodulit tõesti pole, saad `command`-i teha idempotentseks kahel viisil. Esimene on `creates`: see ütleb, et käsku pole vaja, kui fail on juba olemas:
 
 ```yaml
 - name: Genereeri võti ainult siis, kui seda pole
@@ -306,7 +348,7 @@ See task annab teisel jooksul isegi `failed`, sest `useradd` lõpetab veakoodiga
     creates: /etc/app/key
 ```
 
-`changed_when` ütleb Ansible'ile, millal väljund tähendab muutust. Sellest räägime teisel kohtumisel.
+Teine on `changed_when`: see ütleb Ansible'ile, millal väljund tähendab muutust. Sellest räägime teisel kohtumisel.
 
 ??? question "Kordamisküsimus"
 
@@ -316,7 +358,7 @@ See task annab teisel jooksul isegi `failed`, sest `useradd` lõpetab veakoodiga
 
 ## 6. Mida Ansible käivitamisel teeb
 
-Ansible'i maailmas on kaks rolli. **Control node** on masin, kus Ansible on paigaldatud ja kust sa käske käivitad: sinu sülearvuti, WSL või hüppeserver. **Managed node** on masin, mida hallatakse. Managed node'is ei ole Ansible'it paigaldatud, seal on vaja ainult SSH-serverit ja Pythonit.
+Ansible'i maailmas on kaks rolli. **Control node** on masin, kus Ansible on paigaldatud ja kust sa käske käivitad: sinu sülearvuti, WSL või hüppeserver. **Managed node** on masin, mida hallatakse. Managed node'i ei pea Ansible'it paigaldama. Seal peavad olema ainult SSH-server ja Python.
 
 Kui käivitad playbooki, teeb Ansible iga task'i jaoks iga masinaga järgmist:
 
@@ -336,11 +378,29 @@ sequenceDiagram
     C->>C: PLAY RECAP
 ```
 
-Sellest tulenevad omadused, mis mõjutavad kogu edasist tööd.
+Sellest skeemist tuleb neli asja, mis on olulised kogu edasise töö jaoks.
 
-**Agentless.** Sihtmasinasse ei paigaldata püsivat teenust. Võrdle Puppeti või Chefiga, kus igas masinas jookseb agent, mida tuleb uuendada, jälgida ja turvata. Ansible'i puhul on rünnakupind see, mis serveris nagunii olemas on: SSH.
+<figure class="lx" markdown="0" style="max-width:100%;margin:.8em auto">
+<svg viewBox="0 0 760 112" role="img" aria-label="Mida Ansible teeb ühe task'i juures" xmlns="http://www.w3.org/2000/svg">
+<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
+<defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="hi" x="10" y="30" width="150" height="56" rx="6"/><text class="b" x="85.0" y="55.0" text-anchor="middle">control node (vm1)</text><text class="s" x="85.0" y="70.0" text-anchor="middle">ansible-playbook</text>
+<line class="a" x1="160" y1="46" x2="300" y2="46" marker-end="url(#lxa)"/><text class="s" x="230.0" y="40" text-anchor="middle">1. SSH + moodul</text>
+<line class="a" x1="160" y1="70" x2="300" y2="70" marker-end="url(#lxa)"/>
+<rect class="box" x="304" y="20" width="170" height="76" rx="6"/><text class="b" x="389.0" y="62.0" text-anchor="middle">sihtmasin (vm2)</text>
+<text class="s" x="389" y="64" text-anchor="middle">2. Python käivitab mooduli</text>
+<text class="s" x="389" y="80" text-anchor="middle">3. moodul kustutatakse</text>
+<line class="a" x1="300" y1="86" x2="162" y2="86" marker-end="url(#lxa)"/>
+<text class="s" x="231" y="102" text-anchor="middle">4. tulemus JSON-ina tagasi</text>
+<text class="b" x="560" y="40" text-anchor="start">agentless:</text>
+<text class="s" x="560" y="56" text-anchor="start">sihtmasinas pole Ansible'it,</text>
+<text class="s" x="560" y="72" text-anchor="start">vaja on ainult SSH-d ja Pythonit</text>
+</svg>
+</figure>
 
-**Push.** Sina otsustad, millal muutus toimub, ja see toimub kohe. Agendipõhises pull-mudelis kirjutad muudatuse keskserverisse ja agent tõmbab selle järgmisel kontrollil, näiteks 30 minuti pärast. Push sobib hästi, kui tahad muutust näha ja kontrollida. Pull sobib paremini tuhandetele masinatele, mis peavad ise joonel püsima.
+**Agentless.** Sihtmasinasse ei paigaldata ühtegi püsivat teenust. Puppeti ja Chefi puhul jookseb igas masinas agent, mida pead uuendama, jälgima ja turvama. Ansible'i puhul on rünnakupind ainult see, mis serveris nagunii olemas on: SSH.
+
+**Push.** Sina otsustad, millal muudatus tehakse, ja see tehakse kohe. Agendiga pull-mudelis kirjutad muudatuse keskserverisse. Agent tõmbab selle alla järgmisel kontrollil, näiteks 30 minuti pärast. Push sobib hästi, kui tahad muudatust kohe näha ja kontrollida. Pull sobib paremini tuhandetele masinatele, mis peavad ise joonel püsima.
 
 ??? note "Ansible (push) vs Puppet ja Chef (pull)"
 
@@ -351,9 +411,9 @@ Sellest tulenevad omadused, mis mõjutavad kogu edasist tööd.
     | Keskserver | pole vaja | vaja (Puppet Server, Chef Server) |
     | Sobib | kümned kuni sajad masinad, kontrollitud muudatused | tuhanded masinad, pidev joonel hoidmine |
 
-**Task kõigil, siis järgmine task.** Task'id jooksevad kõigil masinatel paralleelselt, aga järjest: esimene task kõigil masinatel, siis teine task kõigil masinatel. Paralleelsust piirab `forks`, vaikimisi 5. Kui ühes masinas task ebaõnnestub, jätkavad teised, aga ebaõnnestunud masin jääb ülejäänud play'st välja.
+**Task kõigil, siis järgmine task.** Task'id jooksevad masinates paralleelselt, aga ükshaaval: kõigepealt esimene task kõigis masinates, siis teine task kõigis masinates. Mitu masinat korraga, määrab `forks` (vaikimisi 5). Kui ühes masinas task ebaõnnestub, siis teised jätkavad. Katki läinud masin jääb aga ülejäänud play'st välja.
 
-**Faktid kogutakse alguses.** Enne esimest task'i käivitab Ansible igas masinas `setup`-mooduli, mis kogub info masina kohta. See võtab paar sekundit masina kohta. Kui fakte pole vaja, saab kogumise välja lülitada (`gather_facts: false`).
+**Faktid kogutakse alguses.** Enne esimest task'i käivitab Ansible igas masinas `setup`-mooduli. See kogub masina kohta infot ja võtab iga masina juures paar sekundit. Kui fakte pole vaja, lülita kogumine välja (`gather_facts: false`).
 
 ??? question "Kordamisküsimus"
 
@@ -365,24 +425,9 @@ Sellest tulenevad omadused, mis mõjutavad kogu edasist tööd.
 
 Materjal on testitud `ansible-core` 2.14-ga (AlmaLinux 9). Oma versiooni näed käsuga `ansible --version`.
 
-Ansible paigaldatakse ainult control node'i. Levinumad viisid:
+Ansible'i paigaldad ainult control node'i. Kuidas, on kirjas [Töökeskkonna](../keskkond.md) sammus 2, koos versiooni kontrolliga.
 
-```bash
-# AlmaLinux (meie VM-id)
-sudo dnf install -y ansible-core
-ansible-galaxy collection install ansible.posix:1.5.4
-
-# pipx: kasutaja kodukausta, distributsioonist sõltumatu versioon
-pipx install --include-deps ansible
-```
-
-`ansible-core` on mootor ja väike hulk sisseehitatud mooduleid (`ansible.builtin`). Pakett `ansible` sisaldab lisaks kollektsioone, näiteks `ansible.posix` ja `community.general`. AlmaLinuxis on tavarepos ainult `ansible-core`, seega vajalikud kollektsioonid paigaldad `ansible-galaxy`-ga.
-
-```bash
-ansible --version
-```
-
-Väljundis on versioon, Pythoni versioon ja see, millist konfiguratsioonifaili kasutatakse.
+`ansible-core` on mootor koos väikese hulga sisseehitatud moodulitega (`ansible.builtin`). Paketis `ansible` on lisaks kollektsioonid, näiteks `ansible.posix` ja `community.general`. AlmaLinuxi tavarepos on ainult `ansible-core`. Seepärast paigaldad vajalikud kollektsioonid `ansible-galaxy`-ga.
 
 ### `ansible.cfg`
 
@@ -393,7 +438,7 @@ Ansible otsib seadistusfaili selles järjekorras ja kasutab esimest, mille leiab
 3. `~/.ansible.cfg`;
 4. `/etc/ansible/ansible.cfg`.
 
-Praktiline on hoida `ansible.cfg` projekti kaustas, siis on seaded koos koodiga Gitis:
+Hoia `ansible.cfg` projekti kaustas. Siis on seaded koodiga koos Gitis:
 
 ```ini
 [defaults]
@@ -406,11 +451,11 @@ callback_result_format = yaml
 pipelining = True
 ```
 
-`inventory` lubab jätta käsust `-i inventory.ini` ära. `pipelining` vähendab SSH-ühenduste arvu ja kiirendab jooksu märgatavalt. `callback_result_format = yaml` teeb väljundi loetavamaks.
+Tänu `inventory`-le ei pea käsule `-i inventory.ini` lisama. `pipelining` teeb vähem SSH-ühendusi ja jooks läheb märgatavalt kiiremaks. `callback_result_format = yaml` teeb väljundi loetavamaks.
 
 !!! warning "Tähelepanu"
 
-    Kui `ansible.cfg` on kaustas, kuhu kõigil on kirjutusõigus (maailmaloetav kaust), ignoreerib Ansible seda turvakaalutlustel ja annab hoiatuse. WSL-is juhtub see, kui töötad Windowsi kettal (`/mnt/c/...`). Hoia töökaust Linuxi failisüsteemis, näiteks `~/`.
+    Kui `ansible.cfg` on kaustas, kuhu kõik saavad kirjutada (maailmaloetav kaust), siis Ansible ignoreerib seda turvalisuse pärast ja annab hoiatuse. WSL-is juhtub see siis, kui töötad Windowsi kettal (`/mnt/c/...`). Hoia oma kaust Linuxi failisüsteemis, näiteks `~/`.
 
 *Allikad: [paigaldamine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) · [ansible.cfg seaded](https://docs.ansible.com/ansible/latest/reference_appendices/config.html)*
 
@@ -432,7 +477,7 @@ vm3
 
 Nurksulgudes on **grupid**. Iga masin võib olla mitmes grupis. Alati on olemas kaks sisseehitatud gruppi: `all` (kõik masinad) ja `ungrouped` (masinad, mis pole üheski grupis).
 
-`ansible_connection=local` ütleb, et selle masinaga ei ühenduta üle SSH, vaid käsud käivitatakse otse. Nii saad esimese playbooki proovida oma masinas ilma ühtki serverit seadistamata.
+`ansible_connection=local` ütleb, et selle masinaga ei ühenduta üle SSH. Käsud käivitatakse otse. Nii saad esimest playbooki proovida oma masinas ega pea ühtegi serverit seadistama.
 
 ### Ühenduse muutujad
 
@@ -455,31 +500,31 @@ vm3 ansible_host=192.168.125.23 ansible_user=kasutaja ansible_port=2222
     | `ansible_connection` | `ssh` (vaikimisi) või `local` |
     | `ansible_python_interpreter` | Pythoni asukoht sihtmasinas, kui automaatne tuvastus ei tööta |
 
-Puhtam lahendus on hoida ühenduse andmed `~/.ssh/config`-is (vt §15). Siis on inventaris ainult nimed, ja sama `ssh vm1` töötab nii käsurealt kui Ansible'ist.
+Puhtam on hoida ühenduse andmeid `~/.ssh/config`-is (vt §15). Siis on inventaris ainult nimed ja sama `ssh vm1` töötab nii käsurealt kui ka Ansible'ist.
 
-### YAML-kujul inventar
+??? info "YAML-kujul inventar"
 
-Sama inventar YAML-is:
+    Sama inventar YAML-is:
 
-```yaml
-all:
-  children:
-    kohalik:
-      hosts:
-        localhost:
-          ansible_connection: local
-    veeb:
-      hosts:
-        vm1:
-        vm2:
-        vm3:
-```
+    ```yaml
+    all:
+      children:
+        kohalik:
+          hosts:
+            localhost:
+              ansible_connection: local
+        veeb:
+          hosts:
+            vm1:
+            vm2:
+            vm3:
+    ```
 
-INI on lühem ja sobib väikestele inventaridele. YAML sobib, kui gruppe ja muutujaid on palju. Teisel kohtumisel kasutame gruppide pesastamist (`children`) ja grupimuutujaid.
+    INI on lühem ja sobib väikestele inventaridele. YAML sobib, kui gruppe ja muutujaid on palju. Teisel kohtumisel paneme grupid üksteise sisse (`children`) ja lisame grupimuutujad.
 
 ### Inventari kontrollimine
 
-Enne esimest jooksu tasub vaadata, kuidas Ansible inventari mõistab:
+Enne esimest jooksu vaata, kuidas Ansible sinu inventarist aru saab:
 
 ```bash
 ansible-inventory -i inventory.ini --graph
@@ -512,14 +557,14 @@ ansible-inventory -i inventory.ini --graph
     | `veeb:&test` | masinad, mis on nii `veeb`- kui `test`-grupis |
     | `vm*` | kõik, mille nimi algab `vm` |
 
-Playbookis on muster rea `hosts:` väärtus. Käsureal lisab `--limit` piirangu playbooki `hosts:` peale:
+Playbookis kirjutad mustri ritta `hosts:`. Käsureal saad `--limit`-iga valikut veel kitsamaks teha, playbooki `hosts:` rea peale:
 
 ```bash
 ansible-playbook bootstrap.yml --limit vm1
 ansible-playbook bootstrap.yml --limit 'veeb:!vm3'
 ```
 
-Tööl on inventar tavaliselt jagatud keskkondade kaupa (`test`, `prod`) ja rollide kaupa (`veeb`, `andmebaas`, `koormusjaotur`). Teisel kohtumisel lisame gruppidele muutujad, nii et sama playbook seadistab test- ja toodangukeskkonna erinevalt.
+Päriselt jagatakse inventar tavaliselt keskkondade (`test`, `prod`) ja rollide (`veeb`, `andmebaas`, `koormusjaotur`) järgi. Teisel kohtumisel lisame gruppidele muutujad. Siis seadistab sama playbook test- ja toodangukeskkonna erinevalt.
 
 *Allikad: [inventar](https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html) · [mustrid](https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html)*
 
@@ -547,7 +592,7 @@ ansible <muster> -i <inventar> -m <moodul> -a "<argumendid>" [-b]
     | faili kopeerimine | `ansible veeb -b -m copy -a "src=motd dest=/etc/motd"` |
     | kasutaja eemaldamine | `ansible veeb -b -m user -a "name=vana state=absent"` |
 
-`ping`-moodul ei saada ICMP-paketti. See ühendub SSH-ga, käivitab sihtmasinas Pythoni ja vastab `pong`, kui kõik töötab. Seega kontrollib `ping` korraga ühendust, autentimist ja Pythoni olemasolu.
+`ping`-moodul ei saada ICMP-paketti. See ühendub SSH-ga, käivitab sihtmasinas Pythoni ja vastab `pong`, kui kõik töötab. Nii kontrollib `ping` korraga kolme asja: ühendust, autentimist ja seda, kas Python on olemas.
 
 ```
 vm1 | SUCCESS => {
@@ -556,7 +601,7 @@ vm1 | SUCCESS => {
 }
 ```
 
-Ad-hoc käsud sobivad küsimustele ("mis versioon kõigis masinates on?") ja ühekordsetele toimingutele ("taaskäivita teenus kohe"). Kõik, mis peab olema korratav või mida tahad Gitis hoida, käib playbooki.
+Ad-hoc käsud sobivad küsimustele ("mis versioon kõigis masinates on?") ja ühekordseteks töödeks ("taaskäivita teenus kohe"). Kõik, mis peab olema korratav või mida tahad Gitis hoida, käib playbooki.
 
 *Allikad: [ad-hoc käsud](https://docs.ansible.com/ansible/latest/command_guide/intro_adhoc.html)*
 
@@ -564,7 +609,7 @@ Ad-hoc käsud sobivad küsimustele ("mis versioon kõigis masinates on?") ja üh
 
 ## 10. YAML lühidalt
 
-Playbookid on YAML-failid. YAML-i süntaksiviga on algaja kõige sagedasem takistus, seega tasub põhireeglid teada.
+Playbookid on YAML-failid. Algajal läheb kõige sagedamini midagi viltu just YAML-i süntaksiga. Seepärast õpi põhireeglid selgeks.
 
 **Taane loeb.** Struktuuri määravad tühikud, mitte sulud. Kasuta alati tühikuid, mitte tabulaatorit. Kursusel kasutame taanet 2 tühikut.
 
@@ -597,7 +642,7 @@ tasks:
       msg: tere
 ```
 
-**Jutumärgid** on vajalikud, kui väärtus algab `{`-ga (Jinja2 muutuja), sisaldab `:` järel tühikut või peab jääma stringiks:
+**Jutumärgid** pane siis, kui väärtus algab `{`-ga (Jinja2 muutuja), kui selles on `:` ja selle järel tühik, või kui see peab jääma stringiks:
 
 ```yaml
 mode: "0644"                    # ilma jutumärkideta loetakse kaheksandarvuks
@@ -605,7 +650,7 @@ sisu: "{{ inventory_hostname }}" # algab {-ga
 pealkiri: "Viga: fail puudub"    # koolon + tühik
 ```
 
-**Tõeväärtused** kirjuta kujul `true` ja `false`. YAML aktsepteerib ka `yes`, `no`, `on`, `off`, aga `ansible-lint` hoiatab nende eest.
+**Tõeväärtused** kirjuta kujul `true` ja `false`. YAML lubab ka `yes`, `no`, `on`, `off`, aga `ansible-lint` hoiatab nende eest.
 
 ??? note "Tüüpilised veateated"
 
@@ -629,7 +674,7 @@ ansible-playbook bootstrap.yml --syntax-check
 
 ## 11. Moodulid ja toores käsk
 
-**Moodul** on väike programm, mis teab, kuidas ühte liiki ressurssi hallata. Moodul kontrollib enne muutmist praegust olekut ja tagastab struktureeritud tulemuse.
+**Moodul** on väike programm, mis oskab hallata üht liiki ressurssi. Enne muutmist vaatab moodul, milline on praegune olek. Lõpus tagastab ta struktureeritud tulemuse.
 
 ??? note "Moodulid, mida esimestel kohtumistel kasutad"
 
@@ -648,9 +693,9 @@ ansible-playbook bootstrap.yml --syntax-check
     | `ansible.posix.authorized_key` | SSH avalik võti kasutajale | `user`, `key` |
     | `ansible.builtin.debug` | väljund jooksu ajal | `msg`, `var` |
 
-`command` ja `shell` käivitavad lihtsalt käsu. Nad ei tea, mida käsk teeb, ega saa seega öelda, kas midagi muutus. Seetõttu märgivad nad end vaikimisi alati `changed`-ks.
+`command` ja `shell` lihtsalt käivitavad käsu. Nad ei tea, mida käsk teeb, seega ei oska nad ka öelda, kas midagi muutus. Seepärast märgivad nad end vaikimisi alati `changed`-ks.
 
-Vahe `command` ja `shell` vahel: `command` käivitab programmi otse, ilma shellita, seega ei tööta seal torud (`|`), ümbersuunamised (`>`) ega muutujad (`$HOME`). `shell` käivitab käsu läbi `/bin/sh`, ja kõik see töötab. `command` on ohutum, sest shelli erimärgid ei saa seal midagi ootamatut teha.
+Mis vahe on `command`-il ja `shell`-il? `command` käivitab programmi otse, ilma shellita. Seal ei tööta torud (`|`), ümbersuunamised (`>`) ega muutujad (`$HOME`). `shell` käivitab käsu läbi `/bin/sh` ja siis töötab see kõik. `command` on ohutum, sest shelli erimärgid ei saa seal midagi ootamatut teha.
 
 ??? note "Käsk vs moodul"
 
@@ -663,11 +708,11 @@ Vahe `command` ja `shell` vahel: `command` käivitab programmi otse, ilma shelli
     | teenus käib | `systemctl start nginx` | `ansible.builtin.service` |
     | õigused | `chmod 600 fail` | `ansible.builtin.file` |
 
-Reegel on lihtne: kui moodul on olemas, kasuta moodulit. `command`/`shell` jäävad käskudele, millele moodulit pole, või ainult lugemiseks mõeldud käskudele.
+Reegel on lihtne: kui moodul on olemas, kasuta moodulit. `command`/`shell` jäta käskudele, millele moodulit pole, või käskudele, mis ainult loevad.
 
 ### FQCN ja `ansible-doc`
 
-Mooduli nimed kirjutame täiskujul (FQCN, fully qualified collection name): `ansible.builtin.copy`, mitte lihtsalt `copy`. Lühike kuju töötab, aga täiskuju ütleb üheselt, millisest kollektsioonist moodul pärit on, ja `ansible-lint` nõuab seda.
+Mooduli nimed kirjutame täiskujul (FQCN, fully qualified collection name): `ansible.builtin.copy`, mitte lihtsalt `copy`. Lühike kuju töötab ka. Täiskujust näed aga kohe, millisest kollektsioonist moodul pärit on, ja `ansible-lint` nõuab seda.
 
 Mooduli parameetrid leiad käsurealt:
 
@@ -677,7 +722,7 @@ ansible-doc -s ansible.builtin.copy      # lühikokkuvõte, sobib kopeerimiseks
 ansible-doc -l | grep -i cron            # otsi mooduleid nime järgi
 ```
 
-`ansible-doc` väljundi lõpus on alati jaotis `EXAMPLES`, kust saad tööva näite. Keegi ei mäleta kõiki parameetreid peast, ja tööl kasutad `ansible-doc`-i iga päev.
+`ansible-doc` väljundi lõpus on alati jaotis `EXAMPLES`. Sealt saad näite, mis töötab. Kõiki parameetreid ei mäleta peast keegi, ja päris töös kasutad `ansible-doc`-i iga päev.
 
 *Allikad: [ansible.builtin moodulid](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/)*
 
@@ -685,7 +730,7 @@ ansible-doc -l | grep -i cron            # otsi mooduleid nime järgi
 
 ## 12. `become`: administraatori õigused
 
-Paljud moodulid vajavad root-õigusi: pakettide paigaldamine, teenuste haldamine, failid `/etc` all. Ansible ühendub tavakasutajana ja tõstab õigusi `sudo` kaudu, kui ütled:
+Paljud moodulid vajavad root-õigusi. Näiteks siis, kui paigaldad pakette, haldad teenuseid või muudad faile `/etc` all. Ansible ühendub tavakasutajana ja võtab `sudo` kaudu õigused juurde, kui sa nii ütled:
 
 ```yaml
 - name: Veebiserver
@@ -693,7 +738,7 @@ Paljud moodulid vajavad root-õigusi: pakettide paigaldamine, teenuste haldamine
   become: true
 ```
 
-`become: true` play tasemel kehtib kõigile task'idele. Seda saab panna ka üksikule task'ile, kui ülejäänud töö ei vaja root-õigusi.
+Kui `become: true` on play tasemel, kehtib see kõigile task'idele. Võid selle panna ka ühele task'ile, kui ülejäänud töö root-õigusi ei vaja.
 
 Kui sihtmasinas nõuab `sudo` parooli, lisa käsule `-K` (`--ask-become-pass`):
 
@@ -701,15 +746,15 @@ Kui sihtmasinas nõuab `sudo` parooli, lisa käsule `-K` (`--ask-become-pass`):
 ansible-playbook bootstrap.yml -K
 ```
 
-Ansible küsib parooli üks kord ja kasutab seda kõigis masinates. Kui masinatel on erinevad paroolid, see ei tööta. Laborites on kasutajal tavaliselt paroolita sudo:
+Ansible küsib parooli üks kord ja kasutab seda kõigis masinates. Kui masinatel on erinevad paroolid, siis see ei tööta. Laboris on kasutajal tavaliselt paroolita sudo:
 
 ```
 kasutaja ALL=(ALL) NOPASSWD: ALL
 ```
 
-Toodangus eelistatakse eraldi automaatikakontot, kellel on paroolita sudo ainult vajalikele käskudele. Vähima õiguse põhimõttest räägime Vaulti juures teisel kohtumisel.
+Toodangus tehakse tavaliselt eraldi automaatikakonto. Sellel on paroolita sudo ainult nende käskude jaoks, mida on vaja. Vähima õiguse põhimõttest räägime teisel kohtumisel Vaulti juures.
 
-`become_user` võimaldab käivitada task'i mõne teise kasutajana kui root, näiteks andmebaasi kasutajana:
+`become_user`-iga saad task'i käivitada mõne teise kasutajana kui root, näiteks andmebaasi kasutajana:
 
 ```yaml
 - name: Andmebaasi varukoopia
@@ -744,13 +789,13 @@ ansible vm1 -m setup -a "filter=ansible_default_ipv4"
     | `ansible_memtotal_mb` | `3915` |
     | `ansible_processor_vcpus` | `2` |
 
-Faktid muutuvad playbookis muutujateks. Lisaks on **maagilised muutujad**, mida Ansible annab alati, ka ilma faktideta. Olulisim neist on `inventory_hostname`: masina nimi inventaris.
+Playbookis saad fakte kasutada nagu muutujaid. Lisaks on olemas **maagilised muutujad**. Need annab Ansible alati, ka siis, kui fakte ei koguta. Kõige olulisem neist on `inventory_hostname`: masina nimi inventaris.
 
-`inventory_hostname` (`vm1`) ja `ansible_hostname` (`hkhk-vm-17`) võivad erineda. Inventari nimi on sinu kontrolli all, masina hostname mitte. Seepärast kasutame kursusel sildiks `inventory_hostname`-i.
+`inventory_hostname` (`vm1`) ja `ansible_hostname` (`hkhk-vm-17`) võivad erineda. Inventari nime paned sina ise, masina hostname'i mitte. Seepärast kasutame kursusel sildiks `inventory_hostname`-i.
 
 ### Jinja2
 
-Muutujaid kasutatakse **Jinja2** süntaksiga, topeltloogeliste sulgude vahel:
+Muutujaid kirjutad **Jinja2** süntaksiga, kahekordsete loogeliste sulgude vahele:
 
 ```yaml
 - name: Avaleht näitab masina nime
@@ -768,9 +813,9 @@ vars:
   pealkiri: "{{ inventory_hostname | upper }}"
 ```
 
-`default` annab väärtuse, kui muutujat pole defineeritud. `upper` teeb suurtähed. Filtreid on sadu, ja teisel kohtumisel kasutame neid mallides.
+`default` annab väärtuse, kui muutujat pole määratud. `upper` teeb teksti suurtähtedeks. Filtreid on sadu. Teisel kohtumisel kasutame neid mallides.
 
-Tingimusi (`if … else …`) läheb vaja siis, kui masinad pole ühesugused, näiteks kui masinapargis on eri distributsioone. Meie kolm VM-i on kõik AlmaLinux, seega kasutame fakte peamiselt info näitamiseks: avalehel (A8) ja raportis (H4).
+Tingimusi (`if … else …`) läheb vaja siis, kui masinad on erinevad. Näiteks siis, kui masinate hulgas on eri distributsioone. Meie kolm VM-i on kõik AlmaLinux. Seega kasutame fakte peamiselt selleks, et infot näidata: avalehel (A8) ja raportis (H4).
 
 ### `debug` ja muutujate vaatamine
 
@@ -824,9 +869,9 @@ Playbook on YAML-fail, milles on üks või mitu **play**'d. Play seob masinad ja
         enabled: true
 ```
 
-Iga task'i `name` on see, mida näed väljundis. Kirjuta nimi soovitud olekuna ("nginx on paigaldatud"), mitte tegevusena ("paigalda nginx"). Nii loetakse väljundit nagu kontrollnimekirja.
+Iga task'i `name` on see, mida näed väljundis. Kirjuta nimi soovitud olekuna ("nginx on paigaldatud"), mitte tegevusena ("paigalda nginx"). Nii saad väljundit lugeda nagu kontrollnimekirja.
 
-Ühes failis võib olla mitu play'd, näiteks üks andmebaasidele ja teine veebiserveritele. Need käivitatakse järjest.
+Ühes failis võib olla mitu play'd, näiteks üks andmebaasidele ja teine veebiserveritele. Need jooksevad järjest.
 
 ### Käivitamise võtmed
 
@@ -842,7 +887,7 @@ Iga task'i `name` on see, mida näed väljundis. Kirjuta nimi soovitud olekuna (
     | `ansible-playbook p.yml --start-at-task "nginx on paigaldatud"` | alusta kindlast task'ist |
     | `ansible-playbook p.yml -v` / `-vvv` | rohkem väljundit; `-vvv` näitab SSH-ühendust |
 
-Veaotsingul alusta alati `-v`-st. `-vvv` näitab, milliste parameetritega SSH ühendus luuakse, ja see lahendab enamiku ühendusvigu.
+Kui otsid viga, alusta alati `-v`-st. `-vvv` näitab, milliste parameetritega SSH-ühendus luuakse. Sellest leiad enamiku ühendusvigade põhjuse.
 
 ### Väljundi lugemine
 
@@ -873,7 +918,7 @@ vm2  : ok=5  changed=1  unreachable=0  failed=0  skipped=0
 vm3  : ok=0  changed=0  unreachable=1  failed=0  skipped=0
 ```
 
-Siit loed kolm asja: `vm1` on soovitud olekus; `vm2`-s oli üks erinevus, mis parandati; `vm3`-ga ei saadud ühendust, seega ei tea sa selle olekust midagi. Viimane on rida, mida kõige kergemini tähelepanuta jäetakse, sest `changed=0` on seal ka.
+Siit loed välja kolm asja. `vm1` on soovitud olekus. `vm2`-s oli üks erinevus ja see parandati. `vm3`-ga ei saadud ühendust, nii et selle olekust ei tea sa midagi. Viimast rida on kõige lihtsam märkamata jätta, sest ka seal on `changed=0`.
 
 *Allikad: [playbookid](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_intro.html)*
 
@@ -881,24 +926,46 @@ Siit loed kolm asja: `vm1` on soovitud olekus; `vm2`-s oli üks erinevus, mis pa
 
 ## 15. SSH-võtmed ja ligipääs
 
-Ansible ühendub masinatega tavalise OpenSSH-kliendiga. Et playbook saaks töötada ilma, et iga masina juures parooli küsitaks, kasutame võtmepõhist autentimist.
+Ansible ühendub masinatega tavalise OpenSSH-kliendiga. Me ei taha, et iga masina juures küsitaks parooli. Seepärast kasutame võtmepõhist autentimist.
 
 ### Võtmepaar
 
-Võtmepaar koosneb kahest failist. **Privaatvõti** (`~/.ssh/id_ed25519`) jääb control node'i ja ei lahku sealt kunagi. **Avalik võti** (`~/.ssh/id_ed25519.pub`) kopeeritakse igasse masinasse, kuhu tahad siseneda, faili `~/.ssh/authorized_keys`. Ühendumisel tõestab klient, et tal on avalikule võtmele vastav privaatvõti, ja parooli ei küsita.
+Võtmepaar koosneb kahest failist. **Privaatvõti** (`~/.ssh/id_ed25519`) jääb control node'i ega lahku sealt kunagi. **Avalik võti** (`~/.ssh/id_ed25519.pub`) läheb igasse masinasse, kuhu tahad siseneda, faili `~/.ssh/authorized_keys`.
+
+Ühendumisel tõestab klient, et tal on avalikule võtmele vastav privaatvõti. Parooli ei küsita.
 
 ```bash
 ssh-keygen -t ed25519 -C "maria@kursus"
 ```
 
-`ed25519` on tänapäevane vaikevalik: lühike võti, kiire ja turvaline. RSA võtmeid kohtad vanemates süsteemides, siis vähemalt 3072 bitti.
+`ed25519` on tänapäeval tavaline valik: võti on lühike, kiire ja turvaline. RSA võtmeid näed vanemates süsteemides. Kui kasutad RSA-d, siis vähemalt 3072 bitti.
 
-Võtmele saab panna parooli (passphrase). See kaitseb võtit, kui fail varastatakse, aga siis küsitakse parooli igal kasutamisel. Lahendus on `ssh-agent`, mis hoiab lahtikrüptitud võtit mälus kuni sessiooni lõpuni:
+Võtmele saab panna parooli (passphrase). See kaitseb võtit, kui keegi faili varastab. Aga siis küsitakse parooli iga kord, kui võtit kasutad. Selle vastu aitab `ssh-agent`: see hoiab lahtikrüptitud võtit mälus, kuni sessioon lõpeb:
 
 ```bash
 eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_ed25519
 ```
+
+<figure class="lx" markdown="0" style="max-width:40rem;margin:.8em auto">
+<svg viewBox="0 0 490 160" role="img" aria-label="SSH-võtmepaar: kuhu kumb võti läheb" xmlns="http://www.w3.org/2000/svg">
+<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
+<defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="hi" x="10" y="40" width="170" height="70" rx="6"/><text class="b" x="95.0" y="79.0" text-anchor="middle">vm1</text>
+<rect class="box" x="24" y="72" width="66" height="28" rx="4"/><text class="c" x="57" y="90" text-anchor="middle">id_ed25519</text>
+<rect class="ok" x="98" y="72" width="72" height="28" rx="4"/><text class="c" x="134" y="90" text-anchor="middle">.pub</text>
+<text class="s" x="57" y="124" text-anchor="middle">privaatvõti: jääb siia</text>
+<line class="a" x1="172" y1="86" x2="318" y2="25" marker-end="url(#lxa)"/>
+<rect class="box" x="322" y="8" width="150" height="32" rx="6"/><text class="b" x="397.0" y="21.0" text-anchor="middle">GitHub</text><text class="c" x="397.0" y="36.0" text-anchor="middle">SSH and GPG keys</text>
+<line class="a" x1="172" y1="86" x2="318" y2="63" marker-end="url(#lxa)"/>
+<rect class="box" x="322" y="46" width="150" height="32" rx="6"/><text class="b" x="397.0" y="59.0" text-anchor="middle">vm2</text><text class="c" x="397.0" y="74.0" text-anchor="middle">authorized_keys</text>
+<line class="a" x1="172" y1="86" x2="318" y2="101" marker-end="url(#lxa)"/>
+<rect class="box" x="322" y="84" width="150" height="32" rx="6"/><text class="b" x="397.0" y="97.0" text-anchor="middle">vm3</text><text class="c" x="397.0" y="112.0" text-anchor="middle">authorized_keys</text>
+<line class="a" x1="172" y1="86" x2="318" y2="139" marker-end="url(#lxa)"/>
+<rect class="box" x="322" y="122" width="150" height="32" rx="6"/><text class="b" x="397.0" y="135.0" text-anchor="middle">vm1 ise</text><text class="c" x="397.0" y="150.0" text-anchor="middle">authorized_keys</text>
+<text class="s" x="245" y="26" text-anchor="middle">avalik võti</text>
+</svg>
+</figure>
 
 ### Avaliku võtme kopeerimine
 
@@ -909,18 +976,18 @@ ssh kasutaja@192.168.125.21 hostname
 
 `ssh-copy-id` küsib esimesel korral parooli, sest võtit veel pole. Pärast seda enam mitte.
 
-Kui `ssh-copy-id` pole saadaval (näiteks Windowsi PowerShellis), teeb sama:
+Kui `ssh-copy-id` pole olemas (näiteks Windowsi PowerShellis), teeb sama asja see käsk:
 
 ```bash
 cat ~/.ssh/id_ed25519.pub | ssh kasutaja@192.168.125.21 \
   "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
 ```
 
-SSH-server on õiguste suhtes range. Kui `~/.ssh` või `authorized_keys` on teistele kirjutatav, ignoreerib server võtit ja küsib parooli.
+SSH-server on õigustega range. Kui teised saavad `~/.ssh`-i või `authorized_keys`-i kirjutada, ignoreerib server võtit ja küsib parooli.
 
 ### `~/.ssh/config`
 
-`~/.ssh/config` lubab anda masinatele lühikesed nimed ja määrata kasutaja ning võtme:
+Failis `~/.ssh/config` saad anda masinatele lühikesed nimed ning määrata kasutaja ja võtme:
 
 ```
 Host vm1
@@ -937,11 +1004,11 @@ Host vm*
     ServerAliveInterval 30
 ```
 
-Nüüd töötab `ssh vm1`, ja kuna Ansible kasutab sama SSH-klienti, töötab ka inventaris lihtsalt `vm1`. Viimane plokk kehtib kõigile, kelle nimi algab `vm`-ga.
+Nüüd töötab `ssh vm1`. Ansible kasutab sama SSH-klienti, seega töötab ka inventaris lihtsalt `vm1`. Viimane plokk kehtib kõigile masinatele, mille nimi algab `vm`-ga.
 
 ### `known_hosts`
 
-Esimesel ühendumisel küsib SSH, kas usaldad masina võtit (host key), ja salvestab selle faili `~/.ssh/known_hosts`. Kui masin hiljem uuesti paigaldatakse, võti muutub ja SSH keeldub ühendumast:
+Esimesel ühendumisel küsib SSH, kas usaldad masina võtit (host key). Siis salvestab ta selle faili `~/.ssh/known_hosts`. Kui masin hiljem uuesti paigaldatakse, siis võti muutub ja SSH keeldub ühendumast:
 
 ```
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -949,16 +1016,16 @@ Esimesel ühendumisel küsib SSH, kas usaldad masina võtit (host key), ja salve
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ```
 
-Laborikeskkonnas, kus VM-e ehitatakse uuesti, eemaldad vana kirje:
+Laboris ehitatakse VM-e tihti uuesti. Siis eemalda vana kirje:
 
 ```bash
 ssh-keygen -R vm1
 ssh-keygen -R 192.168.125.21
 ```
 
-Toodangus on see hoiatus põhjus peatuda ja uurida, sest see võib tähendada, et keegi on ühenduse vahele.
+Toodangus on see hoiatus põhjus peatuda ja uurida. See võib tähendada, et keegi on end ühenduse vahele pannud.
 
-Ansible küsib samuti host key kinnitust, ja kui masinaid on palju, peatub jooks iga uue masina juures. Selle vältimiseks ühendu esimest korda käsitsi (`ssh vm1 hostname`) või kogu võtmed ette:
+Ka Ansible küsib host key kinnitust. Kui masinaid on palju, jääb jooks iga uue masina juures seisma. Et seda ei juhtuks, ühendu esimest korda käsitsi (`ssh vm1 hostname`) või kogu võtmed eelnevalt kokku:
 
 ```bash
 ssh-keyscan vm1 vm2 vm3 >> ~/.ssh/known_hosts
@@ -966,24 +1033,15 @@ ssh-keyscan vm1 vm2 vm3 >> ~/.ssh/known_hosts
 
 !!! warning "Tähelepanu"
 
-    `host_key_checking = False` `ansible.cfg`-s lülitab kontrolli välja. Laboris on see mugav, toodangus mitte.
+    Kui paned `ansible.cfg`-sse `host_key_checking = False`, lülitub kontroll välja. Laboris on see mugav, toodangus mitte.
 
 !!! warning "Tähelepanu"
 
-    Privaatvõti ei käi Giti, ei käi jagatud kausta ega saadeta vestlusesse. Kui see lekib, loo uus võtmepaar ja eemalda vana avalik võti kõigist `authorized_keys` failidest. Esimese kodutöö harjutus H1 teeb seda Ansible'iga.
+    Privaatvõti ei lähe Giti, jagatud kausta ega vestlusesse. Kui see lekib, loo uus võtmepaar ja eemalda vana avalik võti kõigist `authorized_keys` failidest. Esimese kodutöö harjutuses H1 teed seda Ansible'iga.
 
 ### Tüüpilised SSH-vead
 
-??? note "Tüüpilised SSH-vead"
-
-    | Veateade | Põhjus | Lahendus |
-    |---|---|---|
-    | `Permission denied (publickey)` | avalik võti pole sihtmasinas või vale kasutaja | korda `ssh-copy-id`; kontrolli `User` |
-    | `Connection refused` | SSH-server ei käi või vale port | `systemctl status ssh` sihtmasinas; `ansible_port` |
-    | `Connection timed out` | masin pole võrgus või tulemüür | `ping`, VPN, tulemüüri reeglid |
-    | `Host key verification failed` | host key muutus | `ssh-keygen -R vm1` |
-    | `UNREACHABLE` Ansible'is | üks ülaltoodutest | `ssh vm1 hostname` käsitsi, siis `-vvv` |
-    | `Missing sudo password` | sudo nõuab parooli | `-K` või paroolita sudo |
+SSH-vead ja nende lahendused on [praktikumi veaotsingus](lab.md#veaotsing).
 
 *Allikad: [ssh_config](https://man.openbsd.org/ssh_config) · [ssh-keygen](https://man.openbsd.org/ssh-keygen)*
 
@@ -991,7 +1049,7 @@ ssh-keyscan vm1 vm2 vm3 >> ~/.ssh/known_hosts
 
 ## 16. Ohutu muudatus
 
-Automatiseerimine teeb muudatuse kõigis masinates sekunditega, ja sama kiirusega levib viga. Käsitsi tehtud viga rikub ühe serveri. Sama viga playbookis rikub kõik. Seepärast käib iga muudatus läbi samade sammude:
+Automaatika teeb muudatuse kõigis masinates sekunditega. Sama kiiresti levib ka viga. Käsitsi tehtud viga rikub ühe serveri, sama viga playbookis rikub kõik. Seepärast tee iga muudatus samade sammudega:
 
 ```mermaid
 flowchart LR
@@ -1001,9 +1059,26 @@ flowchart LR
     D --> E[teine jooks: changed=0]
 ```
 
+<figure class="lx" markdown="0" style="max-width:100%;margin:.8em auto">
+<svg viewBox="0 0 740 96" role="img" aria-label="Ohutu muudatuse järjekord" xmlns="http://www.w3.org/2000/svg">
+<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
+<defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="box" x="4" y="18" width="128" height="46" rx="6"/><text class="b" x="68.0" y="38.0" text-anchor="middle">--syntax-check</text><text class="s" x="68.0" y="53.0" text-anchor="middle">kas YAML on õige</text>
+<line class="a" x1="132" y1="41" x2="150" y2="41" marker-end="url(#lxa)"/>
+<rect class="box" x="152" y="18" width="128" height="46" rx="6"/><text class="b" x="216.0" y="38.0" text-anchor="middle">--check --diff</text><text class="s" x="216.0" y="53.0" text-anchor="middle">mis muutuks</text>
+<line class="a" x1="280" y1="41" x2="298" y2="41" marker-end="url(#lxa)"/>
+<rect class="box" x="300" y="18" width="128" height="46" rx="6"/><text class="b" x="364.0" y="38.0" text-anchor="middle">--limit vm1</text><text class="s" x="364.0" y="53.0" text-anchor="middle">üks masin</text>
+<line class="a" x1="428" y1="41" x2="446" y2="41" marker-end="url(#lxa)"/>
+<rect class="box" x="448" y="18" width="128" height="46" rx="6"/><text class="b" x="512.0" y="38.0" text-anchor="middle">kõik</text><text class="s" x="512.0" y="53.0" text-anchor="middle">ülejäänud</text>
+<line class="a" x1="576" y1="41" x2="594" y2="41" marker-end="url(#lxa)"/>
+<rect class="ok" x="596" y="18" width="128" height="46" rx="6"/><text class="b" x="660.0" y="38.0" text-anchor="middle">teine jooks</text><text class="s" x="660.0" y="53.0" text-anchor="middle">changed=0</text>
+<text class="s" x="370" y="86" text-anchor="middle">Kui mõni samm annab üllatuse, peatu ja uuri, enne kui lähed edasi.</text>
+</svg>
+</figure>
+
 ### Kuiv jooks: `--check --diff`
 
-`--check` käivitab playbooki kuivalt: moodulid ütlevad, mida nad teeksid, aga ei muuda midagi. `--diff` näitab failide puhul vana ja uue sisu vahet:
+`--check` käivitab playbooki kuivalt: moodulid ütlevad, mida nad teeksid, aga ei muuda midagi. `--diff` näitab failide vana ja uue sisu vahet:
 
 ```
 TASK [Avaleht näitab masina nime] *****************************
@@ -1015,11 +1090,13 @@ TASK [Avaleht näitab masina nime] *****************************
 changed: [vm1]
 ```
 
-Dry run'il on piirangud. `command`- ja `shell`-task'id jäetakse vahele, sest Ansible ei tea, mida need teeksid. Kui hilisem task sõltub eelmise task'i tegelikust tulemusest (näiteks pakett peab olema paigaldatud, et teenust käivitada), võib dry run anda vea, mida päris jooksul ei tuleks. Dry run on hea ülevaade, mitte garantii.
+Dry run ei näe kõike. `command`- ja `shell`-task'id jäetakse vahele, sest Ansible ei tea, mida need teeksid.
+
+Mõni task sõltub sellest, mida eelmine task päriselt tegi. Näiteks teenust saab käivitada alles siis, kui pakett on paigaldatud. Sellisel juhul võib dry run anda vea, mida päris jooksul ei tuleks. Dry run annab hea ülevaate, aga ei garanteeri midagi.
 
 ### Mõjuala: `--limit`
 
-**Blast radius** (mõjuala) on see, kui palju süsteemist üks viga katki teeb. `--limit` hoiab mõjuala ühe masina suurusena, kuni oled kindel, et muudatus töötab:
+**Blast radius** (mõjuala) näitab, kui suure osa süsteemist üks viga katki teeb. `--limit` hoiab mõjuala ühe masina piires, kuni oled kindel, et muudatus töötab:
 
 ```bash
 ansible-playbook bootstrap.yml --limit vm1
@@ -1027,30 +1104,30 @@ curl -s http://vm1
 ansible-playbook bootstrap.yml
 ```
 
-Suuremates keskkondades kasutatakse `serial`-it, mis rakendab muudatust partiidena (näiteks 2 masinat korraga) ja peatub, kui partii ebaõnnestub. Sellest räägime teisel kohtumisel.
+Suuremates keskkondades kasutatakse `serial`-it. See teeb muudatuse partiide kaupa (näiteks 2 masinat korraga) ja jääb seisma, kui mõni partii ebaõnnestub. Sellest räägime teisel kohtumisel.
 
 ### Drift ja kontroll
 
-**Drift** tekib, kui keegi muudab masinat käsitsi: peatab teenuse, parandab konfi, kustutab faili. Järgmine playbooki jooks näitab iga triivinud asja `changed`-ina ja taastab soovitud oleku.
+**Drift** tekib, kui keegi muudab masinat käsitsi: peatab teenuse, parandab konfi, kustutab faili. Järgmine playbooki jooks näitab iga triivinud asja `changed`-ina ja viib selle tagasi soovitud olekusse.
 
-Selles mõttes on playbook ka kontrollvahend. Kui käivitad selle ajastatult `--check` režiimis, saad igal ööl nimekirja masinatest, mis on soovitud olekust eemale triivinud:
+Nii on playbook ka kontrollimise tööriist. Kui jooksutad seda igal ööl `--check` režiimis, saad nimekirja masinatest, mis on soovitud olekust eemale triivinud:
 
 ```bash
 ansible-playbook bootstrap.yml --check > drift-$(date +%F).log
 grep -q 'changed=[1-9]' drift-$(date +%F).log && echo "Drift leitud"
 ```
 
-Päris keskkonnas käivitaks selle CI-konveier või AWX/Ansible Automation Platform ja teade läheks meeskonna kanalisse. Neljandal kohtumisel ehitame konveieri, mis teeb sarnast kontrolli igal push'il.
+Päris keskkonnas käivitab selle CI-konveier või AWX/Ansible Automation Platform ja teade läheb meeskonna kanalisse. Neljandal kohtumisel ehitame konveieri, mis teeb sarnast kontrolli iga push'i peale.
 
 ### Ohutuse kontrollnimekiri
 
 Iga muudatuse juures:
 
-- **ennusta:** kirjuta üles, mitu `changed`-i ootad ja kus;
-- **vaata enne:** `--check --diff`;
-- **piira mõjuala:** `--limit` ühe masinaga;
-- **tõenda:** teine jooks `changed=0` kõigil, `unreachable=0`;
-- **pane kirja:** muudatus käib Giti, commit-sõnum ütleb miks.
+- ennusta: kirjuta üles, mitu `changed`-i ootad ja kus;
+- vaata enne: `--check --diff`;
+- piira mõjuala: `--limit` ühe masinaga;
+- tõenda: teine jooks `changed=0` kõigil, `unreachable=0`;
+- pane kirja: muudatus käib Giti, commit-sõnum ütleb miks.
 
 ??? question "Kordamisküsimus"
 
@@ -1062,22 +1139,9 @@ Iga muudatuse juures:
 
 ## 17. Tüüpilised vead esimesel päeval
 
-??? note "Vead ja lahendused"
+Tüüpilised vead ja nende lahendused on koos [praktikumi veaotsingus](lab.md#veaotsing).
 
-    | Sümptom | Tõenäoline põhjus | Kontroll |
-    |---|---|---|
-    | `ansible: command not found` | Ansible pole paigaldatud või `PATH`-is | `pipx list`, `which ansible` |
-    | hoiatus `ansible.cfg` ignoreeritakse | töökaust on Windowsi kettal (WSL) | tööta `~/`-s |
-    | `Could not match supplied host pattern` | grupp puudub inventaris või vale `-i` | `ansible-inventory --graph` |
-    | `mapping values are not allowed` | YAML: koolon väärtuses | jutumärgid |
-    | `couldn't resolve module/action` | mooduli nimi vale või kollektsioon puudub | `ansible-doc -l \| grep …` |
-    | `Permission denied` task'is | `become: true` puudub | lisa play tasemele |
-    | `Waiting for process ... dnf` | taustal käib teine dnf | oota |
-    | task on igal jooksul `changed` | `command`/`shell` mooduli asemel | vaheta moodul |
-    | `curl` näitab vaikelehte | fail läks vale kausta | `dest` peab olema `/usr/share/nginx/html/index.html` |
-    | `UNREACHABLE` | SSH | `ssh vm1 hostname`, siis `-vvv` |
-
-Veaotsingu järjekord on alati sama: loe veateadet algusest lõpuni, korda käsku `-v`-ga, proovi sama asja käsitsi sihtmasinas. Enamik vigu on kirjas veateate esimeses reas.
+Vigu otsi alati samas järjekorras. Loe veateade algusest lõpuni läbi. Korda käsku `-v`-ga. Proovi sama asja käsitsi sihtmasinas. Enamasti on viga kirjas juba veateate esimeses reas.
 
 *Allikad: [ansible-lint](https://ansible.readthedocs.io/projects/lint/)*
 

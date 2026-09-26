@@ -45,8 +45,10 @@
   margin: .6em 0;
   font-size: .68rem;
 }
+/* Plokkide pealkiri: tavaline kaal (kast on niigi värviline); vahed Materiali
+   vaikimisi, et ikoon ja nool jääksid keskele */
 .md-typeset details > summary,
-.md-typeset .admonition-title { padding-top: .3em; padding-bottom: .3em; }
+.md-typeset .admonition-title { font-weight: 500; }
 
 /* Koodiplokk ja tabel veidi väiksema kirjaga */
 .md-typeset pre > code { padding: .6em .9em; }
@@ -69,4 +71,4 @@
 }
 
 /* Praktikumi variandijoonis: kompaktne */
-.md-typeset figure.dl-var { max-width: 36rem; margin: .8em auto; }
+.md-typeset figure.dl-var { max-width: 100%; margin: .8em auto; }
