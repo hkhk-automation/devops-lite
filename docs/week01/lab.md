@@ -639,50 +639,19 @@ Muutuja teeb playbooki taaskasutatavaks. `-e` (extra vars) on kõige kõrgema pr
 
 ## B · Iseseisev osa: kolm serverit
 
-### Eesmärk
+Vii kõik kolm VM-i (vm1, vm2, vm3) samasse olekusse **sama** `bootstrap.yml`-iga, mille kirjutasid osas A. Iga server näitab avalehel oma inventari nime. Sammud on antud, lahenduse leiad ise. Vihje on iga sammu juures kinnises plokis: ava see alles siis, kui oled ise proovinud.
 
-Vii kõik kolm VM-i (vm1, vm2, vm3) samasse olekusse **sama** `bootstrap.yml`-iga, mille kirjutasid osas A. Iga server näitab avalehel oma inventari nime. Masinate andmed on sul osa 0.1 tabelis.
-
-vm1 on nii control node kui üks kolmest serverist. Ansible ühendub ka vm1-ga üle SSH, seega kopeeri osas 0.3 tehtud avalik võti **kõigile kolmele**, ka vm1 enda IP-le.
-
-Muuda playbooki päises `hosts: kohalik` → `hosts: kohalik:veeb` ja jooksuta B-osas alati `--limit veeb`. Nii jääb üks playbook kõigile ja A-osa töö säilib.
-
-### Piirangud
+Piirangud kogu B-osas:
 
 - Ansible ühendub SSH-võtmega. Parool ei tohi olla üheski repo failis.
 - Üks playbook kõigile kolmele, ilma hostipõhiste erisusteta.
-- Tulemüüris peab `http` olema avatud, ka see käib playbookiga (`ansible.posix.firewalld`), mitte käsitsi.
-- `localhost` jääb inventari alles. B-osa jooksud käivad alati `--limit veeb`-iga.
-- Enne kõiki masinaid proovi ühel (`--limit`).
 - `command`/`shell` pole lubatud seal, kus on olemas moodul.
 
-### Valmis, kui
+### B1 · Võti kõigisse kolme masinasse
 
-- [ ] `ssh vm1 hostname`, `ssh vm2 hostname`, `ssh vm3 hostname` vastavad ilma parooli küsimata.
-- [ ] `ansible veeb -m ping` annab kolm `pong`-i.
-- [ ] vm1-st `curl http://<vm-ip>` näitab iga masina puhul selle nime (vm2 ja vm3 vastavad alles pärast tulemüüri avamist).
-- [ ] Teine jooks kõigil kolmel: `changed=0`, `unreachable=0`, salvestatud faili `logid/kolm_masinat.txt`.
-- [ ] Drift ühes masinas (nt peatatud nginx) parandub ühe jooksuga, ja teised kaks jäävad `changed=0`.
+vm1 on nii control node kui üks kolmest serverist. Ansible ühendub ka vm1-ga üle SSH, seega kopeeri osas 0.3 tehtud avalik võti **kõigile kolmele**, ka vm1 enda IP-le. Seejärel ühendu igasse korra käsitsi: `ssh <kasutaja>@<vm2-ip> hostname` peab vastama `vm2` ilma parooli küsimata.
 
-### Soovitatav järjekord
-
-1. `ssh-copy-id` kõigile kolmele ja `~/.ssh/config`.
-2. Käsitsi `ssh vm2 hostname`, `ssh vm3 hostname`: vastab `vm2`, `vm3` (nimed panid 0.1-s).
-3. Inventari grupp `veeb`.
-4. `ping` ja faktid.
-5. Playbook: `hosts`, leht masina nimega, tulemüür.
-6. `--check --diff --limit vm1` → `--limit vm1` → kõik → teine jooks.
-
-    Värskes masinas (vm2, vm3) kukub `--check` task'is "nginx käib": kuivjooks ei paigalda nginx'i päriselt, seega teenust pole veel. See on ootuspärane.
-7. Drift ühes masinas.
-
-### Vihjed
-
-Ava ainult siis, kui oled ise proovinud ja jäänud kinni.
-
-??? tip "1 · Võti vm-idesse"
-    Võti on sul osast 0.3 olemas. Kopeeri avalik võti iga masina kohta, ka vm1 enda IP-le:
-
+??? tip "Vihje: võtme kopeerimine"
     ```bash
     ssh-copy-id -i ~/.ssh/id_ed25519.pub <kasutaja>@<vm1-ip>
     ssh-copy-id -i ~/.ssh/id_ed25519.pub <kasutaja>@<vm2-ip>
@@ -691,7 +660,14 @@ Ava ainult siis, kui oled ise proovinud ja jäänud kinni.
 
     Iga kord küsitakse üks kord parooli, siis enam mitte. Privaatvõti (`id_ed25519`, ilma `.pub`-ita) ei lahku vm1-st.
 
-??? tip "2 · `~/.ssh/config`"
+??? tip "Vihje: `Are you sure you want to continue connecting`"
+    Esimesel ühendumisel küsib SSH host key kinnitust ja Ansible jääks samasse kohta ootama. Seepärast ühendu esimest korda käsitsi, või kogu võtmed korraga: `ssh-keyscan <ip1> <ip2> <ip3> >> ~/.ssh/known_hosts`.
+
+### B2 · Lühinimed `~/.ssh/config`-is
+
+Tee nii, et `ssh vm1`, `ssh vm2` ja `ssh vm3` töötavad ilma IP-d ja kasutajat kirjutamata. Ansible kasutab samu nimesid.
+
+??? tip "Vihje: faili kuju"
     ```
     Host vm1
         HostName <ip>
@@ -699,16 +675,22 @@ Ava ainult siis, kui oled ise proovinud ja jäänud kinni.
         IdentityFile ~/.ssh/id_ed25519
     ```
 
-    Kolm plokki, üks iga masina kohta. Pärast seda töötab `ssh vm1`, ja Ansible kasutab sama nime.
+    Kolm plokki, üks iga masina kohta. Faili õigused peavad olema `600`: `chmod 600 ~/.ssh/config`.
 
-    Faili õigused peavad olema `600`: `chmod 600 ~/.ssh/config`.
+### B3 · Grupp `veeb` ja ping
 
-??? tip "3 · Host key kinnitus"
-    Esimesel ühendumisel küsib SSH `Are you sure you want to continue connecting (yes/no)?`. Ansible peatub samas kohas. Ühendu esimest korda käsitsi (`ssh vm1 hostname`) või kogu võtmed korraga: `ssh-keyscan <ip1> <ip2> <ip3> >> ~/.ssh/known_hosts`.
+Lisa inventari grupp `veeb` kolme masinaga. `localhost` jääb alles grupis `kohalik`.
 
-??? tip "4 · Inventar"
-    Lisa `inventory.ini`-sse:
+```bash
+ansible-inventory --graph
+ansible veeb -m ping
+```
 
+??? success "Oodatav tulemus"
+
+    Graafis on kaks gruppi, `kohalik` ja `veeb`. `ping` annab kolm `pong`-i.
+
+??? tip "Vihje: inventar"
     ```ini
     [veeb]
     vm1
@@ -716,55 +698,72 @@ Ava ainult siis, kui oled ise proovinud ja jäänud kinni.
     vm3
     ```
 
-    `ansible-inventory --graph` peab näitama mõlemat gruppi.
+### B4 · Playbook kolmele masinale
 
-??? tip "5 · Playbook kolmele"
-    `hosts: kohalik:veeb` tähendab "mõlemad grupid". `--limit veeb` jätab `localhost`-i välja. Kui unustad `--limit`-i, muudab playbook ka localhosti, mis pole viga, aga logifail ei klapi.
+Muuda playbooki päises `hosts: kohalik` → `hosts: kohalik:veeb` ja jooksuta B-osas alati `--limit veeb`. Nii jääb üks playbook kõigile ja A-osa töö säilib. Avaleht peab näitama masina nime inventaris (`vm1`, `vm2`, `vm3`).
 
-??? tip "6 · Masina nimi lehel"
+Proovi enne ühel masinal:
+
+```bash
+ansible-playbook bootstrap.yml --limit vm1 --check --diff
+ansible-playbook bootstrap.yml --limit vm1
+ansible-playbook bootstrap.yml --limit veeb
+```
+
+Värskes masinas (vm2, vm3) kukub `--check` task'is "nginx käib": kuivjooks ei paigalda nginx'i päriselt, seega teenust pole veel. See on ootuspärane.
+
+??? tip "Vihje: masina nimi lehel"
     `content: "<h1>{{ inventory_hostname }}</h1>\n"`. `inventory_hostname` on nimi inventaris (`vm1`), mitte masina enda hostname.
 
-??? tip "7 · Sudo parool kolmes masinas"
-    `ansible.cfg`-s on `become_ask_pass = True` (A3), nii et Ansible küsib `BECOME password:` ühe korra ja kasutab seda kõigis masinates. Kui paroolid on masinates erinevad, küsi juhendajalt.
+??? tip "Vihje: `BECOME password` kolmes masinas"
+    `ansible.cfg`-s on `become_ask_pass = True` (A3), nii et Ansible küsib parooli ühe korra ja kasutab seda kõigis masinates. Seepärast panid 0.1-s kõigile sama parooli.
 
-??? tip "8 · Tulemüür"
-    AlmaLinuxis on `firewalld` sees ja lubab vaikimisi ainult `ssh`-i. Seepärast vastab vm1 iseendale (`curl localhost`), aga vm2 ja vm3 ei vasta väljast. Kontrolli: `ansible veeb -b -m command -a "firewall-cmd --list-services"`.
+### B5 · Leht väljast nähtavaks
 
+Proovi vm1-st kõiki kolme:
+
+```bash
+for h in <vm1-ip> <vm2-ip> <vm3-ip>; do curl -s --max-time 3 http://$h || echo "$h ei vasta"; done
+```
+
+vm1 vastab, vm2 ja vm3 ei vasta, kuigi nginx käib. Leia põhjus ja paranda see playbookis, mitte käsitsi.
+
+??? tip "Vihje 1: kus viga on"
+    AlmaLinuxis on `firewalld` sees ja lubab vaikimisi ainult `ssh`-i. vm1 vastab, sest `curl` iseendale ei läbi tulemüüri. Vaata: `ansible veeb -b -m command -a "firewall-cmd --list-services"`.
+
+??? tip "Vihje 2: moodul"
     Vaja on moodulit, mis lubab firewalld-s teenuse `http` nii kohe kui ka pärast taaskäivitust. Otsi `ansible-doc ansible.posix.firewalld`.
 
     ??? example "Näide, kui ikka kinni"
         `service: http`, `permanent: true`, `immediate: true`, `state: enabled`.
 
-??? tip "9 · Kas leht tuli õigest masinast?"
-    `for h in <ip1> <ip2> <ip3>; do curl -s http://$h; done`
-
-### Kontroll
+### B6 · Teine jooks ja tõend
 
 ```bash
-ansible veeb -m ping
-ansible-playbook bootstrap.yml --limit veeb --check --diff
-ansible-playbook bootstrap.yml --limit vm1
-ansible-playbook bootstrap.yml --limit veeb
 ansible-playbook bootstrap.yml --limit veeb | tee logid/kolm_masinat.txt
 ```
 
-Viimase käsu `PLAY RECAP` peab välja nägema umbes nii:
+??? success "Oodatav tulemus"
 
-```
-PLAY RECAP ****************************************************
-vm1 : ok=6  changed=0  unreachable=0  failed=0  skipped=0
-vm2 : ok=6  changed=0  unreachable=0  failed=0  skipped=0
-vm3 : ok=6  changed=0  unreachable=0  failed=0  skipped=0
-```
+    ```
+    PLAY RECAP ****************************************************
+    vm1 : ok=6  changed=0  unreachable=0  failed=0  skipped=0
+    vm2 : ok=6  changed=0  unreachable=0  failed=0  skipped=0
+    vm3 : ok=6  changed=0  unreachable=0  failed=0  skipped=0
+    ```
 
-Drift ühes masinas:
+    Ja `curl` näitab iga IP puhul selle masina nime.
+
+### B7 · Drift ühes masinas
 
 ```bash
 ssh -t vm2 "sudo systemctl stop nginx"
 ansible-playbook bootstrap.yml --limit veeb
 ```
 
-Ootus: `vm2` näitab `changed=1`, `vm1` ja `vm3` näitavad `changed=0`.
+??? success "Oodatav tulemus"
+
+    `vm2` näitab `changed=1`, `vm1` ja `vm3` näitavad `changed=0`.
 
 ---
 
@@ -838,7 +837,7 @@ Kontrolli järjekorras: loe veateade algusest lõpuni, korda käsku `-v`-ga, pro
 | `couldn't resolve module/action` | mooduli nimi vale | `ansible-doc -l \| grep <nimi>` |
 | task on igal jooksul `changed` | `command`/`shell` mooduli asemel | vaheta moodul |
 | `curl` näitab nginx vaikelehte | fail läks vale kausta | `dest` peab olema `/usr/share/nginx/html/index.html` |
-| `curl` väljast ei vasta, masinas vastab | tulemüür | vihje 8 |
+| `curl` väljast ei vasta, masinas vastab | tulemüür | B5 |
 | käsk töötab PowerShellis, aga mitte vm1-s (või vastupidi) | oled vales aknas | `hostname` — kõik käsud käivad vm1-s |
 | `git push` küsib parooli | repo on kloonitud HTTPS-iga | `git remote set-url origin git@github.com:...` |
 | `Permission denied (publickey)` GitHubist | võti pole GitHubis | osa 0.4 |
