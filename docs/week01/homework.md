@@ -33,7 +33,7 @@ Ava `ansible-doc`-iga moodulid `user` ja `service`. Kirjuta kummagi kohta kolm p
 
 ### Vasta küsimustele → `vastused.md`
 
-Iga vastus 2–4 lauset oma sõnadega.
+Vasta lühidalt oma sõnadega, üks-kaks lauset igale.
 
 1. Miks on `useradd deploy` shelli skriptis ohtlikum kui `ansible.builtin.user`? Mis juhtub kummagagi teisel jooksul? (A2, loeng §5)
 2. `PLAY RECAP` näitab ühel masinal `unreachable=1`, teistel `changed=0`. Mida sa selle masina olekust tead ja mida teed järgmiseks? (loeng §14)
@@ -233,7 +233,11 @@ Esitad
 
 ## III · Eneseanalüüs
 
-`vastused.md` lõpus, 5–10 lauset: mis oli kõige raskem, kus ennustus läks mööda, mida teeksid nüüd teisiti, mis jäi segaseks ja mida tahad järgmisel kohtumisel küsida.
+`vastused.md` lõppu kolm vastust, igaüks üks lause:
+
+1. Mis töötas esimese korraga?
+2. Kus jäid kinni ja mis aitas edasi?
+3. Mida tahad järgmisel kohtumisel küsida?
 
 ??? note "Vabatahtlik: boonus ja lint"
 

@@ -709,7 +709,7 @@ Täida repos olev `README.md` mall: asenda nurksulgudes kohad oma tööga ja kus
 
 README järgi peab keegi teine (või sina kolme kuu pärast) saama masinad sama olekusse viia.
 
-Iga peegeldusküsimuse vastus 2–4 lauset. Automaatne kontroll K1 kukub, kui README-s on veel täitmata kohti või kui see on alla 150 sõna.
+Peegeldusküsimustele vasta lühidalt, üks-kaks lauset piisab. Automaatne kontroll K1 kukub, kui README-s on veel täitmata kohti.
 
 ### Commit ja push
 
@@ -732,7 +732,7 @@ Ava GitHubis oma repo → **Actions** → viimane **Autograde**. Seal on iga kon
 
 | Kontroll | Mida vaatab |
 |---|---|
-| K1 | failid `halb.sh`, `inventory.ini`, `bootstrap.yml`, `logid/teine_jooks.txt` olemas; `README.md` mall täidetud (≥150 sõna) |
+| K1 | failid `halb.sh`, `inventory.ini`, `bootstrap.yml`, `logid/teine_jooks.txt` olemas; `README.md` mall täidetud |
 | K2 | `bootstrap.yml` süntaks |
 | K3 | päris moodulid, `command`/`shell` puudub |
 | K4 | `logid/teine_jooks.txt` sisaldab `changed=0` |
