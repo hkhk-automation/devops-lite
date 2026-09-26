@@ -48,7 +48,14 @@
 /* Plokkide pealkiri: tavaline kaal (kast on niigi värviline); vahed Materiali
    vaikimisi, et ikoon ja nool jääksid keskele */
 .md-typeset details > summary,
-.md-typeset .admonition-title { font-weight: 500; }
+.md-typeset .admonition-title { font-weight: 400; }
+
+/* Ikoon (vasakul) ja nool (paremal) alati pealkirja rea keskel */
+.md-typeset .admonition-title::before,
+.md-typeset summary::before,
+.md-typeset summary::after {
+  top: calc(50% - .5rem);
+}
 
 /* Koodiplokk ja tabel veidi väiksema kirjaga */
 .md-typeset pre > code { padding: .6em .9em; }
