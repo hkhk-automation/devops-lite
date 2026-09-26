@@ -4,14 +4,13 @@ Kodutöö läheb samasse reposse, kuhu klassitöö. Tähtaeg on kirjas Classroom
 
 | Osa | Mida teed | Esitad | Punkte |
 |---|---|---|---|
-| [I](#i-lugemine-ja-kusimused) | loed, uurid mooduleid, vastad küsimustele | `markmed.md`, `vastused.md` | 14 koos III-ga |
+| [I](#i-lugemine-ja-kusimused) | loed, uurid mooduleid, vastad küsimustele | `markmed.md`, `vastused.md` | 14 |
 | [H1](#h1-loo-kasutajad-ja-ligipaas-10-p) | kasutajad, võtmed, sudo, chrony, motd | `admin.yml` + logi | 10 |
 | [H2](#h2-turva-ssh-10-p) | SSH turvamine | `hardening.yml` + logi | 10 |
 | [H3](#h3-halda-pakette-nimekirjast-7-p) | paketid nimekirjast | `baas.yml` + logi | 7 |
 | [H4](#h4-kogu-masinatest-raport-7-p) | raport faktidest | `raport.yml`, `raportid/` | 7 |
 | [H5–H6](#h5-ajasta-varundus) | cron ja drift | `cron.yml` + logi, `logid/drift_check.txt` | 7 |
-| [III](#iii-oma-too) | oma playbook | `oma/*.yml`, `oma/README.md` | 14 koos I-ga |
-| [IV](#iv-eneseanaluus) | eneseanalüüs | `vastused.md` lõpus | – |
+| [III](#iii-eneseanaluus) | eneseanalüüs | `vastused.md` lõpus | – |
 
 Tulemust näed pärast iga push'i: **Actions** → **Autograde**. Loeb punktisumma, mitte värv.
 
@@ -232,22 +231,7 @@ Esitad
 
 ---
 
-## III · Oma töö
-
-Vali oma VM-idest või koduarvutist üks korduv käsitsi tegevus: kasutajate lisamine, pakettide uuendamine, konfifaili muutmine, logikausta seadistamine. Kirjuta sellele idempotentne playbook kausta `oma/`.
-
-`oma/README.md`-s:
-
-- mis oli enne käsitsi (sammud);
-- mis on nüüd kood;
-- tõend, et teine jooks ei muuda midagi;
-- mis jäi automatiseerimata ja miks.
-
-Reposse ei lähe paroole ega võtmeid.
-
----
-
-## IV · Eneseanalüüs
+## III · Eneseanalüüs
 
 `vastused.md` lõpus, 5–10 lauset: mis oli kõige raskem, kus ennustus läks mööda, mida teeksid nüüd teisiti, mis jäi segaseks ja mida tahad järgmisel kohtumisel küsida.
 
