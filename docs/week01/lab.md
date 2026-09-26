@@ -77,11 +77,7 @@ Lõpuks on repos:
 
 ### A1 · Seadista nginx käsitsi
 
-*Loeng §1–§2*
-
 Selle sammu lõpuks käib vm1-s käsitsi seadistatud nginx ja `curl localhost` näitab sinu lehte.
-
-Seadista `localhost` käsitsi veebiserveriks. Iga käsu järel kirjuta vihikusse või faili `kontrolltabel.md` rida: käsk | tulemus, mis pidi tekkima | kuidas kontrollid.
 
 ```bash
 sudo useradd -m saidi
@@ -90,14 +86,16 @@ echo "<h1>Tere käsitsi</h1>" | sudo tee /usr/share/nginx/html/index.html
 sudo systemctl enable --now nginx
 ```
 
-Kontrolltabeli näide:
+??? note "Kontrolltabel: kuidas iga sammu kontrollida"
 
-| Käsk | Tulemus | Kontroll |
-|---|---|---|
-| `useradd -m saidi` | kasutaja `saidi` on olemas, kodukaust olemas | `id saidi`, `ls -d /home/saidi` |
-| `dnf install nginx` | pakett paigaldatud | `rpm -q nginx` |
-| `tee index.html` | avaleht sisuga | `cat /usr/share/nginx/html/index.html` |
-| `systemctl enable --now` | teenus käib ja käivitub buutimisel | `systemctl is-active nginx`, `systemctl is-enabled nginx` |
+    Kirjuta iga käsu kohta rida: käsk, mis pidi tekkima, kuidas kontrollid. A4-s muutuvad need read playbooki task'ideks.
+
+    | Käsk | Tulemus | Kontroll |
+    |---|---|---|
+    | `useradd -m saidi` | kasutaja `saidi` on olemas, kodukaust olemas | `id saidi`, `ls -d /home/saidi` |
+    | `dnf install nginx` | pakett paigaldatud | `rpm -q nginx` |
+    | `tee index.html` | avaleht sisuga | `cat /usr/share/nginx/html/index.html` |
+    | `systemctl enable --now` | teenus käib ja käivitub buutimisel | `systemctl is-active nginx`, `systemctl is-enabled nginx` |
 
 ??? tip "Kui nginx ei käivitu või `curl` ei vasta"
 
@@ -127,11 +125,13 @@ Enne automatiseerimist pead teadma, mida masin peab tegema. Kontrolltabeli read 
 
     Kui peaksid sama tegema kümnele masinale, mitmendal ununeks mõni samm? Milline samm ununeks kõige tõenäolisemalt ja miks just see?
 
+??? info "Loe juurde"
+
+    - [loeng §1–§2](lecture.md#1-kolm-serverit-ja-uks-unustatud-samm)
+
 ---
 
 ### A2 · Vaata, miks skript ei sobi
-
-*Loeng §5*
 
 Selle sammu lõpuks oled näinud, mis juhtub, kui tavalise skripti käivitad kaks korda.
 
@@ -176,11 +176,13 @@ sudo userdel -r raporteerija
 sudo rm -rf /srv/raport
 ```
 
+??? info "Loe juurde"
+
+    - [loeng §5](lecture.md#5-idempotentsus)
+
 ---
 
 ### A3 · Loo inventar ja proovi ad-hoc käske
-
-*Loeng §7–§9 · [Ansible: ad-hoc käsud](https://docs.ansible.com/ansible/latest/command_guide/intro_adhoc.html)*
 
 Selle sammu lõpuks leiab Ansible sinu inventari ja vastab `ping`-ile.
 
@@ -269,11 +271,14 @@ Moodul (`ping`, `setup`, `package`) tagastab struktureeritud info ja teab, kas t
 
     Kui tahad avalehele kirjutada masina distributsiooni ja versiooni, kumb annab selleks info: `setup` või `command`? Miks?
 
+??? info "Loe juurde"
+
+    - [loeng §7–§9](lecture.md#7-paigaldamine-ja-ansiblecfg)
+    - [Ansible: ad-hoc käsud](https://docs.ansible.com/ansible/latest/command_guide/intro_adhoc.html)
+
 ---
 
 ### A4 · Kirjuta esimene playbook
-
-*Loeng §4, §11, §14 · [Ansible: getting started](https://docs.ansible.com/ansible/latest/getting_started/) · [builtin moodulid](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/)*
 
 Selle sammu lõpuks teeb A1 käsitsitöö ära playbook `bootstrap.yml`.
 
@@ -375,11 +380,15 @@ Ainult avalehe sisu erines käsitsi tehtust. Kõik muu oli juba soovitud olekus,
     - `Waiting for process ... dnf`: taustal käib teine dnf, oota.
     - `this task has extra params`: parameeter on vale taandega (loeng §10).
 
+??? info "Loe juurde"
+
+    - [loeng §4, §11, §14](lecture.md#4-kask-ja-soovitud-olek)
+    - [Ansible: getting started](https://docs.ansible.com/ansible/latest/getting_started/)
+    - [builtin moodulid](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/)
+
 ---
 
 ### A5 · Tõenda, et teine jooks ei muuda midagi
-
-*Loeng §5*
 
 Selle sammu lõpuks on failis `logid/teine_jooks.txt` tõend, et teine jooks ei muuda midagi.
 
@@ -426,11 +435,13 @@ Seejärel eemalda katse-task ja jooksuta veel kord, kuni `PLAY RECAP` on `change
 
 Toores käsk ei tea olekut. Kui moodulit pole, teeb `creates` käsu idempotentseks: käsku ei käivitata, kui fail on juba olemas. Päris töös kasuta moodulit, kui see on olemas (`ansible.builtin.file` + `state: touch` teeks sama).
 
+??? info "Loe juurde"
+
+    - [loeng §5](lecture.md#5-idempotentsus)
+
 ---
 
 ### A6 · Vaata muudatust enne tegemist
-
-*Loeng §16 · [Ansible: check mode ja diff](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html)*
 
 Selle sammu lõpuks oskad vaadata, mida playbook muudaks, ilma et midagi muutuks.
 
@@ -473,11 +484,14 @@ Tootmises vaatad enne muutust, mida see teeks. `--diff` näitab täpselt, mis ri
 
     Lisa ajutiselt tagasi `command: date` task ja jooksuta `--check`. Mida näitab väljund selle task'i kohta? Miks? Eemalda task pärast uuesti, automaatne kontroll K3 ei luba `command`-i.
 
+??? info "Loe juurde"
+
+    - [loeng §16](lecture.md#16-ohutu-muudatus)
+    - [Ansible: check mode ja diff](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html)
+
 ---
 
 ### A7 · Paranda drift
-
-*Loeng §16*
 
 Selle sammu lõpuks oled näinud, et playbook parandab ainult selle, mis käsitsi ära rikuti.
 
@@ -514,11 +528,13 @@ Playbook parandas ainult selle, mis triivis, ja sa ei pidanud talle ütlema, mis
 
     Mis oleks juhtunud, kui keegi oleks A7-s nginx-i paketi eemaldanud (`dnf remove nginx`)? Mitu `changed`-i? Kas avaleht oleks alles?
 
+??? info "Loe juurde"
+
+    - [loeng §16](lecture.md#16-ohutu-muudatus)
+
 ---
 
 ### A8 · Kasuta muutujaid ja fakte
-
-*Loeng §13 · [Ansible: faktid ja muutujad](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html)*
 
 Selle sammu lõpuks näitab avaleht muutuja väärtust ja masina fakte.
 
@@ -568,6 +584,11 @@ curl -s localhost
 Seejärel jooksuta ilma `-e`-ta, et leht saaks tagasi soovitud oleku.
 
 Muutuja teeb playbooki taaskasutatavaks. `-e` (extra vars) on kõige kõrgema prioriteediga ja kirjutab üle kõik muu. Teisel kohtumisel paneme muutujad gruppide kaupa failidesse.
+
+??? info "Loe juurde"
+
+    - [loeng §13](lecture.md#13-faktid-ja-muutujad)
+    - [Ansible: faktid ja muutujad](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html)
 
 ---
 
