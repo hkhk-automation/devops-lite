@@ -2,41 +2,42 @@
 
 Tänase lõpuks viib üks playbook kolm serverit samasse olekusse: kasutaja on olemas, nginx käib ja avaleht näitab serveri nime. Teine jooks ei muuda midagi (`changed=0`).
 
-<figure style="max-width:790px;margin:.8em auto" class="dl-var" markdown="0">
-<svg viewBox="0 0 790 206" role="img" aria-labelledby="dl-var-t" xmlns="http://www.w3.org/2000/svg">
+<figure style="max-width:690px;margin:.8em auto" class="dl-var" markdown="0">
+<svg viewBox="0 0 690 284" role="img" aria-labelledby="dl-var-t" xmlns="http://www.w3.org/2000/svg">
 <title id="dl-var-t">Kolm varianti: remote (controller vm1), local WSL (controller sinu arvutis), local Windows (Ansible ei käi)</title>
-<style>.dl-var svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.dl-var .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.dl-var .ctrl{fill:var(--md-primary-fg-color);fill-opacity:.18;stroke:var(--md-primary-fg-color);stroke-width:1.5}.dl-var .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.dl-var .b{fill:var(--md-default-fg-color);font-size:13px;font-weight:600}.dl-var .s{fill:var(--md-default-fg-color--light);font-size:12px}.dl-var .w{fill:var(--md-accent-fg-color);font-size:12.5px;font-weight:700}.dl-var .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5}.dl-var .d{stroke-dasharray:4 3}.dl-var .h{fill:var(--md-default-fg-color--light)}</style>
+<style>.dl-var svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.dl-var .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.dl-var .ctrl{fill:var(--md-primary-fg-color);fill-opacity:.18;stroke:var(--md-primary-fg-color);stroke-width:1.5}.dl-var .t{fill:var(--md-default-fg-color);font-size:15px;font-weight:700}.dl-var .b{fill:var(--md-default-fg-color);font-size:14.5px;font-weight:600}.dl-var .s{fill:var(--md-default-fg-color--light);font-size:13px}.dl-var .w{fill:var(--md-accent-fg-color);font-size:13.5px;font-weight:700}.dl-var .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5}.dl-var .d{stroke-dasharray:4 3}.dl-var .h{fill:var(--md-default-fg-color--light)}</style>
 <defs><marker id="va" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
-<text class="t" x="125" y="18" text-anchor="middle">1 · Remote: controller on vm1</text>
-<rect class="box" x="8" y="32" width="92" height="44" rx="6"/><text class="b" x="54.0" y="51.0" text-anchor="middle">Sinu arvuti</text><text class="s" x="54.0" y="66.0" text-anchor="middle">VS Code</text>
-<line class="a" x1="100" y1="54" x2="136" y2="54" marker-end="url(#va)"/>
-<rect class="ctrl" x="138" y="32" width="106" height="44" rx="6"/><text class="b" x="191.0" y="51.0" text-anchor="middle">vm1</text><text class="s" x="191.0" y="66.0" text-anchor="middle">Ansible + Git</text>
-<line class="a" x1="191" y1="76" x2="53" y2="128" marker-end="url(#va)"/>
-<rect class="box" x="22" y="130" width="62" height="30" rx="6"/><text class="b" x="53.0" y="150.0" text-anchor="middle">vm1</text>
-<line class="a" x1="191" y1="76" x2="125" y2="128" marker-end="url(#va)"/>
-<rect class="box" x="94" y="130" width="62" height="30" rx="6"/><text class="b" x="125.0" y="150.0" text-anchor="middle">vm2</text>
-<line class="a" x1="191" y1="76" x2="197" y2="128" marker-end="url(#va)"/>
-<rect class="box" x="166" y="130" width="62" height="30" rx="6"/><text class="b" x="197.0" y="150.0" text-anchor="middle">vm3</text>
-<text class="s" x="125" y="182" text-anchor="middle">soovitatav, juhend on selle järgi</text>
-<text class="t" x="387" y="18" text-anchor="middle">2 · Local: controller on WSL</text>
-<rect class="ctrl" x="317" y="32" width="140" height="44" rx="6"/><text class="b" x="387.0" y="51.0" text-anchor="middle">Sinu arvuti · WSL</text><text class="s" x="387.0" y="66.0" text-anchor="middle">Ansible + Git</text>
-<line class="a" x1="387" y1="76" x2="315" y2="128" marker-end="url(#va)"/>
-<rect class="box" x="284" y="130" width="62" height="30" rx="6"/><text class="b" x="315.0" y="150.0" text-anchor="middle">vm1</text>
-<line class="a" x1="387" y1="76" x2="387" y2="128" marker-end="url(#va)"/>
-<rect class="box" x="356" y="130" width="62" height="30" rx="6"/><text class="b" x="387.0" y="150.0" text-anchor="middle">vm2</text>
-<line class="a" x1="387" y1="76" x2="459" y2="128" marker-end="url(#va)"/>
-<rect class="box" x="428" y="130" width="62" height="30" rx="6"/><text class="b" x="459.0" y="150.0" text-anchor="middle">vm3</text>
-<text class="s" x="387" y="182" text-anchor="middle">kodus, vaja VPN-i</text>
-<text class="t" x="649" y="18" text-anchor="middle">3 · Local: Windows ilma WSL-ita</text>
-<rect class="box" x="579" y="32" width="140" height="44" rx="6"/><text class="b" x="649.0" y="51.0" text-anchor="middle">Sinu arvuti · Windows</text><text class="s" x="649.0" y="66.0" text-anchor="middle">VS Code + Git</text>
-<line class="a d" x1="649" y1="76" x2="577" y2="128" marker-end="url(#va)"/>
-<rect class="box" x="546" y="130" width="62" height="30" rx="6"/><text class="b" x="577.0" y="150.0" text-anchor="middle">vm1</text>
-<line class="a d" x1="649" y1="76" x2="649" y2="128" marker-end="url(#va)"/>
-<rect class="box" x="618" y="130" width="62" height="30" rx="6"/><text class="b" x="649.0" y="150.0" text-anchor="middle">vm2</text>
-<line class="a d" x1="649" y1="76" x2="721" y2="128" marker-end="url(#va)"/>
-<rect class="box" x="690" y="130" width="62" height="30" rx="6"/><text class="b" x="721.0" y="150.0" text-anchor="middle">vm3</text>
-<text class="w" x="649" y="182" text-anchor="middle">SSH töötab, Ansible ei käi</text>
-<text class="s" x="649" y="198" text-anchor="middle">playbooki jooksutad vm1-s</text>
+<text class="t" x="115" y="18" text-anchor="middle">1 · Remote: vm1</text>
+<rect class="box" x="25" y="30" width="180" height="44" rx="6"/><text class="b" x="115.0" y="49.0" text-anchor="middle">Sinu arvuti</text><text class="s" x="115.0" y="65.0" text-anchor="middle">VS Code</text>
+<line class="a" x1="115" y1="74" x2="115" y2="98" marker-end="url(#va)"/>
+<rect class="ctrl" x="45" y="100" width="140" height="44" rx="6"/><text class="b" x="115.0" y="119.0" text-anchor="middle">vm1</text><text class="s" x="115.0" y="135.0" text-anchor="middle">Ansible + Git</text>
+<line class="a" x1="115" y1="144" x2="43" y2="186" marker-end="url(#va)"/>
+<rect class="box" x="11" y="188" width="64" height="32" rx="6"/><text class="b" x="43.0" y="209.0" text-anchor="middle">vm1</text>
+<line class="a" x1="115" y1="144" x2="115" y2="186" marker-end="url(#va)"/>
+<rect class="box" x="83" y="188" width="64" height="32" rx="6"/><text class="b" x="115.0" y="209.0" text-anchor="middle">vm2</text>
+<line class="a" x1="115" y1="144" x2="187" y2="186" marker-end="url(#va)"/>
+<rect class="box" x="155" y="188" width="64" height="32" rx="6"/><text class="b" x="187.0" y="209.0" text-anchor="middle">vm3</text>
+<text class="s" x="115" y="244" text-anchor="middle">soovitatav, juhend</text>
+<text class="s" x="115" y="261" text-anchor="middle">on selle järgi</text>
+<text class="t" x="345" y="18" text-anchor="middle">2 · Local: WSL</text>
+<rect class="ctrl" x="255" y="30" width="180" height="44" rx="6"/><text class="b" x="345.0" y="49.0" text-anchor="middle">Sinu arvuti · WSL</text><text class="s" x="345.0" y="65.0" text-anchor="middle">Ansible + Git</text>
+<line class="a" x1="345" y1="74" x2="273" y2="186" marker-end="url(#va)"/>
+<rect class="box" x="241" y="188" width="64" height="32" rx="6"/><text class="b" x="273.0" y="209.0" text-anchor="middle">vm1</text>
+<line class="a" x1="345" y1="74" x2="345" y2="186" marker-end="url(#va)"/>
+<rect class="box" x="313" y="188" width="64" height="32" rx="6"/><text class="b" x="345.0" y="209.0" text-anchor="middle">vm2</text>
+<line class="a" x1="345" y1="74" x2="417" y2="186" marker-end="url(#va)"/>
+<rect class="box" x="385" y="188" width="64" height="32" rx="6"/><text class="b" x="417.0" y="209.0" text-anchor="middle">vm3</text>
+<text class="s" x="345" y="244" text-anchor="middle">kodus, vaja VPN-i</text>
+<text class="t" x="575" y="18" text-anchor="middle">3 · Local: Windows</text>
+<rect class="box" x="485" y="30" width="180" height="44" rx="6"/><text class="b" x="575.0" y="49.0" text-anchor="middle">Sinu arvuti</text><text class="s" x="575.0" y="65.0" text-anchor="middle">VS Code + Git</text>
+<line class="a d" x1="575" y1="74" x2="503" y2="186" marker-end="url(#va)"/>
+<rect class="box" x="471" y="188" width="64" height="32" rx="6"/><text class="b" x="503.0" y="209.0" text-anchor="middle">vm1</text>
+<line class="a d" x1="575" y1="74" x2="575" y2="186" marker-end="url(#va)"/>
+<rect class="box" x="543" y="188" width="64" height="32" rx="6"/><text class="b" x="575.0" y="209.0" text-anchor="middle">vm2</text>
+<line class="a d" x1="575" y1="74" x2="647" y2="186" marker-end="url(#va)"/>
+<rect class="box" x="615" y="188" width="64" height="32" rx="6"/><text class="b" x="647.0" y="209.0" text-anchor="middle">vm3</text>
+<text class="w" x="575" y="244" text-anchor="middle">Ansible ei käi</text>
+<text class="s" x="575" y="261" text-anchor="middle">SSH töötab</text>
 </svg>
 </figure>
 
@@ -77,8 +78,6 @@ Kontrollnimekiri on su repos **Issues** all: issue Lab 01 · Esimene playbook.
         ├── teine_jooks.txt
         └── kolm_masinat.txt
     ```
-
----
 
 ## A · Juhendatud osa
 
@@ -136,8 +135,6 @@ Enne kui midagi automatiseerid, pead teadma, mida masin tegema peab. A4-s muutuv
 
     - [loeng §1–§2](lecture.md#1-kolm-serverit-ja-uks-unustatud-samm)
 
----
-
 ### A2 · Vaata, miks skript ei sobi
 
 Selle sammu lõpuks oled näinud, mis juhtub, kui tavalise skripti käivitad kaks korda.
@@ -186,8 +183,6 @@ sudo rm -rf /srv/raport
 ??? info "Loe juurde"
 
     - [loeng §5](lecture.md#5-idempotentsus)
-
----
 
 ### A3 · Loo inventar ja proovi ad-hoc käske
 
@@ -282,8 +277,6 @@ Moodul (`ping`, `setup`, `package`) tagastab struktureeritud info ja teab, kas t
 
     - [loeng §7–§9](lecture.md#7-paigaldamine-ja-ansiblecfg)
     - [Ansible: ad-hoc käsud](https://docs.ansible.com/ansible/latest/command_guide/intro_adhoc.html)
-
----
 
 ### A4 · Kirjuta esimene playbook
 
@@ -393,8 +386,6 @@ Ainult avalehe sisu erines sellest, mis sa käsitsi tegid. Kõik muu oli juba so
     - [Ansible: getting started](https://docs.ansible.com/ansible/latest/getting_started/)
     - [builtin moodulid](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/)
 
----
-
 ### A5 · Tõenda, et teine jooks ei muuda midagi
 
 Selle sammu lõpuks on failis `logid/teine_jooks.txt` tõend, et teine jooks ei muuda midagi.
@@ -446,8 +437,6 @@ Toores käsk ei tea, milline olek on. Kui moodulit pole, teeb `creates` käsu id
 
     - [loeng §5](lecture.md#5-idempotentsus)
 
----
-
 ### A6 · Vaata muudatust enne tegemist
 
 Selle sammu lõpuks oskad vaadata, mida playbook muudaks, ilma et midagi muutuks.
@@ -496,8 +485,6 @@ Tootmises vaatad enne muudatust, mida see teeks. `--diff` näitab täpselt, mis 
     - [loeng §16](lecture.md#16-ohutu-muudatus)
     - [Ansible: check mode ja diff](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html)
 
----
-
 ### A7 · Paranda drift
 
 Selle sammu lõpuks oled näinud, et playbook parandab ainult selle, mis käsitsi ära rikuti.
@@ -538,8 +525,6 @@ Playbook parandas ainult selle, mis triivis. Sa ei pidanud talle ütlema, mis ka
 ??? info "Loe juurde"
 
     - [loeng §16](lecture.md#16-ohutu-muudatus)
-
----
 
 ### A8 · Kasuta muutujaid ja fakte
 
@@ -596,8 +581,6 @@ Muutujaga saad sama playbooki uuesti kasutada. `-e` (extra vars) on kõige kõrg
 
     - [loeng §13](lecture.md#13-faktid-ja-muutujad)
     - [Ansible: faktid ja muutujad](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html)
-
----
 
 ## B · Iseseisev osa: kolm serverit
 
@@ -729,8 +712,6 @@ ansible-playbook bootstrap.yml --limit veeb
 
     `vm2` näitab `changed=1`, `vm1` ja `vm3` näitavad `changed=0`.
 
----
-
 ## Esitamine
 
 ### README
@@ -772,13 +753,9 @@ Kui kontroll on punane, ava job ja leia rida, kus on `FAIL` või `PUUDU`. Parand
 
 Kodutöö kontrollid (H1–H6 jne) kukuvad seni, kuni kodutöö on tegemata. Seepärast on kogu Autograde punane. Nii peabki olema: loeb punktisumma, mitte värv.
 
----
-
 ## Kodutöö
 
 Kodune õpe ja kodutöö on eraldi lehel: [K1 · Kodune õpe ja kodutöö](homework.md). Samasse reposse, tähtaeg Classroom 50-s.
-
----
 
 ## Veaotsing
 
