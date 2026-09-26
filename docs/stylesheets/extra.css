@@ -80,3 +80,13 @@
 /* Joonised: laius tuleb figure style="max-width:<viewBox laius>px" kaudu,
    nii on joonise tekst sama suur kui lehe tekst (1 SVG ühik = 1 px) */
 .md-typeset figure svg { width: 100%; height: auto; }
+
+/* SVG-joonised: Material annab figure'ile width: fit-content, SVG tahab
+   100% -> brauser kahandas joonise pisikeseks. Joonise figure võtab kogu
+   laiuse; tegelik laius tuleb style="max-width:<viewBox>px" kaudu. */
+.md-typeset figure.lx,
+.md-typeset figure.dl-var,
+.md-typeset figure.dl-stack {
+  width: 100%;
+  display: block;
+}
