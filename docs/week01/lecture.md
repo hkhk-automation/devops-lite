@@ -197,7 +197,7 @@ Skript töötab, aga ainult RedHati peres (`rpm`, `dnf`). See ei ütle, mida ta 
         enabled: true
 ```
 
-Kõik kontrollid, mis skriptis olid `if`-idena, on moodulite sees. `package` töötab nii `apt` kui `dnf` peal. Väljundis näed iga rea kohta, kas see muutis midagi.
+Kõik kontrollid, mis skriptis olid `if`-idena, on moodulite sees. `package` kasutab masina enda paketihaldurit, AlmaLinuxis `dnf`-i. Väljundis näed iga rea kohta, kas see muutis midagi.
 
 Tööl tähendab see, et playbooki loetakse nagu serveri kirjeldust. Uus kolleeg, kes tahab teada, kuidas veebiserverid on seadistatud, avab `bootstrap.yml`-i ega pea läbi käima kellegi shelli ajalugu.
 
@@ -614,7 +614,7 @@ Kursuse esimestel kohtumistel kasutad neid mooduleid:
 | `ansible.builtin.user` | kasutaja | `name`, `groups`, `append`, `shell`, `state` |
 | `ansible.builtin.group` | grupp | `name`, `state` |
 | `ansible.builtin.package` | pakett, OS-ist sõltumatult | `name`, `state` (`present`, `absent`, `latest`) |
-| `ansible.builtin.apt` / `dnf` | pakett, konkreetne haldur | `name`, `state`, `update_cache` |
+| `ansible.builtin.dnf` | pakett `dnf`-iga | `name`, `state`, `update_cache` |
 | `ansible.builtin.copy` | fail sisuga või kopeeritud failist | `dest`, `src` või `content`, `mode`, `owner` |
 | `ansible.builtin.file` | kaust, õigused, link, kustutamine | `path`, `state`, `mode`, `owner` |
 | `ansible.builtin.lineinfile` | üks rida failis | `path`, `line`, `regexp`, `create` |
