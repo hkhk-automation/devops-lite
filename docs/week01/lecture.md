@@ -1,8 +1,27 @@
 # K1 · Ansible alused: idempotentsus ja esimene playbook
 
-**Kursus:** DevOps Lite
-Klassis käsitleme §1, §4–5 ja §8, ülejäänu on iseseisvaks lugemiseks.
-**Tase:** kesktase. Eeldame Linuxi käsurida, SSH-d, `sudo`-t, paketihaldust (`dnf`) ja Giti baasi.
+Eeldame Linuxi käsurida, SSH-d, `sudo`-t, paketihaldust (`dnf`) ja Giti aluseid. Klassis käsitleme peatükke §1, §4–5 ja §8, ülejäänu loed kodus.
+
+| § | Teema | Kus |
+|---|---|---|
+| [§1](#1-kolm-serverit-ja-uks-unustatud-samm) | Kolm serverit ja üks unustatud samm | klassis |
+| [§2](#2-konfiguratsiooni-triiv) | Konfiguratsiooni triiv | kodus |
+| [§3](#3-automatiseerimise-uldmudel) | Automatiseerimise üldmudel | kodus |
+| [§4](#4-kask-ja-soovitud-olek) | Käsk ja soovitud olek | klassis |
+| [§5](#5-idempotentsus) | Idempotentsus | klassis |
+| [§6](#6-mida-ansible-kaivitamisel-teeb) | Mida Ansible käivitamisel teeb | kodus |
+| [§7](#7-paigaldamine-ja-ansiblecfg) | Paigaldamine ja `ansible.cfg` | kodus |
+| [§8](#8-inventar) | Inventar | klassis |
+| [§9](#9-ad-hoc-kasud) | Ad-hoc käsud | kodus |
+| [§10](#10-yaml-luhidalt) | YAML lühidalt | kodus |
+| [§11](#11-moodulid-ja-toores-kask) | Moodulid ja toores käsk | kodus |
+| [§12](#12-become-administraatori-oigused) | `become`: administraatori õigused | kodus |
+| [§13](#13-faktid-ja-muutujad) | Faktid ja muutujad | kodus |
+| [§14](#14-playbooki-anatoomia-ja-kaivitamine) | Playbooki anatoomia ja käivitamine | kodus |
+| [§15](#15-ssh-votmed-ja-ligipaas) | SSH-võtmed ja ligipääs | kodus |
+| [§16](#16-ohutu-muudatus) | Ohutu muudatus | kodus |
+| [§17](#17-tuupilised-vead-esimesel-paeval) | Tüüpilised vead esimesel päeval | kodus |
+| [§18](#18-kokkuvote) | Kokkuvõte | kodus |
 
 ---
 
@@ -14,7 +33,7 @@ Pärast seda loengut oskad:
 - eristada käsku ja soovitud oleku kirjeldust ning põhjendada, miks moodul on idempotentne ja `command` mitte;
 - kirjeldada, mida Ansible teeb, kui playbook käivitub: control node, SSH, Python, push-mudel, `forks`;
 - kirjutada ja lugeda inventari, ad-hoc käske, playbooki ja `PLAY RECAP`-i;
-- kasutada fakte ja muutujaid, et sama playbook töötaks eri distributsioonidel;
+- kasutada fakte ja muutujaid playbookis;
 - valida ohutu töökäik muudatusele: `--syntax-check`, `--check --diff`, `--limit`, siis kõik masinad;
 - seadistada võtmepõhise SSH-ligipääsu ja lahendada tüüpilised ühendusvead.
 
@@ -64,6 +83,8 @@ Ansible'i sõnavara, mida täna kasutame:
 Järgmisel kohtumisel lisanduvad **roll** (taaskasutatav task'ide, mallide ja muutujate kogum) ja **Vault** (krüptitud saladused).
 
 Ansible pole ainus tööriist sellele tööle. Puppet, Chef ja SaltStack lahendavad sama probleemi, aga vajavad üldjuhul igasse masinasse agenti ja keskserverit. Ansible'i eelis on väike alguskulu: paigaldad ühe masinasse ja saad kohe hallata kõiki, kuhu SSH-ga ligi pääsed. Sellest, mida see agentless-lähenemine tähendab, räägime §6-s.
+
+*Allikad: [Ansible: getting started](https://docs.ansible.com/ansible/latest/getting_started/) · raamat: Meijer, Hochstein, Moser, *Ansible: Up and Running*, 3. tr, ptk 1–4*
 
 ---
 
@@ -116,7 +137,9 @@ Mudelist on kasu, sest see teeb võõra tööriista loetavaks. Sama raam sobib k
 
 Tõend on osa, mis kõige sagedamini ununeb. Cron-skript, mis kirjutab vea `/dev/null`-i, on automatiseeritud, aga keegi ei tea, kas see töötab. Ansible annab tõendi igal jooksul, ja kursuse jooksul kasutame seda tõendit ka esitamiseks: `logid/teine_jooks.txt` failis olev `changed=0` näitab, et sinu kirjeldus on idempotentne.
 
-**Kordamisküsimus:** võta cron-töö, mis teeb igal ööl andmebaasist varukoopia. Nimeta selle viis osa ülaltoodud mudeli järgi. Mis on selle töö puhul tõend, ja kas see on kuskil nähtav?
+??? question "Kordamisküsimus"
+
+    Võta cron-töö, mis teeb igal ööl andmebaasist varukoopia. Nimeta selle viis osa ülaltoodud mudeli järgi. Mis on selle töö puhul tõend, ja kas see on kuskil nähtav?
 
 ---
 
@@ -304,7 +327,9 @@ See task annab teisel jooksul isegi `failed`, sest `useradd` lõpetab veakoodiga
 
 `changed_when` ütleb Ansible'ile, millal väljund tähendab muutust. Sellest räägime teisel kohtumisel.
 
-**Kordamisküsimus:** miks on `useradd deploy` shelli skriptis ohtlikum kui `ansible.builtin.user: name=deploy`? Mis juhtub kummagagi teisel jooksul, ja kumma viga sa märkad?
+??? question "Kordamisküsimus"
+
+    Miks on `useradd deploy` shelli skriptis ohtlikum kui `ansible.builtin.user: name=deploy`? Mis juhtub kummagagi teisel jooksul, ja kumma viga sa märkad?
 
 ---
 
@@ -347,11 +372,15 @@ Sellest tulenevad omadused, mis mõjutavad kogu edasist tööd.
 
 **Faktid kogutakse alguses.** Enne esimest task'i käivitab Ansible igas masinas `setup`-mooduli, mis kogub info masina kohta. See võtab paar sekundit masina kohta. Kui fakte pole vaja, saab kogumise välja lülitada (`gather_facts: false`).
 
-**Kordamisküsimus:** miks ei pea managed node'is Ansible paigaldatud olema? Mis peab seal siiski olema?
+??? question "Kordamisküsimus"
+
+    Miks ei pea managed node'is Ansible paigaldatud olema? Mis peab seal siiski olema?
 
 ---
 
 ## 7. Paigaldamine ja `ansible.cfg`
+
+Materjal on testitud `ansible-core` 2.14-ga (AlmaLinux 9). Oma versiooni näed käsuga `ansible --version`.
 
 Ansible paigaldatakse ainult control node'i. Levinumad viisid:
 
@@ -399,6 +428,8 @@ pipelining = True
 !!! warning "Tähelepanu"
 
     Kui `ansible.cfg` on kaustas, kuhu kõigil on kirjutusõigus (maailmaloetav kaust), ignoreerib Ansible seda turvakaalutlustel ja annab hoiatuse. WSL-is juhtub see, kui töötad Windowsi kettal (`/mnt/c/...`). Hoia töökaust Linuxi failisüsteemis, näiteks `~/`.
+
+*Allikad: [paigaldamine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) · [ansible.cfg seaded](https://docs.ansible.com/ansible/latest/reference_appendices/config.html)*
 
 ---
 
@@ -505,6 +536,8 @@ ansible-playbook bootstrap.yml --limit 'veeb:!vm3'
 
 Tööl on inventar tavaliselt jagatud keskkondade kaupa (`test`, `prod`) ja rollide kaupa (`veeb`, `andmebaas`, `koormusjaotur`). Teisel kohtumisel lisame gruppidele muutujad, nii et sama playbook seadistab test- ja toodangukeskkonna erinevalt.
 
+*Allikad: [inventar](https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html) · [mustrid](https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html)*
+
 ---
 
 ## 9. Ad-hoc käsud
@@ -537,6 +570,8 @@ vm1 | SUCCESS => {
 ```
 
 Ad-hoc käsud sobivad küsimustele ("mis versioon kõigis masinates on?") ja ühekordsetele toimingutele ("taaskäivita teenus kohe"). Kõik, mis peab olema korratav või mida tahad Gitis hoida, käib playbooki.
+
+*Allikad: [ad-hoc käsud](https://docs.ansible.com/ansible/latest/command_guide/intro_adhoc.html)*
 
 ---
 
@@ -601,6 +636,8 @@ Enne esimest jooksu kontrolli süntaksit:
 ansible-playbook bootstrap.yml --syntax-check
 ```
 
+*Allikad: [YAML süntaks](https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html)*
+
 ---
 
 ## 11. Moodulid ja toores käsk
@@ -653,6 +690,8 @@ ansible-doc -l | grep -i cron            # otsi mooduleid nime järgi
 
 `ansible-doc` väljundi lõpus on alati jaotis `EXAMPLES`, kust saad tööva näite. Keegi ei mäleta kõiki parameetreid peast, ja tööl kasutad `ansible-doc`-i iga päev.
 
+*Allikad: [ansible.builtin moodulid](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/)*
+
 ---
 
 ## 12. `become`: administraatori õigused
@@ -689,6 +728,8 @@ Toodangus eelistatakse eraldi automaatikakontot, kellel on paroolita sudo ainult
   become: true
   become_user: postgres
 ```
+
+*Allikad: [become](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_privilege_escalation.html)*
 
 ---
 
@@ -757,6 +798,7 @@ ok: [vm1] =>
     os_nimi: AlmaLinux 9.8
 ```
 
+*Allikad: [faktid ja muutujad](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html)*
 
 ---
 
@@ -841,6 +883,8 @@ vm3  : ok=0  changed=0  unreachable=1  failed=0  skipped=0
 ```
 
 Siit loed kolm asja: `vm1` on soovitud olekus; `vm2`-s oli üks erinevus, mis parandati; `vm3`-ga ei saadud ühendust, seega ei tea sa selle olekust midagi. Viimane on rida, mida kõige kergemini tähelepanuta jäetakse, sest `changed=0` on seal ka.
+
+*Allikad: [playbookid](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_intro.html)*
 
 ---
 
@@ -948,6 +992,8 @@ ssh-keyscan vm1 vm2 vm3 >> ~/.ssh/known_hosts
 | `UNREACHABLE` Ansible'is | üks ülaltoodutest | `ssh vm1 hostname` käsitsi, siis `-vvv` |
 | `Missing sudo password` | sudo nõuab parooli | `-K` või paroolita sudo |
 
+*Allikad: [ssh_config](https://man.openbsd.org/ssh_config) · [ssh-keygen](https://man.openbsd.org/ssh-keygen)*
+
 ---
 
 ## 16. Ohutu muudatus
@@ -1013,7 +1059,11 @@ Iga muudatuse juures:
 - **tõenda:** teine jooks `changed=0` kõigil, `unreachable=0`;
 - **pane kirja:** muudatus käib Giti, commit-sõnum ütleb miks.
 
-**Kordamisküsimus:** kolleeg ütleb, et `--check` on aeglane ja ta jätab selle vahele, sest "playbook on ju testitud". Millise olukorra puhul läheb see valesti? Ja millal näitab `--check` ise valesti?
+??? question "Kordamisküsimus"
+
+    Kolleeg ütleb, et `--check` on aeglane ja ta jätab selle vahele, sest "playbook on ju testitud". Millise olukorra puhul läheb see valesti? Ja millal näitab `--check` ise valesti?
+
+*Allikad: [check mode ja diff](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html)*
 
 ---
 
@@ -1034,61 +1084,23 @@ Iga muudatuse juures:
 
 Veaotsingu järjekord on alati sama: loe veateadet algusest lõpuni, korda käsku `-v`-ga, proovi sama asja käsitsi sihtmasinas. Enamik vigu on kirjas veateate esimeses reas.
 
+*Allikad: [ansible-lint](https://ansible.readthedocs.io/projects/lint/)*
+
 ---
 
 ## 18. Kokkuvõte
 
-**Triiv tekib alati, kui masinaid seadistatakse käsitsi.** Kaitse selle vastu on kirjeldus koodis, mida käivitatakse korduvalt.
-
-**Deklaratiivne task kirjeldab olekut, moodul otsustab tegevuse.** `command`/`shell` ainult siis, kui moodulit pole.
-
-**`changed=0` teisel jooksul on idempotentsuse tõend.** Task, mis on igal jooksul `changed`, teeb tegevust ega kirjelda olekut.
-
-**Ansible on agentless ja push-põhine.** Control node ühendub SSH-ga, kopeerib mooduli, käivitab selle ja saab JSON-i tagasi.
-
-**Inventar ütleb kus, playbook ütleb mis, faktid ütlevad, milline masin on.** `ansible_os_family` järgi saab üks playbook teenindada eri distributsioone.
-
-**Võtmepõhine SSH on eeldus.** Privaatvõti jääb control node'i, avalik võti läheb `authorized_keys`-i, lühinimed tulevad `~/.ssh/config`-ist.
-
-**Ohutu muudatus:** `--syntax-check` → `--check --diff` → `--limit` → kõik → teine jooks. `unreachable` rida `PLAY RECAP`-is tähendab, et selle masina olekut sa ei tea.
-
----
-
-## Allikad
-
-### Ametlik dokumentatsioon
-
-| Allikas | URL |
+| Põhimõte | Mida see tähendab |
 |---|---|
-| Ansible: Getting started | <https://docs.ansible.com/ansible/latest/getting_started/> |
-| Paigaldamine | <https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html> |
-| Konfiguratsioon (`ansible.cfg`) | <https://docs.ansible.com/ansible/latest/reference_appendices/config.html> |
-| Inventari ülesehitus | <https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html> |
-| Mustrid (patterns) | <https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html> |
-| Ad-hoc käsud | <https://docs.ansible.com/ansible/latest/command_guide/intro_adhoc.html> |
-| YAML süntaks | <https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html> |
-| Playbookid | <https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_intro.html> |
-| `become` | <https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_privilege_escalation.html> |
-| Faktid ja muutujad | <https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html> |
-| Check mode ja diff | <https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html> |
-| `ansible.builtin` moodulid | <https://docs.ansible.com/ansible/latest/collections/ansible/builtin/> |
+| triiv tekib alati, kui masinaid seadistatakse käsitsi | kaitse on kirjeldus koodis, mida käivitatakse korduvalt |
+| task kirjeldab olekut, moodul otsustab tegevuse | `command`/`shell` ainult siis, kui moodulit pole |
+| `changed=0` teisel jooksul on idempotentsuse tõend | task, mis on igal jooksul `changed`, teeb tegevust ega kirjelda olekut |
+| Ansible on agentless ja push-põhine | control node ühendub SSH-ga, kopeerib mooduli, käivitab selle ja saab JSON-i tagasi |
+| inventar ütleb kus, playbook mis, faktid milline masin | faktid on playbookis muutujad, nt `ansible_distribution` |
+| võtmepõhine SSH on eeldus | privaatvõti jääb control node'i, avalik võti läheb `authorized_keys`-i, lühinimed `~/.ssh/config`-ist |
+| ohutu muudatus | `--syntax-check` → `--check --diff` → `--limit` → kõik → teine jooks; `unreachable` tähendab, et masina olekut sa ei tea |
 
-### Teooria ja kontekst
-
-| Allikas | URL |
-|---|---|
-| Bas Meijer, Lorin Hochstein, René Moser, *Ansible: Up and Running*, 3. tr (O'Reilly 2022), ptk 1–4 | — |
-| OpenSSH: `ssh_config` | <https://man.openbsd.org/ssh_config> |
-| OpenSSH: `ssh-keygen` | <https://man.openbsd.org/ssh-keygen> |
-
-### Praktiline
-
-| Allikas | URL |
-|---|---|
-| `ansible-lint` | <https://ansible.readthedocs.io/projects/lint/> |
-| Pikem Ansible'i materjal (IT automatiseerimise kursus) | <https://hkhk-automation.github.io/devops/week03/lecture/> |
-
-**Versioonid:** materjal on testitud `ansible-core` 2.14-ga (AlmaLinux 9). Versiooni näed käsuga `ansible --version`.
+*Allikad: [pikem Ansible'i materjal](https://hkhk-automation.github.io/devops/week03/lecture/)*
 
 ---
 
