@@ -55,12 +55,19 @@ Juhendaja annab sulle kolm IP-d, kasutajanime ja parooli. Kirjuta need üles:
 
 Esimesel ühendumisel küsitakse host key kinnitust (`yes`) ja parooli.
 
-**Tegevus:** masinal pole veel nime (`localhost`). Anna talle nimi, et näeksid alati, kus oled:
+**Tegevus:** vaheta parool ja anna masinatele nimed. Juhendajalt saadud parool on kõigil tudengitel sama, ja masinad on ühes võrgus. Vaheta see kõigis kolmes masinas **samaks** uueks parooliks, sest Ansible küsib sudo parooli ühe korra ja kasutab seda kõigil kolmel.
+
+Masinatel pole veel nime (prompt näitab `localhost`). Nimi aitab sul alati näha, kus oled, ja teeb Ansible'i faktid loetavaks.
 
 ```bash
+passwd
 sudo hostnamectl set-hostname vm1
+ssh -t <kasutaja>@<vm2-ip> "passwd && sudo hostnamectl set-hostname vm2"
+ssh -t <kasutaja>@<vm3-ip> "passwd && sudo hostnamectl set-hostname vm3"
 exec bash
 ```
+
+`passwd` küsib esmalt vana parooli, siis kaks korda uut. `sudo` küsib pärast seda juba uut parooli. Liiga lihtsa parooli lükkab AlmaLinux tagasi (`BAD PASSWORD`), vali vähemalt 8 märki tähtede ja numbritega. `ssh` küsib enne seda vm2 ja vm3 host key kinnitust (`yes`) ja vana parooli. Uus parool ei lähe kunagi üheski repo faili.
 
 **Oodatav tulemus:** prompt on `<kasutaja>@vm1`. Kõik järgmised käsud käivad vm1-s, mitte Windowsis.
 
@@ -597,9 +604,8 @@ curl -s localhost
 
 ```
 TASK [Näita fakte, mida lehel kasutame] ***********************
-ok: [localhost] => {
-    "msg": "localhost / AlmaLinux 9.8"
-}
+ok: [localhost] =>
+    msg: localhost / AlmaLinux 9.8
 
 <h1>Hallatud Ansible'iga</h1><p>localhost, AlmaLinux</p>
 ```
@@ -640,7 +646,6 @@ Kõik kolm on AlmaLinux 9. Playbook peab siiski valima OS-ist sõltuvad väärtu
 
 - [ ] `ssh vm1 hostname`, `ssh vm2 hostname`, `ssh vm3 hostname` vastavad ilma parooli küsimata.
 - [ ] `ansible veeb -m ping` annab kolm `pong`-i.
-- [ ] vm2 ja vm3 prompt näitab nende nime (`sudo hostnamectl set-hostname vm2` jne, nagu 0.1-s).
 - [ ] vm1-st `curl http://<vm-ip>` näitab iga masina puhul selle nime (vm2 ja vm3 vastavad alles pärast tulemüüri avamist).
 - [ ] Teine jooks kõigil kolmel: `changed=0`, `unreachable=0`, salvestatud faili `logid/kolm_masinat.txt`.
 - [ ] Drift ühes masinas (nt peatatud nginx) parandub ühe jooksuga, ja teised kaks jäävad `changed=0`.
@@ -648,7 +653,7 @@ Kõik kolm on AlmaLinux 9. Playbook peab siiski valima OS-ist sõltuvad väärtu
 ### Soovitatav järjekord
 
 1. `ssh-copy-id` kõigile kolmele ja `~/.ssh/config`.
-2. Käsitsi `ssh vm2`, `ssh vm3`: host key kinnitus, hostinimi paika.
+2. Käsitsi `ssh vm2 hostname`, `ssh vm3 hostname`: vastab `vm2`, `vm3` (nimed panid 0.1-s).
 3. Inventari grupp `veeb`.
 4. `ping` ja faktid.
 5. Playbook: `hosts`, juurkaust fakti järgi, leht masina nimega, tulemüür.
@@ -801,7 +806,7 @@ Kodutöö kontrollid (H1–H6 jne) kukuvad seni, kuni kodutöö pole tehtud, ja 
 
 ## Kodutöö
 
-Kodune õpe ja kodutöö (~8,5 h) on eraldi lehel: **[K1 · Kodune õpe ja kodutöö](homework.md)**. Samasse reposse, tähtaeg Classroom 50-s.
+Kodune õpe ja kodutöö on eraldi lehel: **[K1 · Kodune õpe ja kodutöö](homework.md)**. Samasse reposse, tähtaeg Classroom 50-s.
 
 ---
 
