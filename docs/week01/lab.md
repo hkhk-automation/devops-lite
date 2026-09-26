@@ -2,27 +2,45 @@
 
 Tänase lõpuks viib üks playbook kolm serverit samasse olekusse: kasutaja on olemas, nginx käib ja avaleht näitab serveri nime. Teine jooks ei muuda midagi (`changed=0`).
 
-<figure style="max-width:620px;margin:.8em auto" class="dl-var" markdown="0">
-<svg viewBox="0 0 620 150" role="img" aria-labelledby="dl-var-t" xmlns="http://www.w3.org/2000/svg">
-<title id="dl-var-t">Sinu arvutist VS Code Remote-SSH vm1-sse; vm1 on control node ja haldab vm2, vm3 ja iseennast</title>
-<style>.dl-var svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.dl-var .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.dl-var .ctrl{fill:var(--md-primary-fg-color);fill-opacity:.18;stroke:var(--md-primary-fg-color);stroke-width:1.5}.dl-var .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.dl-var .s{fill:var(--md-default-fg-color--light);font-size:12px}.dl-var .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5}.dl-var .h{fill:var(--md-default-fg-color--light)}</style>
+<figure style="max-width:790px;margin:.8em auto" class="dl-var" markdown="0">
+<svg viewBox="0 0 790 206" role="img" aria-labelledby="dl-var-t" xmlns="http://www.w3.org/2000/svg">
+<title id="dl-var-t">Kolm varianti: remote (controller vm1), local WSL (controller sinu arvutis), local Windows (Ansible ei käi)</title>
+<style>.dl-var svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.dl-var .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.dl-var .ctrl{fill:var(--md-primary-fg-color);fill-opacity:.18;stroke:var(--md-primary-fg-color);stroke-width:1.5}.dl-var .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.dl-var .b{fill:var(--md-default-fg-color);font-size:13px;font-weight:600}.dl-var .s{fill:var(--md-default-fg-color--light);font-size:12px}.dl-var .w{fill:var(--md-accent-fg-color);font-size:12.5px;font-weight:700}.dl-var .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5}.dl-var .d{stroke-dasharray:4 3}.dl-var .h{fill:var(--md-default-fg-color--light)}</style>
 <defs><marker id="va" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
-<rect class="box" x="10" y="40" width="150" height="48" rx="6"/><text class="b" x="85.0" y="61.0" text-anchor="middle">Sinu arvuti</text><text class="s" x="85.0" y="76.0" text-anchor="middle">VS Code</text>
-<line class="a" x1="160" y1="64" x2="236" y2="64" marker-end="url(#va)"/>
-<text class="s" x="198" y="56" text-anchor="middle">Remote-SSH</text>
-<rect class="ctrl" x="240" y="34" width="170" height="60" rx="6"/><text class="b" x="325.0" y="61.0" text-anchor="middle">vm1 · control node</text><text class="s" x="325.0" y="76.0" text-anchor="middle">Ansible + Git + repo</text>
-<line class="a" x1="410" y1="52" x2="486" y2="22" marker-end="url(#va)"/>
-<line class="a" x1="410" y1="64" x2="486" y2="64" marker-end="url(#va)"/>
-<line class="a" x1="410" y1="76" x2="486" y2="106" marker-end="url(#va)"/>
-<rect class="box" x="490" y="6" width="110" height="32" rx="6"/><text class="b" x="545.0" y="27.0" text-anchor="middle">vm2</text>
-<rect class="box" x="490" y="48" width="110" height="32" rx="6"/><text class="b" x="545.0" y="69.0" text-anchor="middle">vm3</text>
-<rect class="box" x="490" y="90" width="110" height="32" rx="6"/><text class="b" x="545.0" y="111.0" text-anchor="middle">vm1 ise</text>
-<text class="s" x="548" y="140" text-anchor="middle">SSH-võtmega</text>
-<text class="s" x="325" y="118" text-anchor="middle">kõik käsud jooksevad siin</text>
+<text class="t" x="125" y="18" text-anchor="middle">1 · Remote: controller on vm1</text>
+<rect class="box" x="8" y="32" width="92" height="44" rx="6"/><text class="b" x="54.0" y="51.0" text-anchor="middle">Sinu arvuti</text><text class="s" x="54.0" y="66.0" text-anchor="middle">VS Code</text>
+<line class="a" x1="100" y1="54" x2="136" y2="54" marker-end="url(#va)"/>
+<rect class="ctrl" x="138" y="32" width="106" height="44" rx="6"/><text class="b" x="191.0" y="51.0" text-anchor="middle">vm1</text><text class="s" x="191.0" y="66.0" text-anchor="middle">Ansible + Git</text>
+<line class="a" x1="191" y1="76" x2="53" y2="128" marker-end="url(#va)"/>
+<rect class="box" x="22" y="130" width="62" height="30" rx="6"/><text class="b" x="53.0" y="150.0" text-anchor="middle">vm1</text>
+<line class="a" x1="191" y1="76" x2="125" y2="128" marker-end="url(#va)"/>
+<rect class="box" x="94" y="130" width="62" height="30" rx="6"/><text class="b" x="125.0" y="150.0" text-anchor="middle">vm2</text>
+<line class="a" x1="191" y1="76" x2="197" y2="128" marker-end="url(#va)"/>
+<rect class="box" x="166" y="130" width="62" height="30" rx="6"/><text class="b" x="197.0" y="150.0" text-anchor="middle">vm3</text>
+<text class="s" x="125" y="182" text-anchor="middle">soovitatav, juhend on selle järgi</text>
+<text class="t" x="387" y="18" text-anchor="middle">2 · Local: controller on WSL</text>
+<rect class="ctrl" x="317" y="32" width="140" height="44" rx="6"/><text class="b" x="387.0" y="51.0" text-anchor="middle">Sinu arvuti · WSL</text><text class="s" x="387.0" y="66.0" text-anchor="middle">Ansible + Git</text>
+<line class="a" x1="387" y1="76" x2="315" y2="128" marker-end="url(#va)"/>
+<rect class="box" x="284" y="130" width="62" height="30" rx="6"/><text class="b" x="315.0" y="150.0" text-anchor="middle">vm1</text>
+<line class="a" x1="387" y1="76" x2="387" y2="128" marker-end="url(#va)"/>
+<rect class="box" x="356" y="130" width="62" height="30" rx="6"/><text class="b" x="387.0" y="150.0" text-anchor="middle">vm2</text>
+<line class="a" x1="387" y1="76" x2="459" y2="128" marker-end="url(#va)"/>
+<rect class="box" x="428" y="130" width="62" height="30" rx="6"/><text class="b" x="459.0" y="150.0" text-anchor="middle">vm3</text>
+<text class="s" x="387" y="182" text-anchor="middle">kodus, vaja VPN-i</text>
+<text class="t" x="649" y="18" text-anchor="middle">3 · Local: Windows ilma WSL-ita</text>
+<rect class="box" x="579" y="32" width="140" height="44" rx="6"/><text class="b" x="649.0" y="51.0" text-anchor="middle">Sinu arvuti · Windows</text><text class="s" x="649.0" y="66.0" text-anchor="middle">VS Code + Git</text>
+<line class="a d" x1="649" y1="76" x2="577" y2="128" marker-end="url(#va)"/>
+<rect class="box" x="546" y="130" width="62" height="30" rx="6"/><text class="b" x="577.0" y="150.0" text-anchor="middle">vm1</text>
+<line class="a d" x1="649" y1="76" x2="649" y2="128" marker-end="url(#va)"/>
+<rect class="box" x="618" y="130" width="62" height="30" rx="6"/><text class="b" x="649.0" y="150.0" text-anchor="middle">vm2</text>
+<line class="a d" x1="649" y1="76" x2="721" y2="128" marker-end="url(#va)"/>
+<rect class="box" x="690" y="130" width="62" height="30" rx="6"/><text class="b" x="721.0" y="150.0" text-anchor="middle">vm3</text>
+<text class="w" x="649" y="182" text-anchor="middle">SSH töötab, Ansible ei käi</text>
+<text class="s" x="649" y="198" text-anchor="middle">playbooki jooksutad vm1-s</text>
 </svg>
 </figure>
 
-Sinu arvutis on ainult VS Code: kõik muu (Ansible, Git, repo) on vm1-s. Osa A teed samm-sammult ühel masinal (`localhost`). Osa B teed iseseisvalt kolmel VM-il. Oodatav tulemus ja vihjed on kinnistes plokkides: tee enne ise ja siis võrdle.
+Sinine kast on control node: masin, kus Ansible jookseb. Juhend on kirjutatud variandi 1 järgi. Variant 2 sobib kodus, variant 3 ei sobi, sest [Ansible ei toeta Windowsi control node'ina](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html). Osa A teed samm-sammult ühel masinal (`localhost`). Osa B teed iseseisvalt kolmel VM-il. Oodatav tulemus ja vihjed on kinnistes plokkides: tee enne ise ja siis võrdle.
 
 ??? abstract "Õpiväljundid"
 
