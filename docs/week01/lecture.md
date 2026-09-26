@@ -1,27 +1,6 @@
 # K1 · Ansible alused: idempotentsus ja esimene playbook
 
-Eeldame Linuxi käsurida, SSH-d, `sudo`-t, paketihaldust (`dnf`) ja Giti aluseid. Klassis käsitleme peatükke §1, §4–5 ja §8, ülejäänu loed kodus.
-
-| § | Teema | Kus |
-|---|---|---|
-| [§1](#1-kolm-serverit-ja-uks-unustatud-samm) | Kolm serverit ja üks unustatud samm | klassis |
-| [§2](#2-konfiguratsiooni-triiv) | Konfiguratsiooni triiv | kodus |
-| [§3](#3-automatiseerimise-uldmudel) | Automatiseerimise üldmudel | kodus |
-| [§4](#4-kask-ja-soovitud-olek) | Käsk ja soovitud olek | klassis |
-| [§5](#5-idempotentsus) | Idempotentsus | klassis |
-| [§6](#6-mida-ansible-kaivitamisel-teeb) | Mida Ansible käivitamisel teeb | kodus |
-| [§7](#7-paigaldamine-ja-ansiblecfg) | Paigaldamine ja `ansible.cfg` | kodus |
-| [§8](#8-inventar) | Inventar | klassis |
-| [§9](#9-ad-hoc-kasud) | Ad-hoc käsud | kodus |
-| [§10](#10-yaml-luhidalt) | YAML lühidalt | kodus |
-| [§11](#11-moodulid-ja-toores-kask) | Moodulid ja toores käsk | kodus |
-| [§12](#12-become-administraatori-oigused) | `become`: administraatori õigused | kodus |
-| [§13](#13-faktid-ja-muutujad) | Faktid ja muutujad | kodus |
-| [§14](#14-playbooki-anatoomia-ja-kaivitamine) | Playbooki anatoomia ja käivitamine | kodus |
-| [§15](#15-ssh-votmed-ja-ligipaas) | SSH-võtmed ja ligipääs | kodus |
-| [§16](#16-ohutu-muudatus) | Ohutu muudatus | kodus |
-| [§17](#17-tuupilised-vead-esimesel-paeval) | Tüüpilised vead esimesel päeval | kodus |
-| [§18](#18-kokkuvote) | Kokkuvõte | kodus |
+Selle loengu jaoks peaksid oskama kasutada Linuxi käsurida, ühenduda SSH-ga, kasutada `sudo`-t, paigaldada pakette `dnf`-iga ja teha Gitis commit'i. Klassis räägime peatükkidest 1, 4, 5 ja 8. Ülejäänu loe kodus läbi.
 
 ---
 
@@ -55,30 +34,30 @@ Sellel kursusel õpime seda teist töökäiku: süsteemi olek on kirjas koodis, 
 
 **Ansible** on avatud lähtekoodiga automatiseerimistööriist, millega kirjeldad serverite soovitud olekut tekstifailides ja rakendad seda paljudele masinatele korraga. Selle lõi Michael DeHaan 2012. aastal, 2015. aastast arendab seda Red Hat. Ansible on kirjutatud Pythonis, kirjeldused on YAML-failid, ja masinatega ühendub ta üle SSH (Windowsi masinatega üle WinRM-i või SSH).
 
-Ansible'it kasutatakse neljaks asjaks:
+??? note "Ansible'it kasutatakse neljaks asjaks"
 
-| Kasutus | Näide |
-|---|---|
-| konfiguratsioonihaldus | 50 serveris on samad kasutajad, paketid, SSH-seaded ja NTP |
-| rakenduse paigaldus | uus versioon kopeeritakse serveritesse ja teenus taaskäivitatakse |
-| mitmesammuline muudatus (orkestreerimine) | võta server koormusjaoturist välja, uuenda, kontrolli, pane tagasi, järgmine |
-| ühekordsed toimingud paljudes masinates | kontrolli kõigis serverites kettaruumi või taaskäivita teenus |
+    | Kasutus | Näide |
+    |---|---|
+    | konfiguratsioonihaldus | 50 serveris on samad kasutajad, paketid, SSH-seaded ja NTP |
+    | rakenduse paigaldus | uus versioon kopeeritakse serveritesse ja teenus taaskäivitatakse |
+    | mitmesammuline muudatus (orkestreerimine) | võta server koormusjaoturist välja, uuenda, kontrolli, pane tagasi, järgmine |
+    | ühekordsed toimingud paljudes masinates | kontrolli kõigis serverites kettaruumi või taaskäivita teenus |
 
 Ansible töötab juba olemasolevate masinatega. Masinate loomine (virtuaalmasinad, pilveressursid) on Terraformi töö, mis tuleb viiendal kohtumisel. Rakenduse pakkimine konteinerisse on Dockeri töö, mis tuleb kolmandal. Tavaline tööjaotus on: Terraform loob masina, Ansible seadistab selle, ja rakendus jookseb kas otse masinas või konteineris.
 
-Ansible'i sõnavara, mida täna kasutame:
+??? note "Ansible'i sõnavara, mida täna kasutame"
 
-| Mõiste | Tähendus | Kus täna näed |
-|---|---|---|
-| control node | masin, kus Ansible on paigaldatud ja kust käivitad | sinu WSL või Linux |
-| managed node | masin, mida hallatakse | `localhost`, siis `vm1`–`vm3` |
-| inventar | nimekiri hallatavatest masinatest ja gruppidest | `inventory.ini` |
-| moodul | programm, mis haldab üht liiki ressurssi ja kontrollib olekut | `user`, `package`, `copy`, `service` |
-| task | üks moodul koos parameetritega: üks soovitud oleku rida | "nginx on paigaldatud" |
-| play | task'ide jada, mis rakendub kindlatele masinatele | `hosts: veeb` + `tasks:` |
-| playbook | YAML-fail ühe või mitme play'ga | `bootstrap.yml` |
-| fakt | info masina kohta, mille Ansible kogub enne task'e | `ansible_os_family` |
-| ad-hoc käsk | üks moodul üks kord, ilma playbookita | `ansible veeb -m ping` |
+    | Mõiste | Tähendus | Kus täna näed |
+    |---|---|---|
+    | control node | masin, kus Ansible on paigaldatud ja kust käivitad | sinu WSL või Linux |
+    | managed node | masin, mida hallatakse | `localhost`, siis `vm1`–`vm3` |
+    | inventar | nimekiri hallatavatest masinatest ja gruppidest | `inventory.ini` |
+    | moodul | programm, mis haldab üht liiki ressurssi ja kontrollib olekut | `user`, `package`, `copy`, `service` |
+    | task | üks moodul koos parameetritega: üks soovitud oleku rida | "nginx on paigaldatud" |
+    | play | task'ide jada, mis rakendub kindlatele masinatele | `hosts: veeb` + `tasks:` |
+    | playbook | YAML-fail ühe või mitme play'ga | `bootstrap.yml` |
+    | fakt | info masina kohta, mille Ansible kogub enne task'e | `ansible_os_family` |
+    | ad-hoc käsk | üks moodul üks kord, ilma playbookita | `ansible veeb -m ping` |
 
 Järgmisel kohtumisel lisanduvad **roll** (taaskasutatav task'ide, mallide ja muutujate kogum) ja **Vault** (krüptitud saladused).
 
@@ -92,14 +71,14 @@ Ansible pole ainus tööriist sellele tööle. Puppet, Chef ja SaltStack lahenda
 
 Eelmises loos kirjeldatud nähtust nimetatakse **konfiguratsiooni triiviks** (configuration drift): masinad, mis pidid olema identsed, erinevad üksteisest väikestes asjades, mida keegi ei märka enne, kui need midagi katki teevad.
 
-Triivil on neli tüüpilist põhjust:
+??? note "Triivil on neli tüüpilist põhjust"
 
-| Põhjus | Näide |
-|---|---|
-| unustatud samm | `systemctl enable` jäi tegemata |
-| teine järjekord | konf kopeeriti enne paketti, pakett kirjutas selle üle |
-| öine käsitsi parandus | `max_connections` tõsteti ühes masinas, teistes mitte |
-| keegi ei pannud kirja | "Andres muutis midagi, aga ta on puhkusel" |
+    | Põhjus | Näide |
+    |---|---|
+    | unustatud samm | `systemctl enable` jäi tegemata |
+    | teine järjekord | konf kopeeriti enne paketti, pakett kirjutas selle üle |
+    | öine käsitsi parandus | `max_connections` tõsteti ühes masinas, teistes mitte |
+    | keegi ei pannud kirja | "Andres muutis midagi, aga ta on puhkusel" |
 
 Triiv kasvab ajaga. Esimesel päeval on serverid peaaegu identsed. Pool aastat hiljem on igaühel oma ajalugu: erinevad paketiversioonid, käsitsi lisatud cron-read, ajutised failid, mis jäid alles. Selliseid servereid nimetatakse inglise keeles **snowflake server**: igaüks on ainulaadne, keegi ei tea täpselt, mis seal on, ja keegi ei julge seda uuesti paigaldada.
 
@@ -126,14 +105,16 @@ flowchart LR
 
 Mudelist on kasu, sest see teeb võõra tööriista loetavaks. Sama raam sobib kõigile tööriistadele, mida kursusel kasutame:
 
-| Tööriist | Käivitaja | Soovitud olek | Praegune olek | Tõend |
-|---|---|---|---|---|
-| cron + shell | kellaaeg | skripti sisu | failisüsteem | logifail (kui keegi selle kirjutas) |
-| Ansible | `ansible-playbook` | playbook | faktid + moodulite kontroll | `PLAY RECAP` |
-| Docker Compose | `docker compose up` | `compose.yml` | jooksvad konteinerid | `docker compose ps` |
-| GitHub Actions | `git push` | workflow-fail | repo sisu | roheline/punane job |
-| Terraform | `terraform apply` | `.tf` failid | state + päris ressursid | `plan` väljund |
-| Kubernetes | pidevalt | manifest | jooksvad Pod'id | `kubectl get` |
+??? note "Sama mudel eri tööriistades"
+
+    | Tööriist | Käivitaja | Soovitud olek | Praegune olek | Tõend |
+    |---|---|---|---|---|
+    | cron + shell | kellaaeg | skripti sisu | failisüsteem | logifail (kui keegi selle kirjutas) |
+    | Ansible | `ansible-playbook` | playbook | faktid + moodulite kontroll | `PLAY RECAP` |
+    | Docker Compose | `docker compose up` | `compose.yml` | jooksvad konteinerid | `docker compose ps` |
+    | GitHub Actions | `git push` | workflow-fail | repo sisu | roheline/punane job |
+    | Terraform | `terraform apply` | `.tf` failid | state + päris ressursid | `plan` väljund |
+    | Kubernetes | pidevalt | manifest | jooksvad Pod'id | `kubectl get` |
 
 Tõend on osa, mis kõige sagedamini ununeb. Cron-skript, mis kirjutab vea `/dev/null`-i, on automatiseeritud, aga keegi ei tea, kas see töötab. Ansible annab tõendi igal jooksul, ja kursuse jooksul kasutame seda tõendit ka esitamiseks: `logid/teine_jooks.txt` failis olev `changed=0` näitab, et sinu kirjeldus on idempotentne.
 
@@ -295,15 +276,15 @@ Iga kord peab jooks olema ohutu.
 
 ### Kuidas Ansible idempotentsust näitab
 
-Iga task annab ühe tulemuse:
+??? note "Iga task annab ühe tulemuse"
 
-| Olek | Tähendus |
-|---|---|
-| `ok` | olek oli juba soovitud, midagi ei muudetud |
-| `changed` | olek erines, moodul muutis seda |
-| `failed` | task ebaõnnestus |
-| `skipped` | task jäeti vahele (nt tingimus ei kehtinud või `--check` all `command`) |
-| `unreachable` | masinani ei saadud ühendust |
+    | Olek | Tähendus |
+    |---|---|
+    | `ok` | olek oli juba soovitud, midagi ei muudetud |
+    | `changed` | olek erines, moodul muutis seda |
+    | `failed` | task ebaõnnestus |
+    | `skipped` | task jäeti vahele (nt tingimus ei kehtinud või `--check` all `command`) |
+    | `unreachable` | masinani ei saadud ühendust |
 
 Korralik playbook annab värskes masinas esimesel jooksul mitu `changed`-i ja teisel jooksul kohe järel `changed=0`. See `changed=0` on tõend, et kirjeldus on idempotentne.
 
@@ -361,12 +342,14 @@ Sellest tulenevad omadused, mis mõjutavad kogu edasist tööd.
 
 **Push.** Sina otsustad, millal muutus toimub, ja see toimub kohe. Agendipõhises pull-mudelis kirjutad muudatuse keskserverisse ja agent tõmbab selle järgmisel kontrollil, näiteks 30 minuti pärast. Push sobib hästi, kui tahad muutust näha ja kontrollida. Pull sobib paremini tuhandetele masinatele, mis peavad ise joonel püsima.
 
-| | Ansible (push) | Puppet / Chef (pull) |
-|---|---|---|
-| Sihtmasinas | SSH + Python | agent (teenus) |
-| Muutus toimub | kohe, kui käivitad | agendi järgmisel kontrollil |
-| Keskserver | pole vaja | vaja (Puppet Server, Chef Server) |
-| Sobib | kümned kuni sajad masinad, kontrollitud muudatused | tuhanded masinad, pidev joonel hoidmine |
+??? note "Ansible (push) vs Puppet ja Chef (pull)"
+
+    | | Ansible (push) | Puppet / Chef (pull) |
+    |---|---|---|
+    | Sihtmasinas | SSH + Python | agent (teenus) |
+    | Muutus toimub | kohe, kui käivitad | agendi järgmisel kontrollil |
+    | Keskserver | pole vaja | vaja (Puppet Server, Chef Server) |
+    | Sobib | kümned kuni sajad masinad, kontrollitud muudatused | tuhanded masinad, pidev joonel hoidmine |
 
 **Task kõigil, siis järgmine task.** Task'id jooksevad kõigil masinatel paralleelselt, aga järjest: esimene task kõigil masinatel, siis teine task kõigil masinatel. Paralleelsust piirab `forks`, vaikimisi 5. Kui ühes masinas task ebaõnnestub, jätkavad teised, aga ebaõnnestunud masin jääb ülejäänud play'st välja.
 
@@ -462,13 +445,15 @@ vm2 ansible_host=192.168.125.22 ansible_user=kasutaja
 vm3 ansible_host=192.168.125.23 ansible_user=kasutaja ansible_port=2222
 ```
 
-| Muutuja | Tähendus |
-|---|---|
-| `ansible_host` | IP või DNS-nimi, kuhu ühenduda |
-| `ansible_user` | SSH kasutajanimi |
-| `ansible_port` | SSH port, vaikimisi 22 |
-| `ansible_connection` | `ssh` (vaikimisi) või `local` |
-| `ansible_python_interpreter` | Pythoni asukoht sihtmasinas, kui automaatne tuvastus ei tööta |
+??? note "Ühenduse muutujad"
+
+    | Muutuja | Tähendus |
+    |---|---|
+    | `ansible_host` | IP või DNS-nimi, kuhu ühenduda |
+    | `ansible_user` | SSH kasutajanimi |
+    | `ansible_port` | SSH port, vaikimisi 22 |
+    | `ansible_connection` | `ssh` (vaikimisi) või `local` |
+    | `ansible_python_interpreter` | Pythoni asukoht sihtmasinas, kui automaatne tuvastus ei tööta |
 
 Puhtam lahendus on hoida ühenduse andmed `~/.ssh/config`-is (vt §15). Siis on inventaris ainult nimed, ja sama `ssh vm1` töötab nii käsurealt kui Ansible'ist.
 
@@ -515,17 +500,17 @@ ansible-inventory -i inventory.ini --graph
 
 ### Sihtimine ja mustrid
 
-Masinaid saab valida grupi, nime või mustri järgi:
+??? note "Masinaid saab valida grupi, nime või mustri järgi"
 
-| Muster | Valib |
-|---|---|
-| `all` | kõik masinad |
-| `veeb` | grupi `veeb` |
-| `vm1` | ühe masina |
-| `vm1:vm2` | mõlemad |
-| `veeb:!vm3` | grupi `veeb` ilma `vm3`-ta |
-| `veeb:&test` | masinad, mis on nii `veeb`- kui `test`-grupis |
-| `vm*` | kõik, mille nimi algab `vm` |
+    | Muster | Valib |
+    |---|---|
+    | `all` | kõik masinad |
+    | `veeb` | grupi `veeb` |
+    | `vm1` | ühe masina |
+    | `vm1:vm2` | mõlemad |
+    | `veeb:!vm3` | grupi `veeb` ilma `vm3`-ta |
+    | `veeb:&test` | masinad, mis on nii `veeb`- kui `test`-grupis |
+    | `vm*` | kõik, mille nimi algab `vm` |
 
 Playbookis on muster rea `hosts:` väärtus. Käsureal lisab `--limit` piirangu playbooki `hosts:` peale:
 
@@ -550,15 +535,17 @@ ansible <muster> -i <inventar> -m <moodul> -a "<argumendid>" [-b]
 
 `-b` (`--become`) käivitab mooduli `sudo` kaudu.
 
-| Eesmärk | Käsk |
-|---|---|
-| kas masinad vastavad | `ansible veeb -m ping` |
-| faktid | `ansible vm1 -m setup -a "filter=ansible_distribution*"` |
-| kettaruum | `ansible veeb -m command -a "df -h /"` |
-| paketi paigaldamine | `ansible veeb -b -m package -a "name=htop state=present"` |
-| teenuse taaskäivitus | `ansible veeb -b -m service -a "name=nginx state=restarted"` |
-| faili kopeerimine | `ansible veeb -b -m copy -a "src=motd dest=/etc/motd"` |
-| kasutaja eemaldamine | `ansible veeb -b -m user -a "name=vana state=absent"` |
+??? note "Ad-hoc käskude näited"
+
+    | Eesmärk | Käsk |
+    |---|---|
+    | kas masinad vastavad | `ansible veeb -m ping` |
+    | faktid | `ansible vm1 -m setup -a "filter=ansible_distribution*"` |
+    | kettaruum | `ansible veeb -m command -a "df -h /"` |
+    | paketi paigaldamine | `ansible veeb -b -m package -a "name=htop state=present"` |
+    | teenuse taaskäivitus | `ansible veeb -b -m service -a "name=nginx state=restarted"` |
+    | faili kopeerimine | `ansible veeb -b -m copy -a "src=motd dest=/etc/motd"` |
+    | kasutaja eemaldamine | `ansible veeb -b -m user -a "name=vana state=absent"` |
 
 `ping`-moodul ei saada ICMP-paketti. See ühendub SSH-ga, käivitab sihtmasinas Pythoni ja vastab `pong`, kui kõik töötab. Seega kontrollib `ping` korraga ühendust, autentimist ja Pythoni olemasolu.
 
@@ -620,15 +607,15 @@ pealkiri: "Viga: fail puudub"    # koolon + tühik
 
 **Tõeväärtused** kirjuta kujul `true` ja `false`. YAML aktsepteerib ka `yes`, `no`, `on`, `off`, aga `ansible-lint` hoiatab nende eest.
 
-Tüüpilised veateated:
+??? note "Tüüpilised veateated"
 
-| Veateade | Põhjus |
-|---|---|
-| `mapping values are not allowed in this context` | koolon + tühik väärtuses ilma jutumärkideta |
-| `found character '\t' that cannot start any token` | tabulaator taandes |
-| `did not find expected '-' indicator` | loendi elemendi taane on vale |
-| `We were unable to read either as JSON nor YAML` | fail pole korrektne YAML, sageli taane |
-| `this task has extra params` | mooduli parameeter on vale taandega |
+    | Veateade | Põhjus |
+    |---|---|
+    | `mapping values are not allowed in this context` | koolon + tühik väärtuses ilma jutumärkideta |
+    | `found character '\t' that cannot start any token` | tabulaator taandes |
+    | `did not find expected '-' indicator` | loendi elemendi taane on vale |
+    | `We were unable to read either as JSON nor YAML` | fail pole korrektne YAML, sageli taane |
+    | `this task has extra params` | mooduli parameeter on vale taandega |
 
 Enne esimest jooksu kontrolli süntaksit:
 
@@ -644,35 +631,37 @@ ansible-playbook bootstrap.yml --syntax-check
 
 **Moodul** on väike programm, mis teab, kuidas ühte liiki ressurssi hallata. Moodul kontrollib enne muutmist praegust olekut ja tagastab struktureeritud tulemuse.
 
-Kursuse esimestel kohtumistel kasutad neid mooduleid:
+??? note "Moodulid, mida esimestel kohtumistel kasutad"
 
-| Moodul | Mida haldab | Olulised parameetrid |
-|---|---|---|
-| `ansible.builtin.user` | kasutaja | `name`, `groups`, `append`, `shell`, `state` |
-| `ansible.builtin.group` | grupp | `name`, `state` |
-| `ansible.builtin.package` | pakett, OS-ist sõltumatult | `name`, `state` (`present`, `absent`, `latest`) |
-| `ansible.builtin.dnf` | pakett `dnf`-iga | `name`, `state`, `update_cache` |
-| `ansible.builtin.copy` | fail sisuga või kopeeritud failist | `dest`, `src` või `content`, `mode`, `owner` |
-| `ansible.builtin.file` | kaust, õigused, link, kustutamine | `path`, `state`, `mode`, `owner` |
-| `ansible.builtin.lineinfile` | üks rida failis | `path`, `line`, `regexp`, `create` |
-| `ansible.builtin.service` | teenus | `name`, `state`, `enabled` |
-| `ansible.builtin.cron` | cron-töö | `name`, `minute`, `hour`, `job` |
-| `ansible.builtin.fetch` | fail sihtmasinast control node'i | `src`, `dest`, `flat` |
-| `ansible.posix.authorized_key` | SSH avalik võti kasutajale | `user`, `key` |
-| `ansible.builtin.debug` | väljund jooksu ajal | `msg`, `var` |
+    | Moodul | Mida haldab | Olulised parameetrid |
+    |---|---|---|
+    | `ansible.builtin.user` | kasutaja | `name`, `groups`, `append`, `shell`, `state` |
+    | `ansible.builtin.group` | grupp | `name`, `state` |
+    | `ansible.builtin.package` | pakett, OS-ist sõltumatult | `name`, `state` (`present`, `absent`, `latest`) |
+    | `ansible.builtin.dnf` | pakett `dnf`-iga | `name`, `state`, `update_cache` |
+    | `ansible.builtin.copy` | fail sisuga või kopeeritud failist | `dest`, `src` või `content`, `mode`, `owner` |
+    | `ansible.builtin.file` | kaust, õigused, link, kustutamine | `path`, `state`, `mode`, `owner` |
+    | `ansible.builtin.lineinfile` | üks rida failis | `path`, `line`, `regexp`, `create` |
+    | `ansible.builtin.service` | teenus | `name`, `state`, `enabled` |
+    | `ansible.builtin.cron` | cron-töö | `name`, `minute`, `hour`, `job` |
+    | `ansible.builtin.fetch` | fail sihtmasinast control node'i | `src`, `dest`, `flat` |
+    | `ansible.posix.authorized_key` | SSH avalik võti kasutajale | `user`, `key` |
+    | `ansible.builtin.debug` | väljund jooksu ajal | `msg`, `var` |
 
 `command` ja `shell` käivitavad lihtsalt käsu. Nad ei tea, mida käsk teeb, ega saa seega öelda, kas midagi muutus. Seetõttu märgivad nad end vaikimisi alati `changed`-ks.
 
 Vahe `command` ja `shell` vahel: `command` käivitab programmi otse, ilma shellita, seega ei tööta seal torud (`|`), ümbersuunamised (`>`) ega muutujad (`$HOME`). `shell` käivitab käsu läbi `/bin/sh`, ja kõik see töötab. `command` on ohutum, sest shelli erimärgid ei saa seal midagi ootamatut teha.
 
-| Ülesanne | Käsk | Moodul |
-|---|---|---|
-| kasutaja olemas | `useradd deploy` | `ansible.builtin.user` |
-| pakett paigaldatud | `dnf install nginx` | `ansible.builtin.package` |
-| fail sisuga | `echo … > fail` | `ansible.builtin.copy` |
-| rida konfis | `echo … >> conf` | `ansible.builtin.lineinfile` |
-| teenus käib | `systemctl start nginx` | `ansible.builtin.service` |
-| õigused | `chmod 600 fail` | `ansible.builtin.file` |
+??? note "Käsk vs moodul"
+
+    | Ülesanne | Käsk | Moodul |
+    |---|---|---|
+    | kasutaja olemas | `useradd deploy` | `ansible.builtin.user` |
+    | pakett paigaldatud | `dnf install nginx` | `ansible.builtin.package` |
+    | fail sisuga | `echo … > fail` | `ansible.builtin.copy` |
+    | rida konfis | `echo … >> conf` | `ansible.builtin.lineinfile` |
+    | teenus käib | `systemctl start nginx` | `ansible.builtin.service` |
+    | õigused | `chmod 600 fail` | `ansible.builtin.file` |
 
 Reegel on lihtne: kui moodul on olemas, kasuta moodulit. `command`/`shell` jäävad käskudele, millele moodulit pole, või ainult lugemiseks mõeldud käskudele.
 
@@ -743,17 +732,17 @@ ansible vm1 -m setup -a "filter=ansible_os_family"
 ansible vm1 -m setup -a "filter=ansible_default_ipv4"
 ```
 
-Kõige sagedamini vajad neid:
+??? note "Sagedamini vajalikud faktid"
 
-| Fakt | Näide väärtusest |
-|---|---|
-| `ansible_os_family` | `RedHat` |
-| `ansible_distribution` | `AlmaLinux` |
-| `ansible_distribution_version` | `9.8` |
-| `ansible_hostname` | `hkhk-vm-17` |
-| `ansible_default_ipv4.address` | `192.168.125.21` |
-| `ansible_memtotal_mb` | `3915` |
-| `ansible_processor_vcpus` | `2` |
+    | Fakt | Näide väärtusest |
+    |---|---|
+    | `ansible_os_family` | `RedHat` |
+    | `ansible_distribution` | `AlmaLinux` |
+    | `ansible_distribution_version` | `9.8` |
+    | `ansible_hostname` | `hkhk-vm-17` |
+    | `ansible_default_ipv4.address` | `192.168.125.21` |
+    | `ansible_memtotal_mb` | `3915` |
+    | `ansible_processor_vcpus` | `2` |
 
 Faktid muutuvad playbookis muutujateks. Lisaks on **maagilised muutujad**, mida Ansible annab alati, ka ilma faktideta. Olulisim neist on `inventory_hostname`: masina nimi inventaris.
 
@@ -841,15 +830,17 @@ Iga task'i `name` on see, mida näed väljundis. Kirjuta nimi soovitud olekuna (
 
 ### Käivitamise võtmed
 
-| Käsk | Mida teeb |
-|---|---|
-| `ansible-playbook p.yml --syntax-check` | kontrollib ainult YAML-i ja struktuuri |
-| `ansible-playbook p.yml --list-hosts` | näitab, milliseid masinaid play puudutaks |
-| `ansible-playbook p.yml --list-tasks` | näitab task'ide nimekirja |
-| `ansible-playbook p.yml --check --diff` | kuiv jooks, näitab muudatusi |
-| `ansible-playbook p.yml --limit vm1` | ainult ühele masinale |
-| `ansible-playbook p.yml --start-at-task "nginx on paigaldatud"` | alusta kindlast task'ist |
-| `ansible-playbook p.yml -v` / `-vvv` | rohkem väljundit; `-vvv` näitab SSH-ühendust |
+??? note "Käivitamise võtmed"
+
+    | Käsk | Mida teeb |
+    |---|---|
+    | `ansible-playbook p.yml --syntax-check` | kontrollib ainult YAML-i ja struktuuri |
+    | `ansible-playbook p.yml --list-hosts` | näitab, milliseid masinaid play puudutaks |
+    | `ansible-playbook p.yml --list-tasks` | näitab task'ide nimekirja |
+    | `ansible-playbook p.yml --check --diff` | kuiv jooks, näitab muudatusi |
+    | `ansible-playbook p.yml --limit vm1` | ainult ühele masinale |
+    | `ansible-playbook p.yml --start-at-task "nginx on paigaldatud"` | alusta kindlast task'ist |
+    | `ansible-playbook p.yml -v` / `-vvv` | rohkem väljundit; `-vvv` näitab SSH-ühendust |
 
 Veaotsingul alusta alati `-v`-st. `-vvv` näitab, milliste parameetritega SSH ühendus luuakse, ja see lahendab enamiku ühendusvigu.
 
@@ -983,14 +974,16 @@ ssh-keyscan vm1 vm2 vm3 >> ~/.ssh/known_hosts
 
 ### Tüüpilised SSH-vead
 
-| Veateade | Põhjus | Lahendus |
-|---|---|---|
-| `Permission denied (publickey)` | avalik võti pole sihtmasinas või vale kasutaja | korda `ssh-copy-id`; kontrolli `User` |
-| `Connection refused` | SSH-server ei käi või vale port | `systemctl status ssh` sihtmasinas; `ansible_port` |
-| `Connection timed out` | masin pole võrgus või tulemüür | `ping`, VPN, tulemüüri reeglid |
-| `Host key verification failed` | host key muutus | `ssh-keygen -R vm1` |
-| `UNREACHABLE` Ansible'is | üks ülaltoodutest | `ssh vm1 hostname` käsitsi, siis `-vvv` |
-| `Missing sudo password` | sudo nõuab parooli | `-K` või paroolita sudo |
+??? note "Tüüpilised SSH-vead"
+
+    | Veateade | Põhjus | Lahendus |
+    |---|---|---|
+    | `Permission denied (publickey)` | avalik võti pole sihtmasinas või vale kasutaja | korda `ssh-copy-id`; kontrolli `User` |
+    | `Connection refused` | SSH-server ei käi või vale port | `systemctl status ssh` sihtmasinas; `ansible_port` |
+    | `Connection timed out` | masin pole võrgus või tulemüür | `ping`, VPN, tulemüüri reeglid |
+    | `Host key verification failed` | host key muutus | `ssh-keygen -R vm1` |
+    | `UNREACHABLE` Ansible'is | üks ülaltoodutest | `ssh vm1 hostname` käsitsi, siis `-vvv` |
+    | `Missing sudo password` | sudo nõuab parooli | `-K` või paroolita sudo |
 
 *Allikad: [ssh_config](https://man.openbsd.org/ssh_config) · [ssh-keygen](https://man.openbsd.org/ssh-keygen)*
 
@@ -1069,18 +1062,20 @@ Iga muudatuse juures:
 
 ## 17. Tüüpilised vead esimesel päeval
 
-| Sümptom | Tõenäoline põhjus | Kontroll |
-|---|---|---|
-| `ansible: command not found` | Ansible pole paigaldatud või `PATH`-is | `pipx list`, `which ansible` |
-| hoiatus `ansible.cfg` ignoreeritakse | töökaust on Windowsi kettal (WSL) | tööta `~/`-s |
-| `Could not match supplied host pattern` | grupp puudub inventaris või vale `-i` | `ansible-inventory --graph` |
-| `mapping values are not allowed` | YAML: koolon väärtuses | jutumärgid |
-| `couldn't resolve module/action` | mooduli nimi vale või kollektsioon puudub | `ansible-doc -l \| grep …` |
-| `Permission denied` task'is | `become: true` puudub | lisa play tasemele |
-| `Waiting for process ... dnf` | taustal käib teine dnf | oota |
-| task on igal jooksul `changed` | `command`/`shell` mooduli asemel | vaheta moodul |
-| `curl` näitab vaikelehte | fail läks vale kausta | `dest` peab olema `/usr/share/nginx/html/index.html` |
-| `UNREACHABLE` | SSH | `ssh vm1 hostname`, siis `-vvv` |
+??? note "Vead ja lahendused"
+
+    | Sümptom | Tõenäoline põhjus | Kontroll |
+    |---|---|---|
+    | `ansible: command not found` | Ansible pole paigaldatud või `PATH`-is | `pipx list`, `which ansible` |
+    | hoiatus `ansible.cfg` ignoreeritakse | töökaust on Windowsi kettal (WSL) | tööta `~/`-s |
+    | `Could not match supplied host pattern` | grupp puudub inventaris või vale `-i` | `ansible-inventory --graph` |
+    | `mapping values are not allowed` | YAML: koolon väärtuses | jutumärgid |
+    | `couldn't resolve module/action` | mooduli nimi vale või kollektsioon puudub | `ansible-doc -l \| grep …` |
+    | `Permission denied` task'is | `become: true` puudub | lisa play tasemele |
+    | `Waiting for process ... dnf` | taustal käib teine dnf | oota |
+    | task on igal jooksul `changed` | `command`/`shell` mooduli asemel | vaheta moodul |
+    | `curl` näitab vaikelehte | fail läks vale kausta | `dest` peab olema `/usr/share/nginx/html/index.html` |
+    | `UNREACHABLE` | SSH | `ssh vm1 hostname`, siis `-vvv` |
 
 Veaotsingu järjekord on alati sama: loe veateadet algusest lõpuni, korda käsku `-v`-ga, proovi sama asja käsitsi sihtmasinas. Enamik vigu on kirjas veateate esimeses reas.
 
@@ -1090,15 +1085,17 @@ Veaotsingu järjekord on alati sama: loe veateadet algusest lõpuni, korda käsk
 
 ## 18. Kokkuvõte
 
-| Põhimõte | Mida see tähendab |
-|---|---|
-| triiv tekib alati, kui masinaid seadistatakse käsitsi | kaitse on kirjeldus koodis, mida käivitatakse korduvalt |
-| task kirjeldab olekut, moodul otsustab tegevuse | `command`/`shell` ainult siis, kui moodulit pole |
-| `changed=0` teisel jooksul on idempotentsuse tõend | task, mis on igal jooksul `changed`, teeb tegevust ega kirjelda olekut |
-| Ansible on agentless ja push-põhine | control node ühendub SSH-ga, kopeerib mooduli, käivitab selle ja saab JSON-i tagasi |
-| inventar ütleb kus, playbook mis, faktid milline masin | faktid on playbookis muutujad, nt `ansible_distribution` |
-| võtmepõhine SSH on eeldus | privaatvõti jääb control node'i, avalik võti läheb `authorized_keys`-i, lühinimed `~/.ssh/config`-ist |
-| ohutu muudatus | `--syntax-check` → `--check --diff` → `--limit` → kõik → teine jooks; `unreachable` tähendab, et masina olekut sa ei tea |
+??? note "Põhimõtted ühes tabelis"
+
+    | Põhimõte | Mida see tähendab |
+    |---|---|
+    | triiv tekib alati, kui masinaid seadistatakse käsitsi | kaitse on kirjeldus koodis, mida käivitatakse korduvalt |
+    | task kirjeldab olekut, moodul otsustab tegevuse | `command`/`shell` ainult siis, kui moodulit pole |
+    | `changed=0` teisel jooksul on idempotentsuse tõend | task, mis on igal jooksul `changed`, teeb tegevust ega kirjelda olekut |
+    | Ansible on agentless ja push-põhine | control node ühendub SSH-ga, kopeerib mooduli, käivitab selle ja saab JSON-i tagasi |
+    | inventar ütleb kus, playbook mis, faktid milline masin | faktid on playbookis muutujad, nt `ansible_distribution` |
+    | võtmepõhine SSH on eeldus | privaatvõti jääb control node'i, avalik võti läheb `authorized_keys`-i, lühinimed `~/.ssh/config`-ist |
+    | ohutu muudatus | `--syntax-check` → `--check --diff` → `--limit` → kõik → teine jooks; `unreachable` tähendab, et masina olekut sa ei tea |
 
 *Allikad: [pikem Ansible'i materjal](https://hkhk-automation.github.io/devops/week03/lecture/)*
 
