@@ -1,8 +1,6 @@
 # K1 · Praktikum: esimene playbook
 
-## Eesmärk
-
-Tänase lõpuks on sul playbook, mis viib kolm serverit samasse olekusse: teenusekasutaja on olemas, nginx on paigaldatud ja käib, avaleht näitab serveri nime. Teine jooks ei muuda midagi (`changed=0`), ja see on tõend, et kirjeldus on idempotentne.
+Tänase lõpuks viib üks playbook kolm serverit samasse olekusse: kasutaja on olemas, nginx käib ja avaleht näitab serveri nime. Teine jooks ei muuda midagi (`changed=0`).
 
 ```mermaid
 flowchart LR
@@ -13,43 +11,23 @@ flowchart LR
     CN -->|git push| GH[GitHub<br>Autograde]
 ```
 
-Praktikumil on kaks osa:
+Osa A teed ühel masinal (`localhost`) samm-sammult, osa B kolmel VM-il iseseisvalt. Oodatav tulemus ja vihjed on kinnistes plokkides: tee enne ise, siis võrdle.
 
-- A · Juhendatud: kõik ühel masinal (`localhost`), samm-sammult. Oodatava tulemuse näed iga sammu juures kokkuvolditud plokis: tee enne ise, siis võrdle.
-- B · Iseseisev: sama oskus kolmel VM-il. Antud on eesmärk ja piirangud, lahenduse leiad ise. Vihjed on kinnistes plokkides.
+??? abstract "Õpiväljundid"
 
-| Samm | Tulemus | Kuidas kontrollid |
-|---|---|---|
-| Enne | Töökeskkond tehtud, repo kloonitud | `ansible --version`, `ls` repos |
-| A1 | nginx käib käsitsi seadistatuna | `curl -s localhost` |
-| A2 | skripti probleem on nähtav | `cat /srv/raport/conf` |
-| A3 | Ansible leiab localhosti | `ansible kohalik -m ping` |
-| A4–A5 | playbook töötab, teine jooks ei muuda midagi | `changed=0`, `logid/teine_jooks.txt` |
-| A6–A8 | eelvaade, drift, muutujad | `--check --diff`, `curl` |
-| B | kolm masinat samas olekus | `logid/kolm_masinat.txt`, `curl` iga IP-le |
-| Esitamine | README täidetud, push tehtud | Autograde K1–K5 |
+    Praktikumi lõpuks oskad:
 
-Loengu vastavad peatükid on iga sammu juures viidatud. Kui mõni mõiste on udune, ava [loeng](lecture.md) samal ajal teises aknas.
-
-## Õpiväljundid
-
-Praktikumi lõpuks oskad:
-
-1. näidata oma masinas, miks toores skript pole idempotentne, ja asendada see playbookiga;
-2. luua inventari ja ansible.cfg-i ning kasutada ad-hoc käske ja fakte;
-3. kirjutada playbooki päris moodulitega ja tõestada idempotentsust `changed=0`-ga;
-4. eelvaadata muudatust `--check --diff`-ga ja parandada drift'i;
-5. seadistada võtmepõhise SSH ja rakendada sama playbooki kolmele masinale;
-6. kasutada muutujaid ja fakte playbookis;
-7. dokumenteerida töö README-s ja esitada see Giti kaudu.
-
----
+    1. näidata oma masinas, miks toores skript pole idempotentne, ja asendada see playbookiga;
+    2. luua inventari ja ansible.cfg-i ning kasutada ad-hoc käske ja fakte;
+    3. kirjutada playbooki päris moodulitega ja tõestada idempotentsust `changed=0`-ga;
+    4. eelvaadata muudatust `--check --diff`-ga ja parandada drift'i;
+    5. seadistada võtmepõhise SSH ja rakendada sama playbooki kolmele masinale;
+    6. kasutada muutujaid ja fakte playbookis;
+    7. dokumenteerida töö README-s ja esitada see Giti kaudu.
 
 ## Enne alustamist
 
-Kui sa pole seda veel teinud, tee läbi [Töökeskkond](../keskkond.md): ühendus vm1-ga, parooli vahetus ja masinate nimed, Ansible ja Git, SSH-võti ning repo kloonimine.
-
-Selle praktikumi repo tekib Classroom 50 lingist, mille juhendaja jagab. Klooni see vm1-s SSH-ga (**Code** → **SSH**) ja tee kõik tänased failid selle juurkausta.
+Kui [Töökeskkond](../keskkond.md) on tegemata, tee see enne läbi. Klooni Classroom 50 lingist tekkinud repo vm1-sse SSH-ga (**Code** → **SSH**): kõik tänased failid lähevad selle juurkausta.
 
 Kontrollnimekiri on su repos **Issues** all: issue Lab 01 · Esimene playbook.
 
@@ -57,19 +35,19 @@ Kontrollnimekiri on su repos **Issues** all: issue Lab 01 · Esimene playbook.
 - Sama issue on kursuse projektis: **Projects** → ITS-25 Automatiseerimine → **Minu tööd**.
 - Kinni? Küsi Discordis või ava issue mallist **Vajan abi**.
 
-Lõpuks on repos:
+??? note "Mis repos lõpuks on"
 
-```
-<sinu-repo>/
-├── ansible.cfg
-├── inventory.ini
-├── bootstrap.yml
-├── halb.sh
-├── README.md
-└── logid/
-    ├── teine_jooks.txt
-    └── kolm_masinat.txt
-```
+    ```
+    <sinu-repo>/
+    ├── ansible.cfg
+    ├── inventory.ini
+    ├── bootstrap.yml
+    ├── halb.sh
+    ├── README.md
+    └── logid/
+        ├── teine_jooks.txt
+        └── kolm_masinat.txt
+    ```
 
 ---
 
