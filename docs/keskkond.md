@@ -63,7 +63,8 @@ vm3: sama, `vm3` nimega.
 sudo dnf install -y git ansible-core
 ansible-galaxy collection install ansible.posix:1.5.4
 git --version
-ansible --version | head -3
+ansible --version
+ansible-galaxy collection list ansible.posix
 ```
 
 ??? success "Oodatav tulemus"
@@ -72,10 +73,21 @@ ansible --version | head -3
     git version 2.52.0
     ansible [core 2.14.18]
       config file = /etc/ansible/ansible.cfg
-      configured module search path = [...]
+      ...
+      python version = 3.9.25 (...) (/usr/bin/python3)
+      jinja version = 3.1.2
+
+    Collection    Version
+    ------------- -------
+    ansible.posix 1.5.4
     ```
 
-Versioonid võivad veidi erineda, peaasi et `ansible` vastab. `ansible.posix` (tulemüüri moodul) on versioon 1.5.4, sest uuemad ei toeta AlmaLinuxi `ansible-core 2.14`-t.
+`ansible --version` väljundist loe kaht rida:
+
+- `ansible [core 2.14.18]`: Ansible'i versioon. Sellest sõltub, millised kollektsioonid sobivad.
+- `python version = 3.9…`: Python, millega Ansible jookseb. Sihtmasinates kasutab Ansible nende enda Pythonit (AlmaLinuxis sama 3.9).
+
+Kollektsioon peab sobima Ansible'i versiooniga. Kui ei sobi, näed iga käsu alguses hoiatust `Collection ansible.posix does not support Ansible version 2.14.18`. Siis paigalda sobiv versioon (`ansible-galaxy collection install ansible.posix:1.5.4 --force`). Mis versiooniga kollektsioon töötab, on kirjas selle lehel [Ansible Galaxy](https://galaxy.ansible.com/ui/repo/published/ansible/posix/) väljal *Requires Ansible*.
 
 ## 3 · SSH-võti
 

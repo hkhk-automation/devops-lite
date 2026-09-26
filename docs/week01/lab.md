@@ -99,6 +99,18 @@ Kontrolltabeli näide:
 | `tee index.html` | avaleht sisuga | `cat /usr/share/nginx/html/index.html` |
 | `systemctl enable --now` | teenus käib ja käivitub buutimisel | `systemctl is-active nginx`, `systemctl is-enabled nginx` |
 
+??? tip "Kui nginx ei käivitu või `curl` ei vasta"
+
+    Vaata teenuse olekut ja logi:
+
+    ```bash
+    sudo systemctl status nginx
+    sudo journalctl -u nginx -n 20
+    sudo tail -n 20 /var/log/nginx/error.log
+    ```
+
+    `systemctl status` näitab, kas teenus käib ja viimaseid logiridu. `journalctl -u nginx` on teenuse täielik logi, `-n 20` näitab viimast 20 rida. nginx kirjutab oma vead lisaks faili `/var/log/nginx/error.log`, iga päringu faili `access.log`.
+
 ??? success "Oodatav tulemus"
 
     ```bash
@@ -355,6 +367,8 @@ curl -s localhost
 Ainult avalehe sisu erines käsitsi tehtust. Kõik muu oli juba soovitud olekus, ja moodulid tuvastasid selle ise.
 
 ??? tip "Kui tuleb viga"
+
+    Kui veateatest ei piisa, korda käsku `-v`-ga (rohkem infot) või `-vvv`-ga (kõik, ka SSH-ühendus).
 
     - `Permission denied`, `You need to be root`: `become: true` puudub.
     - `Missing sudo password`: `ansible.cfg`-s puudub `become_ask_pass = True`.
