@@ -77,5 +77,6 @@
   margin: .6em auto;
 }
 
-/* Praktikumi variandijoonis: kompaktne */
-.md-typeset figure.dl-var { max-width: 100%; margin: .8em auto; }
+/* Joonised: laius tuleb figure style="max-width:<viewBox laius>px" kaudu,
+   nii on joonise tekst sama suur kui lehe tekst (1 SVG ühik = 1 px) */
+.md-typeset figure svg { width: 100%; height: auto; }

@@ -2,7 +2,7 @@
 
 IT-infrastruktuuri automatiseerimine: käsitsi tööst korratava, versioonihallatud ja kontrollitud muutuseni. Viie kohtumisega ehitad kihthaaval terve pinu, kus iga kiht on kood Gitis.
 
-<figure class="dl-stack" markdown="0">
+<figure style="max-width:760px;margin:.8em auto" class="dl-stack" markdown="0">
 <svg viewBox="0 0 760 330" role="img" aria-labelledby="dl-stack-title" xmlns="http://www.w3.org/2000/svg">
 <title id="dl-stack-title">Kursuse pinu: Git ja CI/CD tarnivad muutuse neljakihilisse taristusse</title>
 <style>
