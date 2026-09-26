@@ -5,11 +5,11 @@ Kodutöö läheb samasse reposse, kuhu klassitöö. Tähtaeg on kirjas Classroom
 | Osa | Mida teed | Esitad | Punkte |
 |---|---|---|---|
 | [I](#i-lugemine-ja-kusimused) | loed, uurid mooduleid, vastad küsimustele | `markmed.md`, `vastused.md` | 14 koos III-ga |
-| [H1](#h1-adminyml-kasutajad-ja-ligipaas-10-p) | kasutajad, võtmed, sudo, chrony, motd | `admin.yml` + logi | 10 |
-| [H2](#h2-hardeningyml-ssh-turvamine-10-p) | SSH turvamine | `hardening.yml` + logi | 10 |
-| [H3](#h3-baasyml-paketid-nimekirjast-7-p) | paketid nimekirjast | `baas.yml` + logi | 7 |
-| [H4](#h4-raportyml-raport-faktidest-7-p) | raport faktidest | `raport.yml`, `raportid/` | 7 |
-| [H5–H6](#h5-cronyml-ajastatud-too) | cron ja drift | `cron.yml` + logi, `logid/drift_check.txt` | 7 |
+| [H1](#h1-loo-kasutajad-ja-ligipaas-10-p) | kasutajad, võtmed, sudo, chrony, motd | `admin.yml` + logi | 10 |
+| [H2](#h2-turva-ssh-10-p) | SSH turvamine | `hardening.yml` + logi | 10 |
+| [H3](#h3-halda-pakette-nimekirjast-7-p) | paketid nimekirjast | `baas.yml` + logi | 7 |
+| [H4](#h4-kogu-masinatest-raport-7-p) | raport faktidest | `raport.yml`, `raportid/` | 7 |
+| [H5–H6](#h5-ajasta-varundus) | cron ja drift | `cron.yml` + logi, `logid/drift_check.txt` | 7 |
 | [III](#iii-oma-too) | oma playbook | `oma/*.yml`, `oma/README.md` | 14 koos I-ga |
 | [IV](#iv-eneseanaluus) | eneseanalüüs | `vastused.md` lõpus | – |
 
@@ -56,7 +56,9 @@ Kõik harjutused käivad grupi `veeb` vastu. Iga playbooki puhul sama töökäik
 3. `ansible-playbook <fail>.yml`
 4. teine jooks tõendiks: `ansible-playbook <fail>.yml | tee logid/<fail>_teine_jooks.txt`
 
-### H1 · `admin.yml`: kasutajad ja ligipääs · 10 p
+### H1 · Loo kasutajad ja ligipääs · 10 p
+
+Selle ülesande lõpuks on igas masinas kasutaja `deploy`, kes pääseb võtmega sisse ja saab sudo't ilma paroolita.
 
 Igas `veeb`-grupi masinas:
 
@@ -74,7 +76,9 @@ Valmis, kui:
 
 Esitad: `admin.yml`, `logid/admin_teine_jooks.txt`
 
-### H2 · `hardening.yml`: SSH turvamine · 10 p
+### H2 · Turva SSH · 10 p
+
+Selle ülesande lõpuks ei saa masinatesse sisse root'ina ega parooliga, ainult võtmega.
 
 - `/etc/ssh/sshd_config`-is on `PermitRootLogin no` ja `PasswordAuthentication no` (`lineinfile`, uuri `regexp`);
 - enne rakendamist kontrollitakse konfi süntaksit (`validate: sshd -t -f %s`);
@@ -96,12 +100,18 @@ Valmis, kui:
 
 Esitad: `hardening.yml`, `logid/hardening_teine_jooks.txt`
 
-### H3 · `baas.yml`: paketid nimekirjast · 7 p
+### H3 · Halda pakette nimekirjast · 7 p
+
+Selle ülesande lõpuks on vajalikud paketid igas masinas olemas ja keelatud paketid puuduvad.
 
 - `vars` all kaks nimekirja: `paigalda` (vähemalt `curl`, `git`, `tree`, `wget`, `tar`) ja `eemalda` (vähemalt `telnet`);
 - üks task paigaldab esimese nimekirja, teine tagab, et teise nimekirja paketid puuduvad (`state: absent`).
 
-Proovi: paigalda `telnet` käsitsi ühte masinasse ja jooksuta playbook. Mitu `changed`-i tuleb?
+Paigalda `telnet` käsitsi ühte masinasse ja jooksuta playbook.
+
+!!! question "Mõtle"
+
+    Mitu `changed`-i tuli ja millises masinas? Miks just nii palju?
 
 Valmis, kui:
 
@@ -110,7 +120,9 @@ Valmis, kui:
 
 Esitad: `baas.yml`, `logid/baas_teine_jooks.txt`
 
-### H4 · `raport.yml`: raport faktidest · 7 p
+### H4 · Kogu masinatest raport · 7 p
+
+Selle ülesande lõpuks on vm1-s iga masina kohta faktidest koostatud raport.
 
 - igas masinas fail `/tmp/raport.txt`: masina nimi, distributsioon ja versioon, IP-aadress, mälu MB-des, protsessorite arv (kõik faktidest);
 - fail tuuakse control node'i kausta `raportid/` (`ansible.builtin.fetch`, uuri `flat: true`), iga masina raport eraldi failis `raportid/{{ inventory_hostname }}.txt`.
@@ -121,7 +133,9 @@ Valmis, kui:
 
 Esitad: `raport.yml`, `raportid/`
 
-### H5 · `cron.yml`: ajastatud töö
+### H5 · Ajasta varundus
+
+Selle ülesande lõpuks tehakse igas masinas igal ööl `/etc` varukoopia.
 
 Igas masinas:
 
@@ -138,7 +152,19 @@ ssh -t vm1 sudo ls /var/backups
 ssh -t vm1 sudo crontab -l -u root
 ```
 
-Kui jooksutad playbooki kaks korda, kas cron-rida on üks või kaks korda? Miks?
+??? success "Oodatav tulemus"
+
+    ```
+    etc-2026-10-01.tar.gz
+    #Ansible: varundus
+    30 2 * * * /usr/local/bin/varunda.sh
+    ```
+
+    Esimene käsk ei trüki midagi. Teine näitab arhiivi tänase kuupäevaga, kolmas üht cron-rida.
+
+!!! question "Mõtle"
+
+    Jooksuta playbooki kaks korda. Kas cron-rida on siis üks või kaks korda? Mis teeb `ansible.builtin.cron`-i idempotentseks?
 
 Valmis, kui:
 
@@ -148,7 +174,9 @@ Valmis, kui:
 
 Esitad: `cron.yml`, `logid/cron_teine_jooks.txt`
 
-### H6 · Drift ja koristamine
+### H6 · Leia ja paranda drift
+
+Selle ülesande lõpuks oskad `--check`-iga leida, mis masinates on midagi käsitsi muudetud, ja parandad selle playbookidega.
 
 1. Tekita igasse masinasse erinev drift: ühes kustuta `monitor`-kasutaja, teises muuda `/etc/motd` sisu, kolmandas peata `chronyd`.
 2. Jooksuta kõik oma playbookid `--check` režiimis ja salvesta väljund faili `logid/drift_check.txt`. Kas iga drift tuli välja? Millise playbooki järgi?
