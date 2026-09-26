@@ -14,8 +14,6 @@ Kodutöö läheb samasse reposse, kuhu klassitöö. Tähtaeg on kirjas Classroom
 
 Tulemust näed pärast iga push'i: **Actions** → **Autograde**. Loeb punktisumma, mitte värv.
 
----
-
 ## I · Lugemine ja küsimused
 
 Enne küsimusi loe läbi:
@@ -38,8 +36,6 @@ Vasta lühidalt oma sõnadega, üks-kaks lauset igale.
 1. Miks on `useradd deploy` shelli skriptis ohtlikum kui `ansible.builtin.user`? Mis juhtub kummagagi teisel jooksul? (A2, loeng §5)
 2. `PLAY RECAP` näitab ühel masinal `unreachable=1`, teistel `changed=0`. Mida sa selle masina olekust tead ja mida teed järgmiseks? (loeng §14)
 3. Mis vahe on privaat- ja avalikul võtmel? Kuhu kumbki käib ja mida teed, kui privaatvõti lekib? (loeng §15)
-
----
 
 ## II · Harjutused
 
@@ -233,8 +229,6 @@ Esitad
 { .silt }
 
 `logid/drift_check.txt`, lõik `vastused.md`-s
-
----
 
 ## III · Eneseanalüüs
 

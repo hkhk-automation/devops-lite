@@ -56,8 +56,6 @@ IT-infrastruktuuri automatiseerimine: käsitsi tööst korratava, versioonihalla
 | **Keskkond** | kooli Proxmoxis kolm AlmaLinux 9 VM-i; ühendus VS Code Remote-SSH või PowerShelli `ssh` kaudu, kodust VPN-iga |
 | **Abi** | kursuse Discord; oma repos issue **Vajan abi** |
 
----
-
 ## Kohtumised
 
 | | Teema | Klassis | Kodus |
@@ -73,8 +71,6 @@ K5-s kasutame OpenTofut (`tofu`): Terraformi avatud lähtekoodiga haru, sama kee
 ## Lõputöö
 
 Üks probleem oma VM-idest või kodulaborist, lahendatud vähemalt kolme kursuse kihiga (nt Terraform → Ansible roll → Compose või Kubernetes, pipeline kontrollib). Saladused krüptitud, README-s käivitusjuhis ja tõend, et teine jooks ei muuda midagi.
-
----
 
 ## Läbivad tööviisid
 

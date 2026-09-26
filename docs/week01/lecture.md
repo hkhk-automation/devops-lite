@@ -2,8 +2,6 @@
 
 Selle loengu jaoks peaksid oskama kasutada Linuxi käsurida, ühenduda SSH-ga, kasutada `sudo`-t, paigaldada pakette `dnf`-iga ja teha Gitis commit'i. Klassis räägime peatükkidest 1, 4, 5 ja 8. Ülejäänu loe kodus läbi.
 
----
-
 ## Õpiväljundid
 
 Pärast seda loengut oskad:
@@ -15,8 +13,6 @@ Pärast seda loengut oskad:
 - kasutada fakte ja muutujaid playbookis;
 - valida ohutu töökäik muudatusele: `--syntax-check`, `--check --diff`, `--limit`, siis kõik masinad;
 - seadistada võtmepõhise SSH-ligipääsu ja lahendada tüüpilised ühendusvead.
-
----
 
 ## 1. Kolm serverit ja üks unustatud samm
 
@@ -71,9 +67,10 @@ Järgmisel kohtumisel lisanduvad **roll** (taaskasutatav task'ide, mallide ja mu
 
     Ansible pole ainus selline tööriist. Puppet, Chef ja SaltStack teevad sama tööd, aga tavaliselt on neil vaja igasse masinasse agenti ja lisaks keskserverit. Ansible'iga saad kiiresti alustada: paigaldad selle ühte masinasse ja saad kohe hallata kõiki, kuhu SSH-ga ligi pääsed. Mida see agentless tähendab, vaatame §6-s.
 
-*Allikad: [Ansible: getting started](https://docs.ansible.com/ansible/latest/getting_started/) · raamat: Meijer, Hochstein, Moser, *Ansible: Up and Running*, 3. tr, ptk 1–4*
+??? info "Loe juurde"
 
----
+    - [Ansible: getting started](https://docs.ansible.com/ansible/latest/getting_started/)
+    - raamat: Meijer, Hochstein, Moser, *Ansible: Up and Running*, 3. tr, ptk 1–4
 
 ## 2. Konfiguratsiooni triiv
 
@@ -94,28 +91,26 @@ Teine võimalus on vaadata servereid kui asendatavaid. Kui serveri olek on koodi
 
 Triivi ei hoia ära see, et oled käsitsi eriti hoolikas. Inimesed unustavad, telefon heliseb, on kiire. Aitab ainult see, kui masina olek on kirjas kohas, mis ei unusta. Ja seda kirjeldust rakendatakse ikka ja jälle.
 
----
-
 ## 3. Automatiseerimise üldmudel
 
 Kõik automatiseerimise süsteemid koosnevad samadest osadest. Pole vahet, kas see on cron-skript, Ansible, Terraform, CI-konveier või Kubernetes:
 
 <figure style="max-width:740px;margin:.8em auto" class="lx" markdown="0">
-<svg viewBox="0 0 740 156" role="img" aria-label="Automatiseerimise üldmudel" xmlns="http://www.w3.org/2000/svg">
-<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
+<svg viewBox="0 0 740 160" role="img" aria-label="Automatiseerimise üldmudel" xmlns="http://www.w3.org/2000/svg">
+<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:15px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:14.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:13px}.lx .c{fill:var(--md-default-fg-color);font-size:12.5px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
 <defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
-<rect class="box" x="4" y="14" width="130" height="48" rx="6"/><text class="b" x="69.0" y="35.0" text-anchor="middle">Käivitaja</text><text class="s" x="69.0" y="50.0" text-anchor="middle">inimene, cron, push</text>
-<line class="a" x1="134" y1="38" x2="152" y2="38" marker-end="url(#lxa)"/>
-<rect class="box" x="154" y="14" width="130" height="48" rx="6"/><text class="b" x="219.0" y="35.0" text-anchor="middle">Sisend</text><text class="s" x="219.0" y="50.0" text-anchor="middle">kood, muutujad</text>
-<line class="a" x1="284" y1="38" x2="302" y2="38" marker-end="url(#lxa)"/>
-<rect class="box" x="304" y="14" width="130" height="48" rx="6"/><text class="b" x="369.0" y="35.0" text-anchor="middle">Soovitud olek</text><text class="s" x="369.0" y="50.0" text-anchor="middle">mis peab olema</text>
-<line class="a" x1="434" y1="38" x2="452" y2="38" marker-end="url(#lxa)"/>
-<rect class="hi" x="454" y="14" width="130" height="48" rx="6"/><text class="b" x="519.0" y="35.0" text-anchor="middle">Täitmine</text><text class="s" x="519.0" y="50.0" text-anchor="middle">võrdleb ja muudab</text>
-<line class="a" x1="584" y1="38" x2="602" y2="38" marker-end="url(#lxa)"/>
-<rect class="box" x="604" y="14" width="130" height="48" rx="6"/><text class="b" x="669.0" y="35.0" text-anchor="middle">Tõend</text><text class="s" x="669.0" y="50.0" text-anchor="middle">changed=0, logi</text>
-<rect class="box" x="454" y="104" width="130" height="44" rx="6"/><text class="b" x="519.0" y="123.0" text-anchor="middle">Praegune olek</text><text class="s" x="519.0" y="138.0" text-anchor="middle">masin täna</text>
-<line class="a" x1="519" y1="104" x2="519" y2="64" marker-end="url(#lxa)"/>
-<text class="s" x="250" y="132" text-anchor="middle">Täitmine muudab ainult seda, mis erineb.</text>
+<rect class="box" x="4" y="14" width="132" height="50" rx="6"/><text class="b" x="70.0" y="36.0" text-anchor="middle">Käivitaja</text><text class="s" x="70.0" y="51.0" text-anchor="middle">inimene, cron, push</text>
+<line class="a" x1="136" y1="39" x2="152" y2="39" marker-end="url(#lxa)"/>
+<rect class="box" x="154" y="14" width="132" height="50" rx="6"/><text class="b" x="220.0" y="36.0" text-anchor="middle">Sisend</text><text class="s" x="220.0" y="51.0" text-anchor="middle">kood, muutujad</text>
+<line class="a" x1="286" y1="39" x2="302" y2="39" marker-end="url(#lxa)"/>
+<rect class="box" x="304" y="14" width="132" height="50" rx="6"/><text class="b" x="370.0" y="36.0" text-anchor="middle">Soovitud olek</text><text class="s" x="370.0" y="51.0" text-anchor="middle">mis peab olema</text>
+<line class="a" x1="436" y1="39" x2="452" y2="39" marker-end="url(#lxa)"/>
+<rect class="hi" x="454" y="14" width="132" height="50" rx="6"/><text class="b" x="520.0" y="36.0" text-anchor="middle">Täitmine</text><text class="s" x="520.0" y="51.0" text-anchor="middle">võrdleb, muudab</text>
+<line class="a" x1="586" y1="39" x2="602" y2="39" marker-end="url(#lxa)"/>
+<rect class="box" x="604" y="14" width="132" height="50" rx="6"/><text class="b" x="670.0" y="36.0" text-anchor="middle">Tõend</text><text class="s" x="670.0" y="51.0" text-anchor="middle">changed=0, logi</text>
+<rect class="box" x="454" y="106" width="132" height="46" rx="6"/><text class="b" x="520.0" y="126.0" text-anchor="middle">Praegune olek</text><text class="s" x="520.0" y="141.0" text-anchor="middle">masin täna</text>
+<line class="a" x1="520" y1="106" x2="520" y2="66" marker-end="url(#lxa)"/>
+<text class="s" x="230" y="134" text-anchor="middle">Täitmine muudab ainult seda, mis erineb.</text>
 </svg>
 </figure>
 
@@ -139,8 +134,6 @@ Kõige sagedamini ununeb tõend. Kui cron-skript kirjutab vead `/dev/null`-i, on
 ??? question "Kordamisküsimus"
 
     Võta cron-töö, mis teeb igal ööl andmebaasist varukoopia. Nimeta selle viis osa ülaltoodud mudeli järgi. Mis on selle töö puhul tõend, ja kas see on kuskil nähtav?
-
----
 
 ## 4. Käsk ja soovitud olek
 
@@ -223,8 +216,6 @@ Skripti `if`-id on nüüd moodulite sees. `package` kasutab masina enda paketiha
 
 Playbooki saab lugeda nagu serveri kirjeldust. Kui uus kolleeg tahab teada, kuidas veebiserverid on seadistatud, avab ta `bootstrap.yml`-i. Kellegi shelli ajalugu ta läbi kaevama ei pea.
 
----
-
 ## 5. Idempotentsus
 
 Deklaratiivsusest tuleb **idempotentsus**: sama tegevus annab sama tulemuse, ükskõik mitu korda sa seda käivitad.
@@ -294,7 +285,7 @@ Iga kord peab jooks olema ohutu.
 
 <figure style="max-width:720px;margin:.8em auto" class="lx" markdown="0">
 <svg viewBox="0 0 720 104" role="img" aria-label="Skript vs moodul teisel jooksul" xmlns="http://www.w3.org/2000/svg">
-<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
+<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:15px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:14.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:13px}.lx .c{fill:var(--md-default-fg-color);font-size:12.5px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
 <defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
 <text class="t" x="170" y="14" text-anchor="middle">Skript: tegevused</text>
 <text class="t" x="530" y="14" text-anchor="middle">Moodul: soovitud olek</text>
@@ -347,8 +338,6 @@ Teine on `changed_when`: see ütleb Ansible'ile, millal väljund tähendab muutu
 
     Miks on `useradd deploy` shelli skriptis ohtlikum kui `ansible.builtin.user: name=deploy`? Mis juhtub kummagagi teisel jooksul, ja kumma viga sa märkad?
 
----
-
 ## 6. Mida Ansible käivitamisel teeb
 
 Ansible'i maailmas on kaks rolli. **Control node** on masin, kus Ansible on paigaldatud ja kust sa käske käivitad: sinu sülearvuti, WSL või hüppeserver. **Managed node** on masin, mida hallatakse. Managed node'i ei pea Ansible'it paigaldama. Seal peavad olema ainult SSH-server ja Python.
@@ -359,19 +348,19 @@ Sellest skeemist tuleb neli asja, mis on olulised kogu edasise töö jaoks.
 
 <figure style="max-width:760px;margin:.8em auto" class="lx" markdown="0">
 <svg viewBox="0 0 760 112" role="img" aria-label="Mida Ansible teeb ühe task'i juures" xmlns="http://www.w3.org/2000/svg">
-<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
+<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:15px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:14.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:13px}.lx .c{fill:var(--md-default-fg-color);font-size:12.5px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
 <defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
 <rect class="hi" x="10" y="30" width="150" height="56" rx="6"/><text class="b" x="85.0" y="55.0" text-anchor="middle">control node (vm1)</text><text class="s" x="85.0" y="70.0" text-anchor="middle">ansible-playbook</text>
-<line class="a" x1="160" y1="46" x2="300" y2="46" marker-end="url(#lxa)"/><text class="s" x="230.0" y="40" text-anchor="middle">1. SSH + moodul</text>
+<line class="a" x1="160" y1="46" x2="300" y2="46" marker-end="url(#lxa)"/><text class="s" x="230.0" y="40" text-anchor="middle">1. SSH, kopeerib mooduli</text>
 <line class="a" x1="160" y1="70" x2="300" y2="70" marker-end="url(#lxa)"/>
 <rect class="box" x="304" y="20" width="170" height="76" rx="6"/><text class="b" x="389.0" y="62.0" text-anchor="middle">sihtmasin (vm2)</text>
 <text class="s" x="389" y="64" text-anchor="middle">2. Python käivitab mooduli</text>
 <text class="s" x="389" y="80" text-anchor="middle">3. moodul kustutatakse</text>
 <line class="a" x1="300" y1="86" x2="162" y2="86" marker-end="url(#lxa)"/>
 <text class="s" x="231" y="102" text-anchor="middle">4. tulemus JSON-ina tagasi</text>
-<text class="b" x="560" y="40" text-anchor="start">agentless:</text>
-<text class="s" x="560" y="56" text-anchor="start">sihtmasinas pole Ansible'it,</text>
-<text class="s" x="560" y="72" text-anchor="start">vaja on ainult SSH-d ja Pythonit</text>
+<text class="b" x="530" y="40" text-anchor="start">agentless:</text>
+<text class="s" x="530" y="58" text-anchor="start">sihtmasinas pole Ansible'it,</text>
+<text class="s" x="530" y="76" text-anchor="start">vaja on ainult SSH-d ja Pythonit</text>
 </svg>
 </figure>
 
@@ -395,8 +384,6 @@ Sellest skeemist tuleb neli asja, mis on olulised kogu edasise töö jaoks.
 ??? question "Kordamisküsimus"
 
     Miks ei pea managed node'is Ansible paigaldatud olema? Mis peab seal siiski olema?
-
----
 
 ## 7. Paigaldamine ja `ansible.cfg`
 
@@ -434,9 +421,10 @@ Tänu `inventory`-le ei pea käsule `-i inventory.ini` lisama. `pipelining` teeb
 
     Kui `ansible.cfg` on kaustas, kuhu kõik saavad kirjutada (maailmaloetav kaust), siis Ansible ignoreerib seda turvalisuse pärast ja annab hoiatuse. WSL-is juhtub see siis, kui töötad Windowsi kettal (`/mnt/c/...`). Hoia oma kaust Linuxi failisüsteemis, näiteks `~/`.
 
-*Allikad: [paigaldamine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) · [ansible.cfg seaded](https://docs.ansible.com/ansible/latest/reference_appendices/config.html)*
+??? info "Loe juurde"
 
----
+    - [paigaldamine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+    - [ansible.cfg seaded](https://docs.ansible.com/ansible/latest/reference_appendices/config.html)
 
 ## 8. Inventar
 
@@ -543,9 +531,10 @@ ansible-playbook bootstrap.yml --limit 'veeb:!vm3'
 
 Päriselt jagatakse inventar tavaliselt keskkondade (`test`, `prod`) ja rollide (`veeb`, `andmebaas`, `koormusjaotur`) järgi. Teisel kohtumisel lisame gruppidele muutujad. Siis seadistab sama playbook test- ja toodangukeskkonna erinevalt.
 
-*Allikad: [inventar](https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html) · [mustrid](https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html)*
+??? info "Loe juurde"
 
----
+    - [inventar](https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html)
+    - [mustrid](https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html)
 
 ## 9. Ad-hoc käsud
 
@@ -580,9 +569,9 @@ vm1 | SUCCESS => {
 
 Ad-hoc käsud sobivad küsimustele ("mis versioon kõigis masinates on?") ja ühekordseteks töödeks ("taaskäivita teenus kohe"). Kõik, mis peab olema korratav või mida tahad Gitis hoida, käib playbooki.
 
-*Allikad: [ad-hoc käsud](https://docs.ansible.com/ansible/latest/command_guide/intro_adhoc.html)*
+??? info "Loe juurde"
 
----
+    - [ad-hoc käsud](https://docs.ansible.com/ansible/latest/command_guide/intro_adhoc.html)
 
 ## 10. YAML lühidalt
 
@@ -645,9 +634,9 @@ Enne esimest jooksu kontrolli süntaksit:
 ansible-playbook bootstrap.yml --syntax-check
 ```
 
-*Allikad: [YAML süntaks](https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html)*
+??? info "Loe juurde"
 
----
+    - [YAML süntaks](https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html)
 
 ## 11. Moodulid ja toores käsk
 
@@ -701,9 +690,9 @@ ansible-doc -l | grep -i cron            # otsi mooduleid nime järgi
 
 `ansible-doc` väljundi lõpus on alati jaotis `EXAMPLES`. Sealt saad näite, mis töötab. Kõiki parameetreid ei mäleta peast keegi, ja päris töös kasutad `ansible-doc`-i iga päev.
 
-*Allikad: [ansible.builtin moodulid](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/)*
+??? info "Loe juurde"
 
----
+    - [ansible.builtin moodulid](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/)
 
 ## 12. `become`: administraatori õigused
 
@@ -740,9 +729,9 @@ Toodangus tehakse tavaliselt eraldi automaatikakonto. Sellel on paroolita sudo a
   become_user: postgres
 ```
 
-*Allikad: [become](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_privilege_escalation.html)*
+??? info "Loe juurde"
 
----
+    - [become](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_privilege_escalation.html)
 
 ## 13. Faktid ja muutujad
 
@@ -809,9 +798,9 @@ ok: [vm1] =>
     os_nimi: AlmaLinux 9.8
 ```
 
-*Allikad: [faktid ja muutujad](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html)*
+??? info "Loe juurde"
 
----
+    - [faktid ja muutujad](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html)
 
 ## 14. Playbooki anatoomia ja käivitamine
 
@@ -897,9 +886,9 @@ vm3  : ok=0  changed=0  unreachable=1  failed=0  skipped=0
 
 Siit loed välja kolm asja. `vm1` on soovitud olekus. `vm2`-s oli üks erinevus ja see parandati. `vm3`-ga ei saadud ühendust, nii et selle olekust ei tea sa midagi. Viimast rida on kõige lihtsam märkamata jätta, sest ka seal on `changed=0`.
 
-*Allikad: [playbookid](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_intro.html)*
+??? info "Loe juurde"
 
----
+    - [playbookid](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_intro.html)
 
 ## 15. SSH-võtmed ja ligipääs
 
@@ -926,7 +915,7 @@ ssh-add ~/.ssh/id_ed25519
 
 <figure style="max-width:490px;margin:.8em auto" class="lx" markdown="0">
 <svg viewBox="0 0 490 160" role="img" aria-label="SSH-võtmepaar: kuhu kumb võti läheb" xmlns="http://www.w3.org/2000/svg">
-<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
+<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:15px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:14.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:13px}.lx .c{fill:var(--md-default-fg-color);font-size:12.5px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
 <defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
 <rect class="hi" x="10" y="40" width="170" height="70" rx="6"/><text class="b" x="95.0" y="79.0" text-anchor="middle">vm1</text>
 <rect class="box" x="24" y="72" width="66" height="28" rx="4"/><text class="c" x="57" y="90" text-anchor="middle">id_ed25519</text>
@@ -1020,9 +1009,10 @@ ssh-keyscan vm1 vm2 vm3 >> ~/.ssh/known_hosts
 
 SSH-vead ja nende lahendused on [praktikumi veaotsingus](lab.md#veaotsing).
 
-*Allikad: [ssh_config](https://man.openbsd.org/ssh_config) · [ssh-keygen](https://man.openbsd.org/ssh-keygen)*
+??? info "Loe juurde"
 
----
+    - [ssh_config](https://man.openbsd.org/ssh_config)
+    - [ssh-keygen](https://man.openbsd.org/ssh-keygen)
 
 ## 16. Ohutu muudatus
 
@@ -1030,7 +1020,7 @@ Automaatika teeb muudatuse kõigis masinates sekunditega. Sama kiiresti levib ka
 
 <figure style="max-width:740px;margin:.8em auto" class="lx" markdown="0">
 <svg viewBox="0 0 740 96" role="img" aria-label="Ohutu muudatuse järjekord" xmlns="http://www.w3.org/2000/svg">
-<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
+<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:15px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:14.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:13px}.lx .c{fill:var(--md-default-fg-color);font-size:12.5px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
 <defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
 <rect class="box" x="4" y="18" width="128" height="46" rx="6"/><text class="b" x="68.0" y="38.0" text-anchor="middle">--syntax-check</text><text class="s" x="68.0" y="53.0" text-anchor="middle">kas YAML on õige</text>
 <line class="a" x1="132" y1="41" x2="150" y2="41" marker-end="url(#lxa)"/>
@@ -1102,9 +1092,9 @@ Iga muudatuse juures:
 
     Kolleeg ütleb, et `--check` on aeglane ja ta jätab selle vahele, sest "playbook on ju testitud". Millise olukorra puhul läheb see valesti? Ja millal näitab `--check` ise valesti?
 
-*Allikad: [check mode ja diff](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html)*
+??? info "Loe juurde"
 
----
+    - [check mode ja diff](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html)
 
 ## 17. Tüüpilised vead esimesel päeval
 
@@ -1112,9 +1102,9 @@ Tüüpilised vead ja nende lahendused on koos [praktikumi veaotsingus](lab.md#ve
 
 Vigu otsi alati samas järjekorras. Loe veateade algusest lõpuni läbi. Korda käsku `-v`-ga. Proovi sama asja käsitsi sihtmasinas. Enamasti on viga kirjas juba veateate esimeses reas.
 
-*Allikad: [ansible-lint](https://ansible.readthedocs.io/projects/lint/)*
+??? info "Loe juurde"
 
----
+    - [ansible-lint](https://ansible.readthedocs.io/projects/lint/)
 
 ## 18. Kokkuvõte
 
@@ -1130,8 +1120,8 @@ Vigu otsi alati samas järjekorras. Loe veateade algusest lõpuni läbi. Korda k
     | võtmepõhine SSH on eeldus | privaatvõti jääb control node'i, avalik võti läheb `authorized_keys`-i, lühinimed `~/.ssh/config`-ist |
     | ohutu muudatus | `--syntax-check` → `--check --diff` → `--limit` → kõik → teine jooks; `unreachable` tähendab, et masina olekut sa ei tea |
 
-*Allikad: [pikem Ansible'i materjal](https://hkhk-automation.github.io/devops/week03/lecture/)*
+??? info "Loe juurde"
 
----
+    - [pikem Ansible'i materjal](https://hkhk-automation.github.io/devops/week03/lecture/)
 
 *Järgmine: [praktikum](lab.md). Juhendatud osas teed kõik ühel masinal, iseseisvas osas kolmel. Seejärel [kodune õpe ja kodutöö](homework.md).*
