@@ -75,6 +75,7 @@ Valmis, kui
 { .silt }
 
 - [ ] `ssh deploy@vm1 sudo -n true` õnnestub
+- [ ] failis on `loop` ja `authorized_key` (Autograde otsib neid)
 - [ ] teine jooks `changed=0`
 
 Esitad
@@ -110,6 +111,7 @@ Valmis, kui
 { .silt }
 
 - [ ] `ssh root@vm1` keeldub
+- [ ] failis on `lineinfile`, `validate` ja `handlers` (Autograde otsib neid)
 - [ ] `ssh vm1` töötab võtmega
 - [ ] teine jooks `changed=0` ja handler ei käivitu
 
@@ -139,6 +141,7 @@ Valmis, kui
 
 - [ ] teine jooks `changed=0`
 - [ ] käsitsi paigaldatud `telnet` eemaldati
+- [ ] failis on `state: absent` (Autograde otsib seda)
 
 Esitad
 { .silt }
@@ -162,6 +165,7 @@ Valmis, kui
 { .silt }
 
 - [ ] kaustas `raportid/` on kolm faili, igaüks oma masina andmetega
+- [ ] failis on `fetch` (Autograde otsib seda)
 
 Esitad
 { .silt }
@@ -208,6 +212,7 @@ Valmis, kui
 
 - [ ] arhiiv tekib
 - [ ] cron-rida on üks
+- [ ] failis on `cron` moodul (Autograde otsib seda)
 - [ ] teine jooks `changed=0`
 
 Esitad
