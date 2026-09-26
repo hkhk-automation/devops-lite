@@ -2,7 +2,7 @@
 
 Tänase lõpuks viib üks playbook kolm serverit samasse olekusse: kasutaja on olemas, nginx käib ja avaleht näitab serveri nime. Teine jooks ei muuda midagi (`changed=0`).
 
-<figure class="dl-var" markdown="0">
+<figure style="max-width:730px;margin:.8em auto" class="dl-var" markdown="0">
 <svg viewBox="0 0 730 194" role="img" aria-labelledby="dl-var-t" xmlns="http://www.w3.org/2000/svg">
 <title id="dl-var-t">Kolm võimalust, kus Ansible jookseb: vm1, WSL või Windows (ei tööta)</title>
 <style>.dl-var svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.dl-var .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.dl-var .ctrl{fill:var(--md-primary-fg-color);fill-opacity:.18;stroke:var(--md-primary-fg-color);stroke-width:1.5}.dl-var .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.dl-var .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.dl-var .s{fill:var(--md-default-fg-color--light);font-size:12px}.dl-var .w{fill:var(--md-accent-fg-color);font-size:12.5px;font-weight:700}.dl-var .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5}.dl-var .d{stroke-dasharray:4 3}.dl-var .h{fill:var(--md-default-fg-color--light)}</style>

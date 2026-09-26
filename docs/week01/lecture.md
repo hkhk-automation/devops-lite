@@ -100,35 +100,28 @@ Triivi ei hoia ära see, et oled käsitsi eriti hoolikas. Inimesed unustavad, te
 
 Kõik automatiseerimise süsteemid koosnevad samadest osadest. Pole vahet, kas see on cron-skript, Ansible, Terraform, CI-konveier või Kubernetes:
 
-```mermaid
-flowchart LR
-    T[Käivitaja] --> I[Sisend]
-    I --> D[Soovitud olek]
-    D --> E[Täitmine]
-    C[Praegune olek] --> E
-    E --> P[Tõend]
-```
+<figure style="max-width:740px;margin:.8em auto" class="lx" markdown="0">
+<svg viewBox="0 0 740 156" role="img" aria-label="Automatiseerimise üldmudel" xmlns="http://www.w3.org/2000/svg">
+<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
+<defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="box" x="4" y="14" width="130" height="48" rx="6"/><text class="b" x="69.0" y="35.0" text-anchor="middle">Käivitaja</text><text class="s" x="69.0" y="50.0" text-anchor="middle">inimene, cron, push</text>
+<line class="a" x1="134" y1="38" x2="152" y2="38" marker-end="url(#lxa)"/>
+<rect class="box" x="154" y="14" width="130" height="48" rx="6"/><text class="b" x="219.0" y="35.0" text-anchor="middle">Sisend</text><text class="s" x="219.0" y="50.0" text-anchor="middle">kood, muutujad</text>
+<line class="a" x1="284" y1="38" x2="302" y2="38" marker-end="url(#lxa)"/>
+<rect class="box" x="304" y="14" width="130" height="48" rx="6"/><text class="b" x="369.0" y="35.0" text-anchor="middle">Soovitud olek</text><text class="s" x="369.0" y="50.0" text-anchor="middle">mis peab olema</text>
+<line class="a" x1="434" y1="38" x2="452" y2="38" marker-end="url(#lxa)"/>
+<rect class="hi" x="454" y="14" width="130" height="48" rx="6"/><text class="b" x="519.0" y="35.0" text-anchor="middle">Täitmine</text><text class="s" x="519.0" y="50.0" text-anchor="middle">võrdleb ja muudab</text>
+<line class="a" x1="584" y1="38" x2="602" y2="38" marker-end="url(#lxa)"/>
+<rect class="box" x="604" y="14" width="130" height="48" rx="6"/><text class="b" x="669.0" y="35.0" text-anchor="middle">Tõend</text><text class="s" x="669.0" y="50.0" text-anchor="middle">changed=0, logi</text>
+<rect class="box" x="454" y="104" width="130" height="44" rx="6"/><text class="b" x="519.0" y="123.0" text-anchor="middle">Praegune olek</text><text class="s" x="519.0" y="138.0" text-anchor="middle">masin täna</text>
+<line class="a" x1="519" y1="104" x2="519" y2="64" marker-end="url(#lxa)"/>
+<text class="s" x="250" y="132" text-anchor="middle">Täitmine muudab ainult seda, mis erineb.</text>
+</svg>
+</figure>
 
 **Käivitaja** paneb protsessi käima: inimene käsurealt, `git push`, cron, monitooringu häire, webhook. **Sisend** on kood, muutujad, masinate nimekiri ja saladused. **Soovitud olek** on kirjeldus sellest, milline süsteem peab olema. **Praegune olek** on see, milline süsteem tegelikult on. **Täitmine** võrdleb kaht olekut ja teeb vahe kinni. **Tõend** on väljund, millest näed, mis juhtus: logi, plaan, testitulemus, Ansible'i `changed`/`ok`.
 
 Selle mudeliga saad aru ka tööriistast, mida sa veel ei tunne. Sama skeem sobib kõigile tööriistadele, mida kursusel kasutame:
-
-<figure class="lx" markdown="0" style="max-width:100%;margin:.8em auto">
-<svg viewBox="0 0 740 106" role="img" aria-label="Automatiseerimise mudel" xmlns="http://www.w3.org/2000/svg">
-<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
-<defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
-<rect class="box" x="4" y="20" width="130" height="48" rx="6"/><text class="b" x="69.0" y="41.0" text-anchor="middle">Käivitaja</text><text class="s" x="69.0" y="56.0" text-anchor="middle">inimene, cron, push</text>
-<line class="a" x1="134" y1="44" x2="152" y2="44" marker-end="url(#lxa)"/>
-<rect class="box" x="154" y="20" width="130" height="48" rx="6"/><text class="b" x="219.0" y="41.0" text-anchor="middle">Soovitud olek</text><text class="s" x="219.0" y="56.0" text-anchor="middle">kood Gitis</text>
-<line class="a" x1="284" y1="44" x2="302" y2="44" marker-end="url(#lxa)"/>
-<rect class="hi" x="304" y="20" width="130" height="48" rx="6"/><text class="b" x="369.0" y="41.0" text-anchor="middle">Tööriist</text><text class="s" x="369.0" y="56.0" text-anchor="middle">Ansible</text>
-<line class="a" x1="434" y1="44" x2="452" y2="44" marker-end="url(#lxa)"/>
-<rect class="box" x="454" y="20" width="130" height="48" rx="6"/><text class="b" x="519.0" y="41.0" text-anchor="middle">Praegune olek</text><text class="s" x="519.0" y="56.0" text-anchor="middle">masin</text>
-<line class="a" x1="584" y1="44" x2="602" y2="44" marker-end="url(#lxa)"/>
-<rect class="box" x="604" y="20" width="130" height="48" rx="6"/><text class="b" x="669.0" y="41.0" text-anchor="middle">Tõend</text><text class="s" x="669.0" y="56.0" text-anchor="middle">changed=0, logi</text>
-<text class="s" x="365" y="95" text-anchor="middle">Tööriist võrdleb soovitud olekut praegusega ja muudab ainult seda, mis erineb.</text>
-</svg>
-</figure>
 
 ??? note "Sama mudel eri tööriistades"
 
@@ -299,7 +292,7 @@ Idempotentsust on vaja, sest automaatikat käivitatakse ikka ja jälle:
 
 Iga kord peab jooks olema ohutu.
 
-<figure class="lx" markdown="0" style="max-width:100%;margin:.8em auto">
+<figure style="max-width:720px;margin:.8em auto" class="lx" markdown="0">
 <svg viewBox="0 0 720 104" role="img" aria-label="Skript vs moodul teisel jooksul" xmlns="http://www.w3.org/2000/svg">
 <style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
 <defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
@@ -362,25 +355,9 @@ Ansible'i maailmas on kaks rolli. **Control node** on masin, kus Ansible on paig
 
 Kui käivitad playbooki, teeb Ansible iga task'i jaoks iga masinaga järgmist:
 
-```mermaid
-sequenceDiagram
-    participant C as Control node
-    participant M as Managed node
-    C->>C: loeb inventari ja playbooki
-    C->>M: SSH-ühendus
-    C->>M: kogub faktid (setup)
-    loop iga task
-        C->>M: kopeerib mooduli (Python-skript) ajutisse kausta
-        M->>M: käivitab mooduli, võrdleb olekut
-        M-->>C: tagastab JSON-i: ok / changed / failed
-        M->>M: kustutab ajutise faili
-    end
-    C->>C: PLAY RECAP
-```
-
 Sellest skeemist tuleb neli asja, mis on olulised kogu edasise töö jaoks.
 
-<figure class="lx" markdown="0" style="max-width:100%;margin:.8em auto">
+<figure style="max-width:760px;margin:.8em auto" class="lx" markdown="0">
 <svg viewBox="0 0 760 112" role="img" aria-label="Mida Ansible teeb ühe task'i juures" xmlns="http://www.w3.org/2000/svg">
 <style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
 <defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
@@ -947,7 +924,7 @@ eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_ed25519
 ```
 
-<figure class="lx" markdown="0" style="max-width:40rem;margin:.8em auto">
+<figure style="max-width:490px;margin:.8em auto" class="lx" markdown="0">
 <svg viewBox="0 0 490 160" role="img" aria-label="SSH-võtmepaar: kuhu kumb võti läheb" xmlns="http://www.w3.org/2000/svg">
 <style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
 <defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
@@ -1051,15 +1028,7 @@ SSH-vead ja nende lahendused on [praktikumi veaotsingus](lab.md#veaotsing).
 
 Automaatika teeb muudatuse kõigis masinates sekunditega. Sama kiiresti levib ka viga. Käsitsi tehtud viga rikub ühe serveri, sama viga playbookis rikub kõik. Seepärast tee iga muudatus samade sammudega:
 
-```mermaid
-flowchart LR
-    A[--syntax-check] --> B[--check --diff]
-    B --> C[--limit vm1]
-    C --> D[kõik masinad]
-    D --> E[teine jooks: changed=0]
-```
-
-<figure class="lx" markdown="0" style="max-width:100%;margin:.8em auto">
+<figure style="max-width:740px;margin:.8em auto" class="lx" markdown="0">
 <svg viewBox="0 0 740 96" role="img" aria-label="Ohutu muudatuse järjekord" xmlns="http://www.w3.org/2000/svg">
 <style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:14px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:13.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:12px}.lx .c{fill:var(--md-default-fg-color);font-size:12px;font-family:var(--md-code-font-family,monospace)}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .h{fill:var(--md-default-fg-color--light)}</style>
 <defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
