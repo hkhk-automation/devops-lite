@@ -4,6 +4,16 @@ Tahvel näitab, mis sinu VM-ides praegu töötab. Kontroll käib iga 5 minuti j�
 
 Tahvel kontrollib masinaid. Faile sinu repos kontrollib Autograde, selle punktid on tahvlil eraldi veerus.
 
+## Ühenda VM-id tahvliga
+
+Tee seda üks kord. Jooksuta vm1-s oma K2 repo kaustas (seal, kus on `inventory.ini` grupiga `stack`):
+
+```bash
+ansible stack -m ansible.posix.authorized_key -a "user=$USER key=http://<tahvli-aadress>:8090/kontroll.pub"
+```
+
+See lisab tahvli avaliku võtme kõigi kolme masina sinu kasutajale. Tahvel saab siis su masinates olekut lugeda, aga mitte midagi muuta: tal pole sinu parooli ega sudo-õigust. Kui tahad tahvli hiljem lahti ühendada, kustuta see rida failist `~/.ssh/authorized_keys` (rea lõpus on `kontroll@...`).
+
 ## K1 · Esimene playbook
 
 - `nginx` käib vm1-s, vm2-s ja vm3-s;
