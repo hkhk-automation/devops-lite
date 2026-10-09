@@ -75,6 +75,8 @@ nav:
   - Avaleht: index.md
   - Töökeskkond: keskkond.md
   - Laboritahvel: tahvel.md
+  - Ava laboritahvel: https://hkhk-automation.github.io/devops-lite/ava-tahvel/
+  - Uuri projekti: https://hkhk-automation.github.io/devops-lite/uuri/
 - Kohtumised:
   - K1 · Idempotentsus ja esimene playbook:
     - Loeng: week01/lecture.md
