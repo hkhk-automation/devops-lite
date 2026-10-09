@@ -342,31 +342,22 @@ Pärast: `ansible stack -m command -a "systemctl is-active firewalld"` vastab ko
 
 Selle sammu lõpuks käib vm1-s PostgreSQL, selles on andmebaas `labor` ja ainult vm2 ning vm3 pääsevad sellele võrgust ligi.
 
-Andmebaasi roll on pikem, seega jagad selle kolmeks task-failiks. `roles/db/tasks/main.yml` ainult kogub need kokku:
+Andmebaasi roll on pikem kui `common`, seega ehitad selle kolme task-faili kaupa: paigaldus, seadistus, kasutaja. Pärast iga faili jooksutad ja kontrollid. Nii tead alati, mis osa vea tegi.
+
+**Samm 1. Rolli sisukord.** `roles/db/tasks/main.yml` ei tee ise midagi, ta ainult loetleb task-failid järjekorras. Alusta ühega:
 
 ```yaml
 - name: PostgreSQL paigaldus
   ansible.builtin.import_tasks: paigaldus.yml
-
-- name: PostgreSQL seadistus
-  ansible.builtin.import_tasks: seadistus.yml
-
-- name: Seaded rakenduvad enne kasutaja loomist
-  ansible.builtin.meta: flush_handlers # (1)!
-
-- name: Andmebaas ja kasutaja
-  ansible.builtin.import_tasks: kasutaja.yml
 ```
 
-1. Handlerid käivituvad tavaliselt play lõpus. Siin on vaja, et PostgreSQL oleks uute seadetega taaskäivitatud enne, kui kasutaja luuakse, sest parooli räsi sõltub seadest `password_encryption`.
-
-`roles/db/defaults/main.yml`:
+`import_tasks` loeb faili sisse juba enne jooksu, seega `--list-tasks` näitab ka selle task'e. Lisa ka rolli vaikeväärtus `roles/db/defaults/main.yml`:
 
 ```yaml
 db_andmekaust: /var/lib/pgsql/data
 ```
 
-**Samm 1.** `roles/db/tasks/paigaldus.yml`:
+**Samm 2. Paigaldus.** Loo `roles/db/tasks/paigaldus.yml`. Esimene task on tuttav K1-st:
 
 ```yaml
 - name: PostgreSQL server on paigaldatud
@@ -375,121 +366,29 @@ db_andmekaust: /var/lib/pgsql/data
       - postgresql-server
       - postgresql
     state: present
+```
 
+PostgreSQL-i andmekaust tuleb üks kord luua käsuga `postgresql-setup --initdb`. Moodulit selleks pole, seega kasutad `command`-i ja teed selle idempotentseks sama võttega mis K1 A5-s. Kui fail `PG_VERSION` on olemas, on kaust juba loodud:
+
+```yaml
 - name: Andmekaust on initsialiseeritud
   ansible.builtin.command: postgresql-setup --initdb
   args:
-    creates: "{{ db_andmekaust }}/PG_VERSION" # (1)!
-
-- name: PostgreSQL käib
-  ansible.builtin.service:
-    name: postgresql
-    state: started
-    enabled: true
+    creates: "{{ db_andmekaust }}/PG_VERSION"
 ```
 
-1. Sama võte, mis K1 A5-s: kui fail on olemas, on andmekaust juba loodud ja käsku ei käivitata.
+Kolmas task paneb teenuse käima. Kirjuta see ise: moodul `ansible.builtin.service`, teenus `postgresql`, käib ja käivitub buutimisel.
 
-**Samm 2.** `roles/db/tasks/seadistus.yml`. Siin on kaks uut asja: `loop` kahe seade jaoks ühe task'iga ja mall, mis loeb teiste masinate IP-sid.
+??? example "Näide, kui ikka kinni"
+    ```yaml
+    - name: PostgreSQL käib
+      ansible.builtin.service:
+        name: postgresql
+        state: started
+        enabled: true
+    ```
 
-```yaml
-- name: postgresql.conf seaded on paigas
-  ansible.builtin.lineinfile:
-    path: "{{ db_andmekaust }}/postgresql.conf"
-    regexp: "^#?{{ item.nimi }}\\s*="
-    line: "{{ item.nimi }} = '{{ item.vaartus }}'"
-  loop: # (1)!
-    - { nimi: listen_addresses, vaartus: "*" }
-    - { nimi: password_encryption, vaartus: scram-sha-256 }
-  notify: PostgreSQL taaskäivitub
-
-- name: Rakendusserverid pääsevad andmebaasi
-  ansible.builtin.template:
-    src: pg_hba.conf.j2
-    dest: "{{ db_andmekaust }}/pg_hba.conf"
-    owner: postgres
-    group: postgres
-    mode: "0600"
-  notify: PostgreSQL laeb seaded uuesti
-
-- name: Andmebaasi port on tulemüüris avatud
-  ansible.posix.firewalld:
-    port: "{{ db_port }}/tcp"
-    permanent: true
-    immediate: true
-    state: enabled
-```
-
-1. Task jookseb iga nimekirja elemendi kohta üks kord, element on muutujas `item`. `regexp` leiab rea ka siis, kui see on välja kommenteeritud (`#listen_addresses = 'localhost'`).
-
-Mall `roles/db/templates/pg_hba.conf.j2`:
-
-```jinja
-# {{ ansible_managed }}
-# TYPE  DATABASE        USER            ADDRESS                 METHOD
-local   all             all                                     peer
-host    all             all             127.0.0.1/32            scram-sha-256
-host    all             all             ::1/128                 scram-sha-256
-{% for h in groups['app'] %}
-host    {{ db_nimi }}           {{ db_kasutaja }}           {{ hostvars[h].ansible_default_ipv4.address }}/32         scram-sha-256
-{% endfor %}
-```
-
-Mall jookseb vm1 jaoks, aga kirjutab faili vm2 ja vm3 IP-d. `groups['app']` on nimekiri `['vm2', 'vm3']`, `hostvars['vm2']` on kõik, mida Ansible vm2 kohta teab, ka tema faktid. Faktid on olemas, sest esimene play (`hosts: stack`) kogus need kõigist kolmest.
-
-Handlerid, `roles/db/handlers/main.yml`:
-
-```yaml
-- name: PostgreSQL taaskäivitub
-  ansible.builtin.service:
-    name: postgresql
-    state: restarted
-
-- name: PostgreSQL laeb seaded uuesti
-  ansible.builtin.service:
-    name: postgresql
-    state: reloaded
-```
-
-`notify` peab olema täpselt sama tekst mis handleri `name`. `listen_addresses` vajab taaskäivitust, `pg_hba.conf` muutusele piisab uuesti laadimisest.
-
-**Samm 3.** `roles/db/tasks/kasutaja.yml`. PostgreSQL-i kasutajate jaoks on olemas kollektsioon `community.postgresql`, aga meie masinates seda pole. Seepärast teed sama asja `command`-iga ja teed selle ise idempotentseks: esmalt küsid, kas kasutaja on olemas, ja lood ta ainult siis, kui pole.
-
-```yaml
-- name: Kontrolli, kas andmebaasi kasutaja on olemas
-  ansible.builtin.command: psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='{{ db_kasutaja }}'"
-  become_user: postgres # (1)!
-  register: db_roll # (2)!
-  changed_when: false # (3)!
-  check_mode: false # (4)!
-
-- name: Andmebaasi kasutaja on olemas
-  ansible.builtin.command: psql -c "CREATE ROLE {{ db_kasutaja }} LOGIN PASSWORD '{{ db_parool }}'"
-  become_user: postgres
-  when: db_roll.stdout != "1" # (5)!
-  no_log: true # (6)!
-
-- name: Kontrolli, kas andmebaas on olemas
-  ansible.builtin.command: psql -tAc "SELECT 1 FROM pg_database WHERE datname='{{ db_nimi }}'"
-  become_user: postgres
-  register: db_baas
-  changed_when: false
-  check_mode: false
-
-- name: Andmebaas on olemas
-  ansible.builtin.command: createdb -O {{ db_kasutaja }} {{ db_nimi }}
-  become_user: postgres
-  when: db_baas.stdout != "1"
-```
-
-1. Käsk jookseb kasutajana `postgres`, kellel on andmebaasis kõik õigused. `become: true` tuleb play'st.
-2. Käsu tulemus (`stdout`, `rc` jm) salvestatakse muutujasse `db_roll`.
-3. Päring ei muuda midagi, seega ei tohi see olla `changed`. Muidu poleks teine jooks kunagi `changed=0`.
-4. Päring jookseb ka `--check` all. Ilma selleta jäetaks see vahele ja järgmine task ei teaks, mida otsustada.
-5. `psql -tA` vastab `1`, kui rida on olemas, ja tühja reaga, kui ei ole.
-6. Parool ei satu väljundisse ega logisse.
-
-Lisa `site.yml`-i teine play:
+Lisa `site.yml`-i teine play ja jooksuta:
 
 ```yaml
 - name: Andmebaas
@@ -499,53 +398,207 @@ Lisa `site.yml`-i teine play:
     - db
 ```
 
-Kontrolli ja jooksuta:
-
 ```bash
 ansible-playbook site.yml --syntax-check
 ansible-playbook site.yml
+ansible db -m wait_for -a "port=5432 timeout=5"
+```
+
+??? success "Oodatav tulemus"
+
+    Kolm uut task'i `db : ...` nimega, kõik `changed`. `wait_for` vastab `SUCCESS`: PostgreSQL kuulab, aga praegu ainult `localhost`-is.
+
+**Samm 3. Seadistus.** Lisa `tasks/main.yml`-i teine rida:
+
+```yaml
+- name: PostgreSQL seadistus
+  ansible.builtin.import_tasks: seadistus.yml
+```
+
+PostgreSQL peab kuulama võrgus, mitte ainult `localhost`-is, ja paroolid peavad olema tänapäevase räsiga. Need on kaks rida failis `postgresql.conf`. Ühe task'iga saab muuta mõlemat, kui kasutad `loop`-i. Loo `roles/db/tasks/seadistus.yml`:
+
+```yaml
+- name: postgresql.conf seaded on paigas
+  ansible.builtin.lineinfile:
+    path: "{{ db_andmekaust }}/postgresql.conf"
+    regexp: "^#?{{ item.nimi }}\\s*="
+    line: "{{ item.nimi }} = '{{ item.vaartus }}'"
+  loop:
+    - { nimi: listen_addresses, vaartus: "*" }
+    - { nimi: password_encryption, vaartus: scram-sha-256 }
+  notify: PostgreSQL taaskäivitub
+```
+
+Task jookseb iga `loop`-i elemendi kohta ja element on muutujas `item`. `regexp` leiab rea ka siis, kui see on välja kommenteeritud (`#listen_addresses = 'localhost'`). Ilma selleta lisaks `lineinfile` igal jooksul uue rea.
+
+`notify` ütleb: kui see task muutis midagi, taaskäivita PostgreSQL play lõpus. Teenus loeb `listen_addresses`-i ainult käivitudes. Handler läheb rolli faili `roles/db/handlers/main.yml`:
+
+```yaml
+- name: PostgreSQL taaskäivitub
+  ansible.builtin.service:
+    name: postgresql
+    state: restarted
+```
+
+`notify` tekst ja handleri `name` peavad olema täpselt samad, suurtähed loevad.
+
+Nüüd kõige huvitavam rida tänases praktikumis. PostgreSQL lubab võrgust ühenduda ainult aadressidelt, mis on kirjas failis `pg_hba.conf`. Sinna on vaja vm2 ja vm3 IP-d. Neid ei kirjuta sa käsitsi, mall arvutab need. Loo `roles/db/templates/pg_hba.conf.j2`. Kõigepealt read, mis on igas `pg_hba.conf`-is:
+
+```jinja
+# {{ ansible_managed }}
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+local   all             all                                     peer
+host    all             all             127.0.0.1/32            scram-sha-256
+host    all             all             ::1/128                 scram-sha-256
+```
+
+Siis tsükkel üle `app`-grupi. `groups['app']` on nimekiri `['vm2', 'vm3']`, `hostvars[h]` on kõik, mida Ansible masina `h` kohta teab, ka tema IP:
+
+```jinja
+{% for h in groups['app'] %}
+host    {{ db_nimi }}           {{ db_kasutaja }}           {{ hostvars[h].ansible_default_ipv4.address }}/32         scram-sha-256
+{% endfor %}
+```
+
+Mall jookseb vm1 jaoks, aga kirjutab faili vm2 ja vm3 IP-d. Faktid on olemas, sest esimene play (`hosts: stack`) kogus need kõigist kolmest.
+
+Malli paigaldab task. Kirjuta see ise `seadistus.yml`-i lõppu: moodul `ansible.builtin.template`, `src: pg_hba.conf.j2`, `dest` andmekaustas, omanik ja grupp `postgres`, õigused `0600`, teavitab handlerit `PostgreSQL laeb seaded uuesti`. Lisa sama nimega handler, mis teeb `state: reloaded`: `pg_hba.conf`-i muutusele piisab uuesti laadimisest.
+
+??? example "Näide, kui ikka kinni"
+    ```yaml
+    - name: Rakendusserverid pääsevad andmebaasi
+      ansible.builtin.template:
+        src: pg_hba.conf.j2
+        dest: "{{ db_andmekaust }}/pg_hba.conf"
+        owner: postgres
+        group: postgres
+        mode: "0600"
+      notify: PostgreSQL laeb seaded uuesti
+    ```
+
+    Handler `handlers/main.yml`-i:
+
+    ```yaml
+    - name: PostgreSQL laeb seaded uuesti
+      ansible.builtin.service:
+        name: postgresql
+        state: reloaded
+    ```
+
+Viimane task `seadistus.yml`-is avab pordi tulemüüris. Sama moodul mis K1 B5-s, aga `service: http` asemel `port`:
+
+```yaml
+- name: Andmebaasi port on tulemüüris avatud
+  ansible.posix.firewalld:
+    port: "{{ db_port }}/tcp"
+    permanent: true
+    immediate: true
+    state: enabled
+```
+
+Jooksuta ja kontrolli:
+
+```bash
+ansible-playbook site.yml
+ssh -t vm1 "sudo cat /var/lib/pgsql/data/pg_hba.conf"
 ```
 
 ??? success "Oodatav tulemus"
 
     ```
-    TASK [db : Andmekaust on initsialiseeritud] *******************
-    changed: [vm1]
-    ...
     TASK [db : postgresql.conf seaded on paigas] ******************
     changed: [vm1] => (item={'nimi': 'listen_addresses', 'vaartus': '*'})
     changed: [vm1] => (item={'nimi': 'password_encryption', 'vaartus': 'scram-sha-256'})
     ...
     RUNNING HANDLER [db : PostgreSQL taaskäivitub] ****************
     changed: [vm1]
-    ...
-    TASK [db : Andmebaasi kasutaja on olemas] *********************
-    changed: [vm1]
     ```
 
-Pärast: kontrolli masinas, mitte playbooki väljundis.
+    `pg_hba.conf`-i lõpus on kaks rida, üks vm2 ja üks vm3 IP-ga.
+
+??? tip "Kui näed hoiatust `Module remote_tmp ... did not exist and was created with a mode of 0700`"
+
+    See on esimese jooksu hoiatus, mitte viga. Ansible lõi kasutajatele `root` ja `postgres` ajutise kausta. Järgmisel jooksul hoiatust enam pole.
+
+**Samm 4. Kasutaja ja andmebaas.** Rakendus vajab andmebaasi `labor` ja kasutajat `labor`. PostgreSQL-i kasutajate jaoks on olemas kollektsioon `community.postgresql`, aga meie masinates seda pole. Seepärast teed sama `command`-iga ja teed selle ise idempotentseks: esmalt küsid, kas kasutaja on olemas, ja lood ta ainult siis, kui pole.
+
+Lisa `tasks/main.yml`-i lõppu kaks rida. `flush_handlers` käivitab ootel handlerid kohe, mitte play lõpus. PostgreSQL peab uue `password_encryption` seadega käima enne, kui kasutaja luuakse:
+
+```yaml
+- name: Seaded rakenduvad enne kasutaja loomist
+  ansible.builtin.meta: flush_handlers
+
+- name: Andmebaas ja kasutaja
+  ansible.builtin.import_tasks: kasutaja.yml
+```
+
+Loo `roles/db/tasks/kasutaja.yml`. Esimene task küsib ja ei muuda midagi:
+
+```yaml
+- name: Kontrolli, kas andmebaasi kasutaja on olemas
+  ansible.builtin.command: psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='{{ db_kasutaja }}'"
+  become_user: postgres # (1)!
+  register: db_roll # (2)!
+  changed_when: false # (3)!
+  check_mode: false # (4)!
+```
+
+1. Käsk jookseb kasutajana `postgres`, kellel on andmebaasis kõik õigused.
+2. Käsu tulemus (`stdout`, `rc` jm) salvestatakse muutujasse `db_roll`.
+3. Päring ei muuda midagi, seega ei tohi see olla `changed`. Muidu poleks teine jooks kunagi `changed=0`.
+4. Päring jookseb ka `--check` all. Ilma selleta jäetaks see vahele ja järgmine task ei teaks, mida otsustada.
+
+Teine task loob kasutaja, aga ainult siis, kui päring ei vastanud `1`:
+
+```yaml
+- name: Andmebaasi kasutaja on olemas
+  ansible.builtin.command: psql -c "CREATE ROLE {{ db_kasutaja }} LOGIN PASSWORD '{{ db_parool }}'"
+  become_user: postgres
+  when: db_roll.stdout != "1"
+  no_log: true # (1)!
+```
+
+1. Parool ei satu väljundisse ega logisse.
+
+Andmebaasi jaoks on sama muster. Kirjuta need kaks task'i ise:
+
+- kontroll: `psql -tAc "SELECT 1 FROM pg_database WHERE datname='{{ db_nimi }}'"`, tulemus muutujasse `db_baas`;
+- loomine: `createdb -O {{ db_kasutaja }} {{ db_nimi }}`, ainult siis, kui andmebaasi pole.
+
+??? example "Näide, kui ikka kinni"
+    ```yaml
+    - name: Kontrolli, kas andmebaas on olemas
+      ansible.builtin.command: psql -tAc "SELECT 1 FROM pg_database WHERE datname='{{ db_nimi }}'"
+      become_user: postgres
+      register: db_baas
+      changed_when: false
+      check_mode: false
+
+    - name: Andmebaas on olemas
+      ansible.builtin.command: createdb -O {{ db_kasutaja }} {{ db_nimi }}
+      become_user: postgres
+      when: db_baas.stdout != "1"
+    ```
+
+Jooksuta kaks korda ja kontrolli:
 
 ```bash
-ansible db -m wait_for -a "port=5432 timeout=5"
+ansible-playbook site.yml
+ansible-playbook site.yml
 ssh -t vm1 "sudo -u postgres psql -c '\l labor'"
-ssh -t vm1 "sudo cat /var/lib/pgsql/data/pg_hba.conf"
 ```
 
 ??? success "Oodatav tulemus"
 
-    `wait_for` vastab `SUCCESS`. `\l labor` näitab andmebaasi, mille omanik on `labor`. `pg_hba.conf`-i lõpus on kaks rida, üks vm2 ja üks vm3 IP-ga.
+    Esimesel jooksul on `Andmebaasi kasutaja on olemas` ja `Andmebaas on olemas` `changed`. Teisel jooksul on need `skipped` ja kontrollpäringud `ok`. `\l labor` näitab andmebaasi, mille omanik on `labor`.
 
 ??? tip "Kui `psql` annab `could not change directory to \"/home/...\": Permission denied`"
 
     See on hoiatus, mitte viga. Kasutaja `postgres` ei pääse sinu kodukausta, kust käsk käivitati. Käsk ise töötab.
 
-??? tip "Kui näed hoiatust `Module remote_tmp ... did not exist and was created with a mode of 0700`"
-
-    Ka see on esimese jooksu hoiatus, mitte viga. Ansible lõi kasutajatele `root` ja `postgres` ajutise kausta. Järgmisel jooksul hoiatust enam pole.
-
 ??? question "Mõtle (vabatahtlik)"
 
-    Jooksuta `ansible-playbook site.yml` uuesti. Mitu korda on `Andmebaasi kasutaja on olemas` nüüd `skipped`? Mis juhtuks, kui muudaksid `group_vars/all.yml`-is parooli: kas andmebaasis parool muutuks?
+    Mis juhtuks, kui muudaksid `group_vars/all.yml`-is parooli: kas andmebaasis parool muutuks? Miks mitte?
 
 ??? info "Loe juurde"
 
@@ -558,9 +611,9 @@ ssh -t vm1 "sudo cat /var/lib/pgsql/data/pg_hba.conf"
 
 Selle sammu lõpuks käib vm2-s ja vm3-s systemd teenus `labori-app`, mis kirjutab iga külastuse vm1 andmebaasi.
 
-Vaata enne rakendus läbi: `less roles/app/files/app.py`. See on umbes 100 rida Pythonit. Seaded tulevad keskkonnamuutujatest (`DB_HOST`, `APP_PORT` jt), aadressil `/health` vastab rakendus `ok`, kui andmebaas vastab.
+Vaata enne rakendus läbi: `less roles/app/files/app.py`. Seaded tulevad keskkonnamuutujatest (`DB_HOST`, `APP_PORT` jt), aadressil `/health` vastab rakendus `ok`, kui andmebaas vastab. Sinu ülesanne on see masinasse panna nii, nagu paneksid iga teise teenuse: kasutaja, kood, seaded, systemd.
 
-`roles/app/defaults/main.yml`:
+**Samm 1. Kasutaja ja draiver.** Rakendus ei jookse root'ina, vaid oma süsteemikasutajana. Lisa rolli vaikeväärtused `roles/app/defaults/main.yml`:
 
 ```yaml
 app_kasutaja: labori
@@ -568,7 +621,47 @@ app_kaust: /opt/labori-app
 app_versioon: "1.0"
 ```
 
-Seadete mall `roles/app/templates/labori-app.env.j2`:
+Esimene task `roles/app/tasks/main.yml`-is:
+
+```yaml
+- name: Rakenduse kasutaja on olemas
+  ansible.builtin.user:
+    name: "{{ app_kasutaja }}"
+    system: true
+    shell: /sbin/nologin
+    create_home: false
+```
+
+`system: true` ja `/sbin/nologin` tähendavad: teenuse kasutaja, sisse logida ei saa. Teine task paigaldab paketi `python3-psycopg2` (Pythoni PostgreSQL-i draiver). Kirjuta see ise.
+
+Kolmas task loob kausta `{{ app_kaust }}` õigustega `0755`. Moodul `ansible.builtin.file`, `state: directory`.
+
+??? example "Näide, kui ikka kinni"
+    ```yaml
+    - name: Andmebaasi draiver on paigaldatud
+      ansible.builtin.package:
+        name: python3-psycopg2
+        state: present
+
+    - name: Rakenduse kaust on olemas
+      ansible.builtin.file:
+        path: "{{ app_kaust }}"
+        state: directory
+        mode: "0755"
+    ```
+
+**Samm 2. Kood ja seaded.** Kood kopeeritakse muutmata, seega `copy`. Rollis ei pea kirjutama teed, `src: app.py` leitakse kaustast `roles/app/files/`:
+
+```yaml
+- name: Rakenduse kood on paigas
+  ansible.builtin.copy:
+    src: app.py
+    dest: "{{ app_kaust }}/app.py"
+    mode: "0755"
+  notify: Rakendus taaskäivitub
+```
+
+Seaded on igal masinal erinevad (port, andmebaasi IP), seega mall. Loo `roles/app/templates/labori-app.env.j2`:
 
 ```jinja
 # {{ ansible_managed }}
@@ -582,9 +675,21 @@ DB_KASUTAJA={{ db_kasutaja }}
 DB_PAROOL={{ db_parool }}
 ```
 
-`groups['db'][0]` on `db`-grupi esimene masin. Nii ei pea andmebaasi IP-d kuhugi käsitsi kirjutama.
+Vaata rida `DB_HOST`. `groups['db'][0]` on `db`-grupi esimene masin, vm1. Tema IP tuleb jälle `hostvars`-ist. Kui andmebaas homme kolib, muudad inventari ja see rida uueneb ise.
 
-systemd teenuse mall `roles/app/templates/labori-app.service.j2`:
+Malli paigaldab task, mis on peaaegu sama nagu koodi oma. Kirjuta see ise: `template`, `dest: /etc/labori-app.env`, õigused `0600` (failis on parool), teavitab sama handlerit.
+
+??? example "Näide, kui ikka kinni"
+    ```yaml
+    - name: Rakenduse seaded on paigas
+      ansible.builtin.template:
+        src: labori-app.env.j2
+        dest: /etc/labori-app.env
+        mode: "0600"
+      notify: Rakendus taaskäivitub
+    ```
+
+**Samm 3. systemd teenus.** systemd vajab teenusefaili. Loo mall `roles/app/templates/labori-app.service.j2`:
 
 ```jinja
 # {{ ansible_managed }}
@@ -604,60 +709,32 @@ RestartSec=3
 WantedBy=multi-user.target
 ```
 
-Task'id, `roles/app/tasks/main.yml`:
+`EnvironmentFile` loeb sammu 2 seaded keskkonnamuutujateks. systemd loeb faili root'ina enne, kui rakendus kasutajana `labori` käivitub, seepärast sobib õigus `0600`.
+
+Lisa task'id: teenusefail malli järgi (`dest: /etc/systemd/system/labori-app.service`, `0644`, teavitab handlerit) ja teenus käima:
 
 ```yaml
-- name: Rakenduse kasutaja on olemas
-  ansible.builtin.user:
-    name: "{{ app_kasutaja }}"
-    system: true
-    shell: /sbin/nologin
-    create_home: false
-
-- name: Andmebaasi draiver on paigaldatud
-  ansible.builtin.package:
-    name: python3-psycopg2
-    state: present
-
-- name: Rakenduse kaust on olemas
-  ansible.builtin.file:
-    path: "{{ app_kaust }}"
-    state: directory
-    mode: "0755"
-
-- name: Rakenduse kood on paigas
-  ansible.builtin.copy:
-    src: app.py
-    dest: "{{ app_kaust }}/app.py"
-    mode: "0755"
-  notify: Rakendus taaskäivitub
-
-- name: Rakenduse seaded on paigas
-  ansible.builtin.template:
-    src: labori-app.env.j2
-    dest: /etc/labori-app.env
-    mode: "0600" # (1)!
-  notify: Rakendus taaskäivitub
-
-- name: systemd teenus on kirjeldatud
-  ansible.builtin.template:
-    src: labori-app.service.j2
-    dest: /etc/systemd/system/labori-app.service
-    mode: "0644"
-  notify: Rakendus taaskäivitub
-
 - name: Rakendus käib
   ansible.builtin.systemd:
     name: labori-app
     state: started
     enabled: true
-    daemon_reload: true # (2)!
+    daemon_reload: true # (1)!
 ```
 
-1. Failis on parool, seega loeb seda ainult root. systemd loeb faili root'ina enne, kui rakendus kasutajana `labori` käivitub.
-2. systemd loeb uue või muudetud `.service` faili sisse alles pärast `daemon-reload`-i.
+1. systemd loeb uue või muudetud `.service` faili sisse alles pärast `daemon-reload`-i.
 
-Handler, `roles/app/handlers/main.yml`:
+??? example "Näide: teenusefaili task, kui ikka kinni"
+    ```yaml
+    - name: systemd teenus on kirjeldatud
+      ansible.builtin.template:
+        src: labori-app.service.j2
+        dest: /etc/systemd/system/labori-app.service
+        mode: "0644"
+      notify: Rakendus taaskäivitub
+    ```
+
+Viimaseks handler `roles/app/handlers/main.yml`:
 
 ```yaml
 - name: Rakendus taaskäivitub
@@ -676,7 +753,7 @@ ansible-playbook site.yml --syntax-check
 ansible-playbook site.yml
 ```
 
-Pärast: küsi rakenduselt endalt, kas see näeb andmebaasi. Ad-hoc käsus saad kasutada muutujat, see arvutatakse iga masina jaoks eraldi:
+Pärast küsi rakenduselt endalt, kas see näeb andmebaasi. Ad-hoc käsus saad kasutada muutujat, see arvutatakse iga masina jaoks eraldi:
 
 ```bash
 ansible app -m uri -a "url=http://localhost:{{ app_port }}/health return_content=true"
@@ -720,13 +797,13 @@ ansible app -m uri -a "url=http://localhost:{{ app_port }}/health return_content
 
 Selle sammu lõpuks saadab vm1 nginx päringud edasi rakendusserveritele ja kogu nginx-i seadistus tuleb mallist.
 
-`roles/lb/defaults/main.yml`:
+Mall asendab terve `/etc/nginx/nginx.conf`-i. K1 avaleht vm1-s kaob, nii peabki olema. Ehitad malli kolmes osas. Lisa enne rolli vaikeväärtus `roles/lb/defaults/main.yml`:
 
 ```yaml
 lb_port: 80
 ```
 
-Mall `roles/lb/templates/nginx.conf.j2` asendab terve `/etc/nginx/nginx.conf`-i. K1 avaleht vm1-s kaob, nii peabki olema.
+**Samm 1. Malli algus.** Loo `roles/lb/templates/nginx.conf.j2`. Esimene osa on iga nginx-i põhi: kasutaja, protsessid, logid:
 
 ```jinja
 # {{ ansible_managed }}
@@ -743,15 +820,27 @@ http {
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
 
-    log_format lb '$remote_addr "$request" $status -> $upstream_addr $upstream_status'; # (1)!
+    log_format lb '$remote_addr "$request" $status -> $upstream_addr $upstream_status';
     access_log /var/log/nginx/access.log lb;
+```
 
+`log_format lb` kirjutab igale logireale, millisele rakendusserverile päring läks ja mis sealt vastati. B1-s on sellest abi.
+
+**Samm 2. Upstream.** `upstream` on nimekiri serveritest, kuhu nginx päringud edasi saadab. Sama tsükkel mis `pg_hba.conf`-is, ainult et nüüd on vaja ka porti. Lisa malli:
+
+```jinja
     upstream rakendus {
 {% for h in groups['app'] %}
         server {{ hostvars[h].ansible_default_ipv4.address }}:{{ app_port }} max_fails=1 fail_timeout=10s;  # {{ h }}
 {% endfor %}
     }
+```
 
+`max_fails=1 fail_timeout=10s`: kui server ei vasta, jätab nginx selle 10 sekundiks vahele.
+
+**Samm 3. Server.** Viimane osa võtab pordil 80 päringud vastu ja saadab need `upstream`-i:
+
+```jinja
     server {
         listen {{ lb_port }} default_server;
         server_name _;
@@ -759,7 +848,7 @@ http {
         location / {
             proxy_pass http://rakendus;
             proxy_connect_timeout 2s;
-            proxy_next_upstream error timeout http_502 http_503; # (2)!
+            proxy_next_upstream error timeout http_502 http_503;
             proxy_set_header Host $host;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
@@ -767,17 +856,17 @@ http {
 }
 ```
 
-1. Igal logireal on näha, millisele rakendusserverile päring läks ja mis sealt vastati. B1-s on sellest abi.
-2. Kui üks rakendusserver ei vasta, proovib nginx sama päringut järgmisega. Kasutaja viga ei näe.
+`proxy_next_upstream`: kui üks rakendusserver ei vasta, proovib nginx sama päringut järgmisega. Kasutaja viga ei näe.
 
-Task'id, `roles/lb/tasks/main.yml`:
+**Samm 4. Task'id.** `roles/lb/tasks/main.yml`-is on neli task'i. Kolm neist on sulle tuttavad, kirjuta need ise:
+
+- pakett `nginx` on paigaldatud;
+- teenus `nginx` käib ja käivitub buutimisel;
+- tulemüüris on avatud teenus `http` (sama mis K1 B5).
+
+Uus on malli task. Pane see paketi ja teenuse vahele:
 
 ```yaml
-- name: nginx on paigaldatud
-  ansible.builtin.package:
-    name: nginx
-    state: present
-
 - name: Koormusjaoturi seadistus on paigas
   ansible.builtin.template:
     src: nginx.conf.j2
@@ -785,41 +874,57 @@ Task'id, `roles/lb/tasks/main.yml`:
     mode: "0644"
     validate: nginx -t -c %s # (1)!
   notify: nginx laeb seaded uuesti
-
-- name: nginx käib
-  ansible.builtin.service:
-    name: nginx
-    state: started
-    enabled: true
-
-- name: HTTP on tulemüüris avatud
-  ansible.posix.firewalld:
-    service: http
-    permanent: true
-    immediate: true
-    state: enabled
 ```
 
 1. Enne kui fail asendatakse, kontrollib nginx uut versiooni (`%s` on ajutise faili tee). Kui kontroll kukub, jääb vana fail paigale ja nginx töötab edasi. B2-s proovid seda.
 
-Handler, `roles/lb/handlers/main.yml`:
+Handler `roles/lb/handlers/main.yml`-is teeb `reload`-i, mitte `restart`-i. `reload` ei katkesta pooleliolevaid ühendusi. Kirjuta see ise: nimi `nginx laeb seaded uuesti`, `state: reloaded`.
 
-```yaml
-- name: nginx laeb seaded uuesti
-  ansible.builtin.service:
-    name: nginx
-    state: reloaded
-```
+??? example "Näide: kogu `tasks/main.yml` ja handler, kui ikka kinni"
+    ```yaml
+    - name: nginx on paigaldatud
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Koormusjaoturi seadistus on paigas
+      ansible.builtin.template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        mode: "0644"
+        validate: nginx -t -c %s
+      notify: nginx laeb seaded uuesti
+
+    - name: nginx käib
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: HTTP on tulemüüris avatud
+      ansible.posix.firewalld:
+        service: http
+        permanent: true
+        immediate: true
+        state: enabled
+    ```
+
+    ```yaml
+    - name: nginx laeb seaded uuesti
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+    ```
 
 Lisa `site.yml`-i neljas play (`hosts: lb`, roll `lb`). Enne jooksu vaata, mida mall kirjutaks:
 
 ```bash
-ansible-playbook site.yml --check --diff --limit lb
+ansible-playbook site.yml --check --diff
 ```
 
 ??? tip "Kui `--limit lb` annab `'dict object' has no attribute 'ansible_default_ipv4'`"
 
-    `--limit lb` piirab ka faktide kogumist. vm2 ja vm3 fakte ei kogutud, seega mall ei tea nende IP-d. Jooksuta ilma `--limit`-ita: `ansible-playbook site.yml --check --diff`.
+    `--limit lb` piirab ka faktide kogumist. vm2 ja vm3 fakte ei kogutud, seega mall ei tea nende IP-d. Jooksuta ilma `--limit`-ita.
 
 Jooksuta päriselt ja proovi:
 
