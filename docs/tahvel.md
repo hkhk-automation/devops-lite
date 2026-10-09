@@ -1,51 +1,50 @@
 # Laboritahvel
 
-Laboritahvel näitab, millised labori osad sinu virtuaalmasinates praegu töötavad. Kontroll käib iga viie minuti järel. Tahvel muutub koos kursusega: jooksva kohtumise kontrollid on üksikasjalikult näha, varasemad kohtumised kuvatakse ainult protsendina.
+Tahvel näitab, mis sinu VM-ides praegu töötab. Kontroll käib iga 5 minuti järel. Aadressi annab juhendaja, tahvel avaneb koolivõrgus või VPN-iga. Tahvlil on kõigi õppijate read.
 
-Tahvli aadressi annab õpetaja. See on nähtav koolivõrgus või VPN-iga. Tahvlil on kõigi õppijate nimed ja tulemused nähtavad.
+Tahvel kontrollib masinaid. Faile sinu repos kontrollib Autograde, selle punktid on tahvlil eraldi veerus.
 
 ## K1 · Esimene playbook
 
-K1 osa näitab kolme kontrolli:
-
-- kas `nginx` töötab masinates vm1, vm2 ja vm3;
-- kas kasutaja `saidi` on olemas;
-- kas veebileht vastab väljastpoolt virtuaalmasinat ehk tulemüür lubab ühenduse läbi.
+- `nginx` käib vm1-s, vm2-s ja vm3-s;
+- kasutaja `saidi` on olemas;
+- leht vastab väljast, st tulemüür on lahti.
 
 ## K2 · Kolmekihiline rakendus
 
-K2 osa näitab, kas:
-
-- PostgreSQL töötab vm1-s;
-- `labori-app` töötab nii vm2-s kui ka vm3-s;
-- SELinuxi luba on seadistatud;
-- rakenduse leht vastab vm1-st;
-- koormusjaotur suunab päringud vaheldumisi mõlemasse rakendusmasinasse.
+- PostgreSQL käib vm1-s;
+- `labori-app` käib vm2-s ja vm3-s;
+- SELinuxi luba `httpd_can_network_connect` on sees;
+- leht vastab vm1-st;
+- päringud vastavad vaheldumisi vm2-st ja vm3-st.
 
 ## K3 · Podman, Docker ja Compose
 
-Kontrollid lisanduvad selle kohtumise eel.
+Kontrollid lisanduvad enne kohtumist.
 
 ## K4 · CI/CD ja GitHub Actions
 
-Kontrollid lisanduvad selle kohtumise eel.
+Kontrollid lisanduvad enne kohtumist.
 
-## K5 · OpenTofu ja Kubernetes (k3s)
+## K5 · OpenTofu ja Kubernetes
 
-Kontrollid lisanduvad selle kohtumise eel.
+Kontrollid lisanduvad enne kohtumist.
 
-## Tahvel ja Autograde täidavad eri ülesannet
+## Märgid
 
-Tahvel kontrollib virtuaalmasinate olekut ja seda, kas teenused vastavad. See ei kontrolli, millised failid on reposse esitatud. Seda teeb Autograde: see hindab koodi ja näitab labori Git-punkte Classroom 50 viimase esituse põhjal.
+| Märk | Tähendus |
+|---|---|
+| ✓ | korras |
+| 2/3 | korras kahes masinas kolmest |
+| ✗ | puudu |
+| hall rida | VM-id ei vasta: VM seisab või IP muutus |
+| Git | viimase esituse Autograde'i punktid; uuenevad, kui juhendaja tahvli uuendab |
+| vihje | mis masinas mis on valesti ja milline juhendi samm aitab (nt K2 A7) |
 
-Masinaolekut kontrollitakse iga viie minuti järel. Git-punktid ei uuene selle intervalliga: need värskenevad siis, kui õpetaja tahvlit uuendab. Seepärast võib punktide muutumine pärast uut esitust viibida.
+## Kui VM ei vasta
 
-## Tulemuste lugemine
+[![The IT Crowd GIF](https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3MHh0a3djMmU1Ymk1Z3o0dW9ieWk3ZzJyZnYxODNreGZ1Z2FhMWltZyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/dlMIwDQAxXn1K/giphy.gif)](https://giphy.com/theitcrowd)
 
-- ✓ tähendab, et kontroll on korras.
-- Osaline tulemus, näiteks 2/3, näitab, et kontroll õnnestus osas masinatest, näiteks `nginx` töötab vm1-s ja vm2-s, aga mitte vm3-s.
-- ✗ tähendab, et kontroll ei õnnestunud.
-- Hall rida tähendab, et virtuaalmasinad ei vasta. Põhjuseks võib olla seisev VM või muutunud IP-aadress. Hall rida ei tähenda null punkti.
-- Vihjed näitavad võimalikku vea asukohta ja juhatavad laborijuhendi sammuni, näiteks K2 A7 või B1. Need on suunad vea otsimiseks, mitte valmis lahendused.
+*„Kas proovisid välja ja uuesti sisse lülitada?“* Enne taaskäivitamist kontrolli, kas VM seisab või IP-aadress on muutunud. [GIF: The IT Crowd GIPHYs](https://giphy.com/theitcrowd).
 
-Kui jääd hätta, küsi abi Discordis või ava oma repos issue „Vajan abi“.
+Kinni? Küsi Discordis või ava oma repos issue **Vajan abi**.
