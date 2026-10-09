@@ -1,0 +1,711 @@
+<!doctype html><html lang="et"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DevOps Lite projekt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: koodiredaktor — vasakul projekti puu kohtumiste kaupa, keskel fail, paremal selgitus, all terminal */
+:root{
+  --bg:#f3f4f8; --panel:#ffffff; --panel2:#eceef5; --fg:#1a1d33; --muted:#5d6280; --line:#d9dce8;
+  --accent:#0c7a78; --accent-soft:#d6efed; --indigo:#3346a8; --indigo-soft:#e3e7fb;
+  --warn:#a75400; --warn-soft:#fbecd8; --code-bg:#fbfbfd; --term-bg:#151833; --term-fg:#d8dbef;
+  --kw:#3346a8; --str:#0c7a78; --cmt:#8a8fa8; --jinja:#a75400;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1124; --panel:#161936; --panel2:#1d2144; --fg:#e7e8f4; --muted:#9a9fbe; --line:#2a2f58;
+  --accent:#4cc3be; --accent-soft:#143c43; --indigo:#9aa8ff; --indigo-soft:#252b5c;
+  --warn:#f2a453; --warn-soft:#3a2b19; --code-bg:#13162f; --term-bg:#0a0c1c; --term-fg:#d8dbef;
+  --kw:#9aa8ff; --str:#4cc3be; --cmt:#6d7296; --jinja:#f2a453; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1124; --panel:#161936; --panel2:#1d2144; --fg:#e7e8f4; --muted:#9a9fbe; --line:#2a2f58;
+  --accent:#4cc3be; --accent-soft:#143c43; --indigo:#9aa8ff; --indigo-soft:#252b5c;
+  --warn:#f2a453; --warn-soft:#3a2b19; --code-bg:#13162f; --term-bg:#0a0c1c; --term-fg:#d8dbef;
+  --kw:#9aa8ff; --str:#4cc3be; --cmt:#6d7296; --jinja:#f2a453; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--sans);padding-inline:16px;padding-block:16px}
+.app{max-width:1440px;margin:0 auto;display:grid;gap:12px;grid-template-columns:290px minmax(0,1fr) 340px;grid-template-rows:auto minmax(0,1fr) 230px;height:calc(100% - 0px);min-height:640px}
+.bar{grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.bar .who{font:600 13px var(--mono);color:var(--accent)}
+.crumb{font:13px var(--mono);color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.crumb b{color:var(--fg);font-weight:600}
+.search{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:5px 10px;color:var(--muted);font-size:13px;cursor:pointer}
+.search kbd{font:11px var(--mono);border:1px solid var(--line);border-radius:4px;padding:0 5px;background:var(--panel)}
+.iconbtn{background:none;border:1px solid var(--line);border-radius:8px;color:var(--muted);font:13px var(--sans);padding:5px 10px;cursor:pointer}
+aside.tree,.editor,.info,.term{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-width:0;min-height:0}
+aside.tree{overflow:auto;padding:10px 6px;grid-row:2/4}
+.tree h2{font:600 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 10px 8px}
+.k{margin-bottom:6px}
+.k>button{all:unset;display:flex;align-items:center;gap:8px;width:calc(100% - 8px);padding:6px 10px;border-radius:6px;cursor:pointer;font:600 14px var(--sans)}
+.k>button:hover{background:var(--panel2)}
+.k>button .tag{margin-left:auto;font:500 10px var(--sans);letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:99px}
+.tag.on{background:var(--accent-soft);color:var(--accent)}.tag.soon{background:var(--panel2);color:var(--muted)}
+.k>button .car{width:10px;color:var(--muted);transition:transform .15s}
+.k.open>button .car{transform:rotate(90deg)}
+.k ul{list-style:none;margin:2px 0 6px;padding:0;display:none}
+.k.open ul{display:block}
+.k li button{all:unset;display:block;width:calc(100% - 8px);padding:4px 10px 4px 28px;border-radius:6px;font:13px var(--mono);color:var(--muted);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k li button:hover{background:var(--panel2);color:var(--fg)}
+.k li button[aria-current="true"]{background:var(--indigo-soft);color:var(--indigo);font-weight:600}
+.k li .dir{color:var(--muted);opacity:.7}
+button:focus-visible,.search:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.editor{display:flex;flex-direction:column;overflow:hidden}
+.tabs{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);font:13px var(--mono)}
+.tabs .fname{color:var(--fg);font-weight:600}
+.tabs .lang{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.tabs .preview{margin-left:auto;font:500 11px var(--sans);color:var(--warn);background:var(--warn-soft);padding:2px 8px;border-radius:99px}
+pre.code{margin:0;flex:1;overflow:auto;background:var(--code-bg);padding:12px 0;font:13.5px/1.65 var(--mono);counter-reset:ln}
+.ln{display:flex;padding-right:16px;white-space:pre}
+.ln::before{counter-increment:ln;content:counter(ln);width:48px;flex:none;text-align:right;padding-right:16px;color:var(--cmt);user-select:none}
+.ln.note{background:var(--indigo-soft);cursor:pointer}
+.ln.note::after{content:"?";margin-left:auto;padding-left:16px;font:700 11px var(--sans);color:var(--indigo)}
+.ln.sel{background:var(--accent-soft);box-shadow:inset 3px 0 var(--accent)}
+.c-cmt{color:var(--cmt);font-style:italic}.c-key{color:var(--kw)}.c-str{color:var(--str)}.c-jinja{color:var(--jinja);font-weight:600}.c-sec{color:var(--kw);font-weight:600}
+.info{overflow:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.info h3{margin:0;font:700 18px/1.25 var(--sans);text-wrap:balance}
+.meta{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:500 12px var(--sans);padding:2px 8px;border-radius:99px;background:var(--panel2);color:var(--muted)}
+.chip.k1{background:var(--accent-soft);color:var(--accent)}
+.info p{margin:0;max-width:62ch}
+.box{border-radius:8px;padding:10px 12px;font-size:14px}
+.box b{display:block;font:600 11px var(--sans);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.box.note{background:var(--indigo-soft)}.box.note b{color:var(--indigo)}
+.box.err{background:var(--warn-soft)}.box.err b{color:var(--warn)}
+.info a{color:var(--indigo)}
+.cmds{display:flex;flex-direction:column;gap:6px}
+.cmds button{all:unset;cursor:pointer;font:12.5px var(--mono);background:var(--term-bg);color:var(--term-fg);padding:6px 10px;border-radius:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmds button::before{content:"$ ";color:var(--accent)}
+.cmds button:hover{outline:1px solid var(--accent)}
+code{font:12.5px var(--mono);background:var(--panel2);padding:1px 5px;border-radius:4px}
+.term{grid-column:2/4;background:var(--term-bg);border-color:var(--term-bg);display:flex;flex-direction:column;overflow:hidden}
+.term .out{flex:1;overflow:auto;padding:10px 14px;font:12.5px/1.55 var(--mono);color:var(--term-fg);white-space:pre-wrap;word-break:break-word}
+.term .p{color:#4cc3be}.term .dim{color:#7d82a6}.term .ok{color:#7bd88f}.term .bad{color:#ff8a80}.term .y{color:#f2a453}
+.term form{display:flex;align-items:center;gap:8px;border-top:1px solid #23284d;padding:8px 14px}
+.term label{font:12.5px var(--mono);color:#4cc3be;white-space:nowrap}
+.term input{flex:1;min-width:0;background:transparent;border:0;color:var(--term-fg);font:12.5px var(--mono);outline:none}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--fg);padding:0;width:min(560px,92vw)}
+dialog::backdrop{background:rgba(10,12,30,.45)}
+dialog input{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--fg);font:15px var(--sans);padding:14px 16px;outline:none}
+dialog ul{list-style:none;margin:0;padding:6px;max-height:50vh;overflow:auto}
+dialog li button{all:unset;display:flex;gap:10px;width:calc(100% - 20px);padding:8px 10px;border-radius:6px;cursor:pointer;font-size:14px}
+dialog li button:hover,dialog li button.hl{background:var(--panel2)}
+dialog li small{margin-left:auto;color:var(--muted);font:12px var(--mono)}
+@media (max-width:1100px){.app{grid-template-columns:230px minmax(0,1fr);grid-template-rows:auto minmax(420px,1fr) auto 230px;height:auto}
+  .info{grid-column:2}.term{grid-column:1/-1}aside.tree{grid-row:2/4}}
+@media (max-width:700px){body{padding-inline:12px}.app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto}
+  aside.tree,.term,.info{grid-column:1;grid-row:auto}aside.tree{max-height:260px}.editor{min-height:380px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head><body>
+
+<div class="app">
+  <div class="bar">
+    <span class="who">kasutaja@vm1</span>
+    <span class="crumb" id="crumb">~/projekt</span>
+    <button class="search" id="openSearch" type="button" aria-label="Otsi faili">Otsi faili <kbd>Ctrl K</kbd></button>
+    <button class="iconbtn" id="theme" type="button">Teema</button>
+  </div>
+
+  <aside class="tree" aria-label="Projekti failid">
+    <h2>projekt/</h2>
+    <div id="tree"></div>
+  </aside>
+
+  <section class="editor" aria-label="Fail">
+    <div class="tabs"><span class="fname" id="fname"></span><span class="lang" id="flang"></span><span class="preview" id="fprev" hidden>eelvaade · täpsustub enne kohtumist</span></div>
+    <pre class="code" id="code"></pre>
+  </section>
+
+  <section class="info" id="info" aria-live="polite"></section>
+
+  <section class="term" aria-label="Terminal">
+    <div class="out" id="out"></div>
+    <form id="tform"><label for="tin">kasutaja@vm1:~/projekt$</label><input id="tin" autocomplete="off" spellcheck="false" placeholder="kirjuta käsk või help"></form>
+  </section>
+</div>
+
+<dialog id="dlg"><input id="q" placeholder="Faili nimi või teema, nt mall, handler, compose" autocomplete="off"><ul id="res"></ul></dialog>
+
+<!-- ============ FAILID ============ -->
+<script type="text/plain" id="f-README.md"># DevOps Lite: üks projekt, viis kohtumist
+
+See on kursuse projekt nii, nagu see kasvab.
+Iga kaust on üks kohtumine. Iga järgmine ehitab eelmisele peale.
+
+  k1/  üks playbook, kolm ühesugust serverit
+  k2/  rollid ja kolmekihiline rakendus
+  k3/  sama rakendus konteinerites
+  k4/  GitHub Actions kontrollib ja tarnib
+  k5/  OpenTofu loob masinad, Kubernetes jooksutab rakendust
+
+Kuidas lugeda:
+  - vasakul vali fail
+  - sinise taustaga ridadel on selgitus, klõpsa neil
+  - paremal: mis see fail on, levinud viga, link juhendisse
+  - all terminal: klõpsa käsul või kirjuta ise (help)
+</script>
+
+<script type="text/plain" id="f-k1/ansible.cfg">[defaults]
+inventory = inventory.ini
+callback_result_format = yaml
+
+[privilege_escalation]
+become_ask_pass = True
+
+[ssh_connection]
+pipelining = True
+</script>
+
+<script type="text/plain" id="f-k1/inventory.ini">[kohalik]
+localhost ansible_connection=local
+
+[veeb]
+vm1
+vm2
+vm3
+</script>
+
+<script type="text/plain" id="f-k1/bootstrap.yml">- name: Bootstrap veebiserver
+  hosts: kohalik:veeb
+  become: true
+  vars:
+    lehe_pealkiri: "Hallatud Ansible'iga"
+  tasks:
+    - name: Kasutaja saidi on olemas
+      ansible.builtin.user:
+        name: saidi
+
+    - name: nginx on paigaldatud
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Avaleht on paigas
+      ansible.builtin.copy:
+        dest: /usr/share/nginx/html/index.html
+        content: "<h1>{{ lehe_pealkiri }}</h1><p>{{ inventory_hostname }}</p>\n"
+
+    - name: nginx käib
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: HTTP on tulemüüris lubatud
+      ansible.posix.firewalld:
+        service: http
+        permanent: true
+        immediate: true
+        state: enabled
+</script>
+
+<script type="text/plain" id="f-k2/inventory.ini">[lb]
+vm1
+
+[db]
+vm1
+
+[app]
+vm2
+vm3
+
+[stack:children]
+lb
+db
+app
+</script>
+
+<script type="text/plain" id="f-k2/group_vars/all.yml">app_nimi: "Labori seis"
+app_port: 8080
+
+db_nimi: labor
+db_kasutaja: labor
+db_parool: "Muuda-mind-2026"
+db_port: 5432
+</script>
+
+<script type="text/plain" id="f-k2/host_vars/vm3.yml"># vm3-s on port 8080 kolleegi testteenuse all,
+# seepärast kuulab rakendus siin 8081-l.
+app_port: 8081
+</script>
+
+<script type="text/plain" id="f-k2/site.yml">- name: Ühine baas kõigile masinatele
+  hosts: stack
+  become: true
+  roles:
+    - common
+
+- name: Andmebaas
+  hosts: db
+  become: true
+  roles:
+    - db
+
+- name: Rakendusserverid
+  hosts: app
+  become: true
+  roles:
+    - app
+
+- name: Koormusjaotur
+  hosts: lb
+  become: true
+  roles:
+    - lb
+</script>
+
+<script type="text/plain" id="f-k2/roles/db/tasks/kasutaja.yml">- name: Kontrolli, kas andmebaasi kasutaja on olemas
+  ansible.builtin.command: psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='{{ db_kasutaja }}'"
+  become_user: postgres
+  register: db_roll
+  changed_when: false
+  check_mode: false
+
+- name: Andmebaasi kasutaja on olemas
+  ansible.builtin.command: psql -c "CREATE ROLE {{ db_kasutaja }} LOGIN PASSWORD '{{ db_parool }}'"
+  become_user: postgres
+  when: db_roll.stdout != "1"
+  no_log: true
+</script>
+
+<script type="text/plain" id="f-k2/roles/app/templates/labori-app.env.j2"># {{ ansible_managed }}
+APP_NIMI="{{ app_nimi }}"
+APP_PORT={{ app_port }}
+DB_HOST={{ hostvars[groups['db'][0]].ansible_default_ipv4.address }}
+DB_NIMI={{ db_nimi }}
+DB_KASUTAJA={{ db_kasutaja }}
+DB_PAROOL={{ db_parool }}
+</script>
+
+<script type="text/plain" id="f-k2/roles/lb/templates/nginx.conf.j2">upstream rakendus {
+{% for h in groups['app'] %}
+    server {{ hostvars[h].ansible_default_ipv4.address }}:{{ hostvars[h].app_port }} max_fails=1 fail_timeout=10s;
+{% endfor %}
+}
+
+server {
+    listen 80 default_server;
+    location / {
+        proxy_pass http://rakendus;
+        proxy_connect_timeout 2s;
+        proxy_next_upstream error timeout http_502 http_503;
+    }
+}
+</script>
+
+<script type="text/plain" id="f-k2/roles/lb/tasks/main.yml">- name: nginx tohib ühenduda rakendusserveritega (SELinux)
+  ansible.posix.seboolean:
+    name: httpd_can_network_connect
+    state: true
+    persistent: true
+
+- name: Koormusjaoturi seadistus on paigas
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    validate: nginx -t -c %s
+  notify: nginx laeb seaded uuesti
+</script>
+
+<script type="text/plain" id="f-k3/Containerfile">FROM registry.access.redhat.com/ubi9/python-311
+WORKDIR /app
+COPY app.py .
+RUN pip install --no-cache-dir psycopg2-binary
+USER 1001
+EXPOSE 8080
+CMD ["python3", "app.py"]
+</script>
+
+<script type="text/plain" id="f-k3/compose.yaml">services:
+  db:
+    image: docker.io/library/postgres:16
+    environment:
+      POSTGRES_DB: labor
+      POSTGRES_USER: labor
+      POSTGRES_PASSWORD: ${DB_PAROOL}
+    volumes:
+      - andmed:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "labor"]
+      interval: 5s
+
+  app:
+    build: .
+    environment:
+      DB_HOST: db
+      DB_PAROOL: ${DB_PAROOL}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  proxy:
+    image: docker.io/library/nginx:1.27
+    ports:
+      - "80:80"
+    depends_on: [app]
+
+volumes:
+  andmed:
+</script>
+
+<script type="text/plain" id="f-k4/.github/workflows/ci.yml">name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install ansible-lint yamllint
+      - run: yamllint . && ansible-lint
+
+  image:
+    needs: lint
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: k3
+          push: true
+          tags: ghcr.io/${{ github.repository }}/labori-app:${{ github.sha }}
+</script>
+
+<script type="text/plain" id="f-k5/main.tf">terraform {
+  required_providers {
+    proxmox = {
+      source  = "bpg/proxmox"
+      version = "~> 0.70"
+    }
+  }
+}
+
+resource "proxmox_virtual_environment_vm" "rakendus" {
+  count     = var.masinaid
+  name      = "app-${count.index + 1}"
+  node_name = var.node
+  tags      = ["lab.automatiseerimine"]
+
+  clone {
+    vm_id = 9000
+  }
+  cpu {
+    cores = 2
+  }
+  memory {
+    dedicated = 2048
+  }
+}
+
+output "ip" {
+  value = proxmox_virtual_environment_vm.rakendus[*].ipv4_addresses
+}
+</script>
+
+<script type="text/plain" id="f-k5/k8s/deployment.yaml">apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labori-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: labori-app
+  template:
+    metadata:
+      labels:
+        app: labori-app
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/sinu-repo/labori-app:1.0
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: labori-db
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+</script>
+
+<script type="text/plain" id="f-k5/k8s/service.yaml">apiVersion: v1
+kind: Service
+metadata:
+  name: labori-app
+spec:
+  selector:
+    app: labori-app
+  ports:
+    - port: 80
+      targetPort: 8080
+</script>
+
+<script>
+const G = 'https://hkhk-automation.github.io/devops-lite/';
+const MEETINGS = [
+  {id:'README.md', label:'README.md', single:true},
+  {id:'k1', label:'K1 · Esimene playbook', ready:true},
+  {id:'k2', label:'K2 · Kolm kihti', ready:true},
+  {id:'k3', label:'K3 · Konteinerid'},
+  {id:'k4', label:'K4 · CI/CD'},
+  {id:'k5', label:'K5 · OpenTofu, Kubernetes'},
+];
+
+/* Iga faili selgitus. notes: rea number (1-põhine) -> selgitus. cmds: käsk, mida terminalis proovida. */
+const META = {
+  'README.md': {lang:'md', title:'Kuidas seda projekti lugeda', k:'kõik',
+    about:'Üks repo, mis kasvab kogu kursuse jooksul. Iga kohtumine lisab kihi: playbook, rollid, konteinerid, konveier, masinate loomine ja Kubernetes.',
+    cmds:['tree -L 2', 'help']},
+  'k1/ansible.cfg': {lang:'ini', title:'Ansible\'i seaded selle repo jaoks', k:'K1',
+    about:'Ansible loeb `ansible.cfg` faili jooksvast kaustast. Siis ei pea iga käsu juurde `-i inventory.ini` kirjutama.',
+    notes:{2:'Masinate nimekiri tuleb sellest failist.',3:'Väljund loetava YAML-ina, mitte ühe pika JSON-reana.',6:'Ansible küsib sudo parooli ühe korra ja kasutab seda kõigil masinatel.',9:'Vähem SSH-ühendusi task\'i kohta, jooks on kiirem.'},
+    err:'`config file = None`: sa ei ole repo kaustas. Tee `cd ~/<sinu-repo>`.',
+    guide:['K1 praktikum A3', G+'week01/lab/#a3-loo-inventar-ja-proovi-ad-hoc-kaske'],
+    cmds:['ansible --version | grep "config file"']},
+  'k1/inventory.ini': {lang:'ini', title:'Inventar: kus Ansible töötab', k:'K1',
+    about:'Inventar loetleb masinad ja jagab need gruppidesse. Playbook sihib gruppi, mitte üksikut IP-d.',
+    notes:{2:'`localhost` ilma SSH-ta. A-osa töö käib siin.',4:'Grupp veeb: kolm masinat. Nimed tulevad failist `~/.ssh/config`.'},
+    err:'`Could not match supplied host pattern`: grupp puudub või nimi on vale. Vaata `ansible-inventory --graph`.',
+    guide:['K1 praktikum B3', G+'week01/lab/#b3-grupp-veeb-ja-ping'],
+    cmds:['ansible-inventory --graph','ansible veeb -m ping']},
+  'k1/bootstrap.yml': {lang:'yaml', title:'Esimene playbook: soovitud olek', k:'K1',
+    about:'Iga task kirjeldab olekut, mitte tegevust: "nginx on paigaldatud", mitte "paigalda nginx". Moodul vaatab ise, kas midagi on vaja muuta.',
+    notes:{2:'Üks playbook kahele grupile korraga.',3:'Kõik task\'id jooksevad sudo-õigustega.',8:'`user` moodul loob kasutaja ainult siis, kui teda pole.',19:'`inventory_hostname` on masina nimi inventaris. Iga masin saab oma lehe.',27:'Tulemüür lubab http-d. Ilma selleta vastab leht ainult masinas endas.'},
+    err:'Task on igal jooksul `changed`: mooduli asemel on `command` või `shell`.',
+    guide:['K1 praktikum A4', G+'week01/lab/#a4-kirjuta-esimene-playbook'],
+    cmds:['ansible-playbook bootstrap.yml','ansible-playbook bootstrap.yml --check --diff']},
+  'k2/inventory.ini': {lang:'ini', title:'Grupid ülesande järgi', k:'K2',
+    about:'Masinad on grupeeritud selle järgi, mida nad teevad. vm1 on kahes grupis: koormusjaotur ja andmebaas.',
+    notes:{1:'Koormusjaotur.',4:'Andmebaas. Sama vm1 teist korda: üks masin, kaks rolli.',7:'Rakendusserverid.',11:'`:children` teeb grupi gruppidest. `stack` hõlmab kõiki kolme.'},
+    err:'Grupi nimi masina järgi (`vm2_vm3`) läheb valeks esimese kolimisega.',
+    guide:['K2 praktikum A1', G+'week02/lab/#a1-kirjelda-pinu-inventaris'],
+    cmds:['ansible-inventory --graph','ansible stack -m ping']},
+  'k2/group_vars/all.yml': {lang:'yaml', title:'Väärtused ühes kohas', k:'K2',
+    about:'Kaust `group_vars` loetakse ise. `all.yml` kehtib kõigile masinatele. Andmebaasi nime vajavad nii andmebaas kui ka rakendus, seega on see siin.',
+    notes:{2:'Vaikimisi port. vm3 kirjutab selle üle (vt host_vars).',6:'Parool avatud tekstina on halb. Lisaülesandes läheb see Vaulti.'},
+    guide:['K2 praktikum A2', G+'week02/lab/#a2-pane-muutujad-group_vars-i'],
+    cmds:['ansible stack -m debug -a "var=app_port"']},
+  'k2/host_vars/vm3.yml': {lang:'yaml', title:'Erisus ühele masinale', k:'K2',
+    about:'Kitsam võidab laiemat: `host_vars` kirjutab üle `group_vars`-i väärtuse. Kommentaar ütleb miks, muidu kustutab järgmine inimene selle faili.',
+    notes:{3:'vm3 kuulab 8081-l. See rida on B1 vea juur, kui mall kasutab `{{ app_port }}` ilma `hostvars`-ita.'},
+    guide:['K2 loeng §3', G+'week02/lecture/#3-group_vars-host_vars-ja-eelistusjarjekord'],
+    cmds:['ansible-inventory --host vm3']},
+  'k2/site.yml': {lang:'yaml', title:'Kogu keskkond ühes failis', k:'K2',
+    about:'Mitu play\'d järjest, igaüks oma grupile. Järjekord järgib sõltuvusi: andmebaas, siis rakendus, siis koormusjaotur.',
+    notes:{2:'Esimene play kogub faktid kõigist kolmest. Hilisemad näevad ka teiste masinate IP-sid.',5:'Roll ütleb mida. `site.yml` ütleb kus.'},
+    err:'`--limit lb` annab `has no attribute ansible_default_ipv4`: vm2 ja vm3 fakte ei kogutud.',
+    guide:['K2 praktikum A3', G+'week02/lab/#a3-ehita-rollide-skelett-ja-siteyml'],
+    cmds:['ansible-playbook site.yml','ansible-playbook site.yml --list-tasks']},
+  'k2/roles/db/tasks/kasutaja.yml': {lang:'yaml', title:'Idempotentne command', k:'K2',
+    about:'Moodulit pole, seega `command`. Kontrolltask küsib olekut, teine task muudab ainult vajadusel.',
+    notes:{3:'Käsk jookseb kasutajana postgres.',4:'Tulemus salvestatakse muutujasse.',5:'Päring ei muuda midagi. Muidu poleks teine jooks kunagi changed=0.',6:'Jookseb ka `--check` all, muidu ei tea järgmine task, mida otsustada.',11:'Loome ainult siis, kui päring ei vastanud 1.',12:'Parool ei satu logisse.'},
+    err:'`--check` kukub: kontrolltask\'il puudub `check_mode: false`.',
+    guide:['K2 praktikum A4', G+'week02/lab/#a4-paigalda-andmebaas-rolliga'],
+    cmds:['ansible-playbook site.yml | tail -n 5']},
+  'k2/roles/app/templates/labori-app.env.j2': {lang:'jinja', title:'Seadete mall', k:'K2',
+    about:'Mall arvutatakse iga masina jaoks eraldi. vm2 ja vm3 saavad erineva `APP_PORT`-i, aga sama andmebaasi aadressi.',
+    notes:{1:'Hoiatus faili alguses: seda faili haldab Ansible.',3:'Iga masina enda väärtus: vm2 8080, vm3 8081.',4:'db-grupi esimese masina IP faktidest. Kui andmebaas kolib, muutub ainult inventar.'},
+    guide:['K2 praktikum A5', G+'week02/lab/#a5-paigalda-rakendus-vm2-le-ja-vm3-le'],
+    cmds:['ansible app -m uri -a "url=http://localhost:{{ app_port }}/health return_content=true"']},
+  'k2/roles/lb/templates/nginx.conf.j2': {lang:'jinja', title:'Mall, mis loeb teiste masinate andmeid', k:'K2',
+    about:'Mall jookseb vm1-s, aga kirjutab vm2 ja vm3 aadressid. `groups` annab grupi liikmed, `hostvars` iga liikme muutujad.',
+    notes:{2:'Tsükkel üle app-grupi.',3:'`hostvars[h].app_port`: iga masina enda port. Ainult `{{ app_port }}` oleks vm1 väärtus 8080 ja vm3 jääks vahele.',11:'Kui üks server ei vasta, proovib nginx järgmist. Kasutaja viga ei näe.'},
+    err:'Vastab ainult vm2: mallis on `{{ app_port }}` ilma `hostvars`-ita.',
+    guide:['K2 praktikum B1', G+'week02/lab/#b1-pane-koormus-vahelduma'],
+    cmds:['for i in 1 2 3 4; do curl -s localhost | grep Vastas; done']},
+  'k2/roles/lb/tasks/main.yml': {lang:'yaml', title:'SELinux ja validate', k:'K2',
+    about:'Kaks kaitset: SELinuxi luba, et nginx tohiks teistele masinatele ühenduda, ja `validate`, et vigane fail ei jõuaks masinasse.',
+    notes:{2:'Üks luba, mitte SELinux välja. `setenforce 0` kaoks niikuinii esimesel reboot\'il.',5:'Kehtib ka pärast taaskäivitust.',11:'nginx kontrollib uut faili enne asendamist. Kui kukub, töötab vana edasi.',12:'Handler laeb seaded uuesti ainult siis, kui fail muutus.'},
+    err:'502 ja logis `13: Permission denied`: SELinuxi luba puudub. `113: No route to host`: teise masina tulemüür.',
+    guide:['K2 praktikum A7', G+'week02/lab/#a7-leia-miks-leht-annab-502'],
+    cmds:['curl -s -i localhost | head -n 1','sudo tail -n 2 /var/log/nginx/error.log','getsebool httpd_can_network_connect']},
+  'k3/Containerfile': {lang:'docker', title:'Rakendus image\'iks', k:'K3', preview:true,
+    about:'Sama Pythoni rakendus, aga nüüd kaasas kõik, mida see vajab. Image ehitatakse üks kord ja jookseb igal masinal ühtemoodi.',
+    notes:{1:'Väike alus-image Red Hati registrist.',4:'Sõltuvus image\'i sisse, mitte masinasse.',5:'Konteiner ei jookse root\'ina.'},
+    cmds:['podman build -t labori-app .','podman images']},
+  'k3/compose.yaml': {lang:'yaml', title:'Kolm teenust ühes failis', k:'K3', preview:true,
+    about:'K2 kolm kihti ühes failis: andmebaas, rakendus ja proxy. Masinate asemel on konteinerid, inventari asemel teenuste nimed.',
+    notes:{6:'Parool tuleb `.env` failist, mitte Gitist.',8:'Nimega volume: andmed jäävad alles ka siis, kui konteiner kustutatakse.',15:'`DB_HOST: db`: teenuse nimi on DNS-nimi.',18:'Rakendus käivitub alles siis, kui andmebaas on terve.'},
+    cmds:['podman compose up -d','podman ps']},
+  'k4/.github/workflows/ci.yml': {lang:'yaml', title:'Konveier: kontroll ja tarne', k:'K4', preview:true,
+    about:'Iga push käivitab kontrolli. Punane konveier tähendab, et muudatus ei lähe edasi.',
+    notes:{3:'Käivitub iga push\'i peale main harusse ja iga PR-i peale.',13:'Lint leiab vead enne, kui playbook masinasse jõuab.',16:'image ehitatakse alles siis, kui lint on roheline.',26:'Saladus tuleb GitHubist, mitte reposse.'},
+    cmds:['git push']},
+  'k5/main.tf': {lang:'hcl', title:'Masinad koodist', k:'K5', preview:true,
+    about:'Ansible seadistab olemasolevaid masinaid. OpenTofu loob need: `plan` näitab, mis muutub, `apply` teeb.',
+    notes:{12:'`count`: mitu masinat. Muuda numbrit ja `plan` näitab vahet.',18:'Klooni mallist 9000 (AlmaLinux cloud-init).',29:'IP-d tulevad välja, Ansible'+"'"+'i inventar saab need siit.'},
+    cmds:['tofu plan','tofu apply']},
+  'k5/k8s/deployment.yaml': {lang:'yaml', title:'Deployment: mitu koopiat, ise taastuv', k:'K5', preview:true,
+    about:'Kubernetes hoiab soovitud olekut nagu Ansible, aga pidevalt: kui pod kukub, teeb ta uue.',
+    notes:{6:'Kaks koopiat, nagu vm2 ja vm3 K2-s.',18:'Image K4 konveierist.',24:'Liiklust saadetakse alles siis, kui /health vastab.'},
+    cmds:['kubectl apply -f k8s/','kubectl get pods']},
+  'k5/k8s/service.yaml': {lang:'yaml', title:'Service: üks aadress mitmele pod\'ile', k:'K5', preview:true,
+    about:'Sama roll mis K2 nginx upstream\'il: üks aadress, mitu taga olevat koopiat.',
+    notes:{6:'Valib pod\'id sildi järgi, mitte IP järgi.'},
+    cmds:['kubectl get svc']},
+};
+
+/* Terminali vastused (näidisväljund, mitte päris masin) */
+const OUT = {
+  'help': '<span class="dim">See on näidisterminal. Proovi:</span>\n  tree -L 2, ansible-inventory --graph, ansible stack -m ping,\n  ansible-playbook site.yml, curl -s -i localhost | head -n 1,\n  podman compose up -d, tofu plan, kubectl get pods, clear',
+  'tree -L 2': 'projekt/\n├── README.md\n├── k1/  ansible.cfg  inventory.ini  bootstrap.yml\n├── k2/  inventory.ini  site.yml  group_vars/  host_vars/  roles/\n├── k3/  Containerfile  compose.yaml\n├── k4/  .github/workflows/ci.yml\n└── k5/  main.tf  k8s/',
+  'ansible --version | grep "config file"': '  config file = /home/kasutaja/projekt/k1/ansible.cfg',
+  'ansible-inventory --graph': '@all:\n  |--@ungrouped:\n  |--@stack:\n  |  |--@lb:\n  |  |  |--vm1\n  |  |--@db:\n  |  |  |--vm1\n  |  |--@app:\n  |  |  |--vm2\n  |  |  |--vm3',
+  'ansible veeb -m ping': '<span class="ok">vm1 | SUCCESS</span> => ping: pong\n<span class="ok">vm2 | SUCCESS</span> => ping: pong\n<span class="ok">vm3 | SUCCESS</span> => ping: pong',
+  'ansible stack -m ping': '<span class="ok">vm1 | SUCCESS</span> => ping: pong\n<span class="ok">vm2 | SUCCESS</span> => ping: pong\n<span class="ok">vm3 | SUCCESS</span> => ping: pong\n<span class="dim"># kolm vastust, mitte neli: vm1 on kahes grupis, aga üks masin</span>',
+  'ansible-playbook bootstrap.yml': 'PLAY RECAP *********************************************\nvm1 : ok=6  <span class="ok">changed=0</span>  unreachable=0  failed=0\nvm2 : ok=6  <span class="ok">changed=0</span>  unreachable=0  failed=0\nvm3 : ok=6  <span class="ok">changed=0</span>  unreachable=0  failed=0',
+  'ansible-playbook bootstrap.yml --check --diff': 'TASK [Avaleht on paigas] *******************************\n--- before: /usr/share/nginx/html/index.html\n+++ after: /usr/share/nginx/html/index.html\n<span class="bad">-<h1>Tere käsitsi</h1></span>\n<span class="ok">+<h1>Hallatud Ansible\'iga</h1><p>vm1</p></span>\n<span class="y">changed: [vm1]</span>',
+  'ansible stack -m debug -a "var=app_port"': 'vm1 | SUCCESS =>\n    app_port: 8080\nvm2 | SUCCESS =>\n    app_port: 8080\nvm3 | SUCCESS =>\n    app_port: <span class="y">8081</span>',
+  'ansible-inventory --host vm3': '{\n    "app_port": <span class="y">8081</span>,\n    "app_nimi": "Labori seis",\n    "db_nimi": "labor",\n    ...\n}',
+  'ansible-playbook site.yml': 'RUNNING HANDLER [db : PostgreSQL taaskäivitub] *********\n<span class="y">changed: [vm1]</span>\n\nPLAY RECAP *********************************************\nvm1 : ok=19 <span class="y">changed=14</span> unreachable=0 failed=0\nvm2 : ok=12 <span class="y">changed=10</span> unreachable=0 failed=0\nvm3 : ok=12 <span class="y">changed=10</span> unreachable=0 failed=0\n<span class="dim"># jooksuta uuesti: changed=0</span>',
+  'ansible-playbook site.yml --list-tasks': 'play #1 (stack): Ühine baas kõigile masinatele\n    common : Põhipaketid on paigaldatud\n    common : firewalld käib\nplay #2 (db): Andmebaas\n    db : PostgreSQL server on paigaldatud\n    ...',
+  'ansible-playbook site.yml | tail -n 5': 'PLAY RECAP *********************************************\nvm1 : ok=20 <span class="ok">changed=0</span> unreachable=0 failed=0 skipped=2\nvm2 : ok=12 <span class="ok">changed=0</span> unreachable=0 failed=0\nvm3 : ok=12 <span class="ok">changed=0</span> unreachable=0 failed=0\n<span class="dim"># skipped=2: kasutaja ja andmebaas on juba olemas</span>',
+  'ansible app -m uri -a "url=http://localhost:{{ app_port }}/health return_content=true"': 'vm2 | SUCCESS =>\n    content: ok vm2\n    url: http://localhost:8080/health\nvm3 | SUCCESS =>\n    content: ok vm3\n    url: http://localhost:<span class="y">8081</span>/health',
+  'for i in 1 2 3 4; do curl -s localhost | grep Vastas; done': 'Vastas: vm2\nVastas: vm3\nVastas: vm2\nVastas: vm3\n<span class="dim"># vaheldub: mall loeb pordi hostvars-ist</span>',
+  'curl -s -i localhost | head -n 1': '<span class="bad">HTTP/1.1 502 Bad Gateway</span>\n<span class="dim"># playbook oli roheline, leht ei tööta. Vaata vealogi.</span>',
+  'sudo tail -n 2 /var/log/nginx/error.log': '... connect() to 10.0.0.12:8080 failed (<span class="bad">13: Permission denied</span>) while connecting to upstream\n<span class="dim"># 13 = SELinux selles masinas. 113 oleks teise masina tulemüür.</span>',
+  'getsebool httpd_can_network_connect': 'httpd_can_network_connect --> <span class="bad">off</span>',
+  'podman build -t labori-app .': 'STEP 1/7: FROM registry.access.redhat.com/ubi9/python-311\n...\nSTEP 7/7: CMD ["python3", "app.py"]\n<span class="ok">Successfully tagged localhost/labori-app:latest</span>',
+  'podman images': 'REPOSITORY              TAG     SIZE\nlocalhost/labori-app    latest  1.05 GB',
+  'podman compose up -d': '<span class="ok">✔</span> db     Healthy\n<span class="ok">✔</span> app    Started\n<span class="ok">✔</span> proxy  Started',
+  'podman ps': 'CONTAINER ID  IMAGE                         STATUS                 NAMES\n3f2a...       docker.io/library/postgres:16  Up 2 min (healthy)     projekt-db-1\n9c1b...       localhost/labori-app           Up 1 min               projekt-app-1\n77de...       docker.io/library/nginx:1.27   Up 1 min               projekt-proxy-1',
+  'git push': 'To github.com:hkhk-automation/sinu-repo.git\n   a1b2c3d..e4f5a6b  main -> main\n<span class="dim"># GitHubis: Actions → CI → lint ✔ → image ✔</span>',
+  'tofu plan': 'OpenTofu will perform the following actions:\n  <span class="ok"># proxmox_virtual_environment_vm.rakendus[0] will be created</span>\n  <span class="ok"># proxmox_virtual_environment_vm.rakendus[1] will be created</span>\nPlan: <span class="ok">2 to add</span>, 0 to change, 0 to destroy.',
+  'tofu apply': 'Apply complete! Resources: <span class="ok">2 added</span>, 0 changed, 0 destroyed.\n\nOutputs:\nip = [["10.0.0.21"], ["10.0.0.22"]]',
+  'kubectl apply -f k8s/': 'deployment.apps/labori-app <span class="ok">created</span>\nservice/labori-app <span class="ok">created</span>',
+  'kubectl get pods': 'NAME                          READY   STATUS    RESTARTS\nlabori-app-6f9c7d8b9-4kq2x   1/1     <span class="ok">Running</span>   0\nlabori-app-6f9c7d8b9-p8mzt   1/1     <span class="ok">Running</span>   0',
+  'kubectl get svc': 'NAME         TYPE        CLUSTER-IP     PORT(S)\nlabori-app   ClusterIP   10.43.18.205   80/TCP',
+  'ls': 'README.md  k1  k2  k3  k4  k5',
+  'exit': '<span class="y">Siit ei pääse enne, kui teine jooks on changed=0.</span>',
+};
+
+const esc = s => s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const inl = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+const $ = id => document.getElementById(id);
+const FILES = [...document.querySelectorAll('script[id^="f-"]')].map(s => s.id.slice(2));
+const src = f => $('f-' + f).textContent.replace(/^\n/, '').replace(/\n$/, '');
+
+function hl(line, lang) {
+  // kommentaar rea lõpus (mitte stringi või malli sees)
+  let body = line, cmt = '';
+  const cm = lang === 'hcl' ? /(^|\s)(#|\/\/).*$/ : (lang === 'jinja' ? /^\s*#(?!\{).*$/ : /(^|\s)#(?!\{).*$/);
+  const m = body.match(cm);
+  if (m && !/["'][^"']*$/.test(body.slice(0, m.index))) { cmt = body.slice(m.index); body = body.slice(0, m.index); }
+  // üks läbikäik: mallid ja stringid, ülejäänu escape'itud
+  const re = /(\$\{\{.*?\}\}|\{\{.*?\}\}|\{%.*?%\}|\$\{[^}]*\})|("[^"]*"|'[^']*')/g;
+  let out = '', last = 0, t;
+  const plain = x => {
+    let h = esc(x);
+    if (lang === 'ini') h = h.replace(/^(\[[^\]]+\])/, '<span class="c-sec">$1</span>').replace(/^([\w.]+)(\s*=)/, '<span class="c-key">$1</span>$2');
+    if (lang === 'yaml' && last === 0) h = h.replace(/^(\s*-?\s*)([\w.\-\/]+)(:)(?=\s|$)/, '$1<span class="c-key">$2</span>$3');
+    if (lang === 'docker') h = h.replace(/^(FROM|WORKDIR|COPY|RUN|USER|EXPOSE|CMD|ENV)\b/, '<span class="c-sec">$1</span>');
+    if (lang === 'hcl' && last === 0) h = h.replace(/^(\s*)(resource|output|terraform|required_providers|clone|cpu|memory)\b/, '$1<span class="c-sec">$2</span>').replace(/^(\s*)(\w+)(\s*=)/, '$1<span class="c-key">$2</span>$3');
+    return h;
+  };
+  while ((t = re.exec(body))) {
+    out += plain(body.slice(last, t.index));
+    out += `<span class="${t[1] ? 'c-jinja' : 'c-str'}">${esc(t[0])}</span>`;
+    last = re.lastIndex;
+  }
+  out += plain(body.slice(last));
+  return out + (cmt ? `<span class="c-cmt">${esc(cmt)}</span>` : '');
+}
+
+let cur = null, sel = null;
+function show(f, line) {
+  cur = f; sel = line || null;
+  const m = META[f] || {}, lines = src(f).split('\n');
+  $('crumb').innerHTML = '~/projekt/' + f.split('/').map((p, i, a) => i === a.length - 1 ? '<b>' + esc(p) + '</b>' : esc(p)).join('/');
+  $('fname').textContent = f.split('/').pop();
+  $('flang').textContent = m.lang || '';
+  $('fprev').hidden = !m.preview;
+  $('code').innerHTML = lines.map((l, i) => {
+    const n = i + 1, note = m.notes && m.notes[n];
+    return `<span class="ln${note ? ' note' : ''}${sel === n ? ' sel' : ''}" data-n="${n}">${hl(l, m.lang) || ' '}</span>`;
+  }).join('');
+  document.querySelectorAll('#code .ln.note').forEach(el => el.onclick = () => show(f, +el.dataset.n));
+  const note = sel && m.notes ? m.notes[sel] : null;
+  $('info').innerHTML =
+    `<div class="meta"><span class="chip ${m.preview ? '' : 'k1'}">${esc(m.k || '')}</span>${m.preview ? '<span class="chip">eelvaade</span>' : ''}</div>` +
+    `<h3>${esc(m.title || f)}</h3><p>${inl(m.about || '')}</p>` +
+    (note ? `<div class="box note"><b>Rida ${sel}</b>${inl(note)}</div>` : (m.notes ? '<p style="color:var(--muted);font-size:13px">Klõpsa sinisel real, et näha selle selgitust.</p>' : '')) +
+    (m.err ? `<div class="box err"><b>Levinud viga</b>${inl(m.err)}</div>` : '') +
+    (m.guide ? `<p>Juhendis: <a href="${m.guide[1]}" target="_blank" rel="noopener">${esc(m.guide[0])}</a></p>` : '') +
+    (m.cmds ? `<div class="cmds">${m.cmds.map(c => `<button type="button" data-c="${esc(c).replace(/"/g, '&quot;')}">${esc(c)}</button>`).join('')}</div>` : '');
+  document.querySelectorAll('.cmds button').forEach(b => b.onclick = () => run(b.dataset.c));
+  document.querySelectorAll('.k li button').forEach(b => b.setAttribute('aria-current', b.dataset.f === f));
+  const k = f.split('/')[0]; const box = document.querySelector(`.k[data-k="${k}"]`); if (box) box.classList.add('open');
+  if (sel) { const el = document.querySelector(`#code .ln[data-n="${sel}"]`); el && el.scrollIntoView({block:'nearest'}); }
+  try { localStorage.setItem('fail', f); } catch (e) {}
+}
+
+function buildTree() {
+  $('tree').innerHTML = MEETINGS.map(mt => {
+    if (mt.single) return `<div class="k"><ul style="display:block"><li><button type="button" data-f="${mt.id}" style="padding-left:10px">${mt.label}</button></li></ul></div>`;
+    const fs = FILES.filter(f => f.startsWith(mt.id + '/'));
+    return `<div class="k" data-k="${mt.id}"><button type="button"><span class="car">▸</span>${esc(mt.label)}<span class="tag ${mt.ready ? 'on' : 'soon'}">${mt.ready ? 'valmis' : 'tulemas'}</span></button><ul>` +
+      fs.map(f => { const p = f.slice(mt.id.length + 1).split('/'); const name = p.pop();
+        return `<li><button type="button" data-f="${f}" title="${f}">${p.length ? `<span class="dir">${esc(p.join('/'))}/</span>` : ''}${esc(name)}</button></li>`; }).join('') + '</ul></div>';
+  }).join('');
+  document.querySelectorAll('.k>button').forEach(b => b.onclick = () => b.parentElement.classList.toggle('open'));
+  document.querySelectorAll('.k li button').forEach(b => b.onclick = () => show(b.dataset.f));
+}
+
+const out = $('out');
+function print(html) { out.innerHTML += html + '\n'; out.scrollTop = out.scrollHeight; }
+function run(c) {
+  c = c.trim(); if (!c) return;
+  print(`<span class="p">kasutaja@vm1:~/projekt$</span> ${esc(c)}`);
+  if (c === 'clear') { out.innerHTML = ''; return; }
+  if (/^sudo rm -rf/.test(c)) return print('<span class="y">Tahvel nägi seda. vm1 ütleb: ei.</span>');
+  if (/^cat\s+/.test(c)) { const f = c.slice(4).trim(); if (FILES.includes(f)) { show(f); return print(esc(src(f))); } }
+  if (/^cd\s+/.test(c)) { const d = c.slice(3).trim().replace(/\/$/, ''); const f = FILES.find(x => x.startsWith(d + '/')); if (f) { show(f); return print(`<span class="dim">avasin ${esc(f)}</span>`); } }
+  print(OUT[c] || `<span class="dim">Seda käsku see näidisterminal ei tunne. Proovi </span>help<span class="dim"> või klõpsa käsul paremal.</span>`);
+}
+$('tform').onsubmit = e => { e.preventDefault(); run($('tin').value); $('tin').value = ''; };
+
+/* Otsing */
+const dlg = $('dlg'), q = $('q'), res = $('res'); let hits = [], hi = 0;
+function search() {
+  const t = q.value.toLowerCase();
+  hits = FILES.filter(f => !t || f.toLowerCase().includes(t) || (META[f] && (META[f].title + ' ' + META[f].about).toLowerCase().includes(t))).slice(0, 12);
+  hi = 0; res.innerHTML = hits.map((f, i) => `<li><button type="button" class="${i === hi ? 'hl' : ''}" data-f="${f}">${esc((META[f] || {}).title || f)}<small>${esc(f)}</small></button></li>`).join('') || '<li style="padding:10px;color:var(--muted)">Ei leidnud. Proovi: mall, handler, compose, tofu</li>';
+  res.querySelectorAll('button').forEach(b => b.onclick = () => { dlg.close(); show(b.dataset.f); });
+}
+function openSearch() { q.value = ''; search(); dlg.showModal(); q.focus(); }
+$('openSearch').onclick = openSearch;
+q.oninput = search;
+q.onkeydown = e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); hi = (hi + (e.key === 'ArrowDown' ? 1 : -1) + hits.length) % Math.max(hits.length, 1); res.querySelectorAll('button').forEach((b, i) => b.classList.toggle('hl', i === hi)); }
+  if (e.key === 'Enter' && hits[hi]) { dlg.close(); show(hits[hi]); }
+};
+document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openSearch(); } });
+
+$('theme').onclick = () => {
+  const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  r.dataset.theme = dark ? 'light' : 'dark';
+};
+
+buildTree();
+let start = 'k2/roles/lb/templates/nginx.conf.j2';
+try { const s = localStorage.getItem('fail'); if (s && FILES.includes(s)) start = s; } catch (e) {}
+show(start, start === 'k2/roles/lb/templates/nginx.conf.j2' ? 3 : null);
+print('<span class="dim">Näidisterminal. Kirjuta </span>help<span class="dim"> või klõpsa käsul paremal.</span>');
+run('ansible-inventory --graph');
+</script>
+</body></html>
