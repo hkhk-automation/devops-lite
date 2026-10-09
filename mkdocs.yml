@@ -74,6 +74,7 @@ nav:
 - Kursus:
   - Avaleht: index.md
   - Töökeskkond: keskkond.md
+  - Laboritahvel: tahvel.md
 - Kohtumised:
   - K1 · Idempotentsus ja esimene playbook:
     - Loeng: week01/lecture.md
