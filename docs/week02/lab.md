@@ -539,6 +539,10 @@ ssh -t vm1 "sudo cat /var/lib/pgsql/data/pg_hba.conf"
 
     See on hoiatus, mitte viga. Kasutaja `postgres` ei pääse sinu kodukausta, kust käsk käivitati. Käsk ise töötab.
 
+??? tip "Kui näed hoiatust `Module remote_tmp ... did not exist and was created with a mode of 0700`"
+
+    Ka see on esimese jooksu hoiatus, mitte viga. Ansible lõi kasutajatele `root` ja `postgres` ajutise kausta. Järgmisel jooksul hoiatust enam pole.
+
 ??? question "Mõtle (vabatahtlik)"
 
     Jooksuta `ansible-playbook site.yml` uuesti. Mitu korda on `Andmebaasi kasutaja on olemas` nüüd `skipped`? Mis juhtuks, kui muudaksid `group_vars/all.yml`-is parooli: kas andmebaasis parool muutuks?
