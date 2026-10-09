@@ -79,6 +79,10 @@ nav:
     - Loeng: week01/lecture.md
     - Praktikum: week01/lab.md
     - Kodune õpe ja kodutöö: week01/homework.md
+  - K2 · Kolmekihiline rakendus:
+    - Loeng: week02/lecture.md
+    - Praktikum: week02/lab.md
+    - Kodune õpe ja kodutöö: week02/homework.md
 
 extra_css:
 - stylesheets/extra.css

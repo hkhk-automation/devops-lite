@@ -8,3 +8,8 @@
 *[SELinux]: AlmaLinuxi turvakiht, mis piirab, mida teenused tohivad teha, ka root-õigustega.
 *[VPN]: Turvaline tunnel koolivõrku; kodust pääsed oma VM-idele ainult sellega.
 *[YAML]: Tekstivorming, milles playbookid kirjutatakse; taane on tähenduslik.
+*[handler]: Task, mis jookseb play lõpus ainult siis, kui mõni muutunud task teda teavitas (notify).
+*[hostvars]: Kõik, mida Ansible iga masina kohta teab: muutujad ja faktid, nt hostvars['vm2'].
+*[koormusjaotur]: Teenus, mis võtab päringud vastu ja jagab need mitme rakendusserveri vahel.
+*[upstream]: nginx-i nimekiri serveritest, kuhu päringud edasi saadetakse.
+*[Vault]: Ansible'i tööriist failide ja väärtuste krüptimiseks, et saladused saaks Gitis hoida.
