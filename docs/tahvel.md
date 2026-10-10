@@ -1,6 +1,6 @@
 # Laboritahvel
 
-Tahvel näitab, mis sinu VM-ides praegu töötab. Kontroll käib iga 5 minuti järel. Aadressi annab juhendaja, tahvel avaneb koolivõrgus või VPN-iga. Tahvlil on kõigi õppijate read.
+Tahvel näitab, mis sinu VM-ides praegu töötab. Kontroll käib iga 5 minuti järel. Ava see menüüst **Ava laboritahvel**. Tahvel avaneb ainult koolivõrgus või VPN-iga. Tahvlil on kõigi õppijate read.
 
 Tahvel kontrollib masinaid. Faile sinu repos kontrollib Autograde, selle punktid on tahvlil eraldi veerus.
 
@@ -13,6 +13,13 @@ ansible stack -m ansible.posix.authorized_key -a "user=$USER key=http://<tahvli-
 ```
 
 See lisab tahvli avaliku võtme kõigi kolme masina sinu kasutajale. Tahvel saab siis su masinates olekut lugeda, aga mitte midagi muuta: tal pole sinu parooli ega sudo-õigust. Kui tahad tahvli hiljem lahti ühendada, kustuta see rida failist `~/.ssh/authorized_keys` (rea lõpus on `kontroll@...`).
+
+## Mida tahvel veel näeb
+
+- **Töötavad teenused** igas VM-is (vaheleht Masinad), nt `nginx`, `postgresql`, `labori-app`.
+- **Käsuajalugu ainult arvudena:** mitu korda oled jooksutanud `ansible-playbook`, `site.yml`, `--check`, vaadanud logisid (`journalctl`, `error.log`), teinud `git push`. Käske ennast ega nende sisu tahvel ei loe ega näita. Ära kirjuta paroole käsureale, see on hea tava niikuinii.
+
+Ajalugu salvestub faili tavaliselt alles väljalogimisel. Kui tahvel näitab „ajalugu puudub“, logi korra välja ja sisse.
 
 ## K1 · Esimene playbook
 
