@@ -71,7 +71,7 @@ Kontrollid lisanduvad enne kohtumist.
 | 🐦 | 100% vähemalt kolm päeva enne tähtaega |
 | 🥇 | esimene rühmas, kes sai selle labori 100% |
 | 🔁 | visa: vähemalt viis esitust, lõpuks 100% |
-| 🦉 | öökull: esitus kell 0–5. Märk on sinu, aga uni on ka oskus |
+| 🦉 | öine esitus (kell 0–5) |
 
 ## Kui VM ei vasta
 
