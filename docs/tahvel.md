@@ -6,13 +6,23 @@ Tahvel kontrollib masinaid. Faile sinu repos kontrollib Autograde, selle punktid
 
 ## Ühenda VM-id tahvliga
 
-Tee seda üks kord. Jooksuta vm1-s oma K2 repo kaustas (seal, kus on `inventory.ini` grupiga `stack`):
+Tee seda üks kord. Tahvli aadressi näed brauseri aadressiribal, kui avad menüüst **Ava laboritahvel** (kujul `http://192.168.x.x:8090/`). Allpool on see `<tahvel>`.
+
+**Ansible'iga.** Jooksuta vm1-s oma repo kaustas (seal, kus on `ansible.cfg` ja inventar):
 
 ```bash
-ansible stack -m ansible.posix.authorized_key -a "user=$USER key=http://<tahvli-aadress>:8090/kontroll.pub"
+curl -sO http://<tahvel>:8090/opetaja.yml && ansible-playbook opetaja.yml
 ```
 
-See lisab tahvli avaliku võtme kõigi kolme masina sinu kasutajale. Tahvel saab siis su masinates olekut lugeda, aga mitte midagi muuta: tal pole sinu parooli ega sudo-õigust. Kui tahad tahvli hiljem lahti ühendada, kustuta see rida failist `~/.ssh/authorized_keys` (rea lõpus on `kontroll@...`).
+Playbook töötab kõigi inventari masinatega, grupi nimi pole oluline. Iga masina juures peab olema `changed` või `ok`.
+
+**Käsitsi.** Kui Ansible ei tööta, jooksuta see käsk **igas VM-is eraldi** (vm1, vm2, vm3):
+
+```bash
+mkdir -p ~/.ssh && curl -s http://<tahvel>:8090/opetaja.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && echo OK
+```
+
+Mõlemal juhul lisatakse õpetaja kontrollvõti sinu kasutajale. Tahvel saab siis su masinates olekut lugeda, aga mitte midagi muuta: tal pole sinu parooli ega sudo-õigust. Viie minuti pärast on su rida tahvlil täidetud. Kui tahad tahvli hiljem lahti ühendada, kustuta failist `~/.ssh/authorized_keys` rida, mille lõpus on `kontroll@...`.
 
 ## Mida tahvel veel näeb
 
