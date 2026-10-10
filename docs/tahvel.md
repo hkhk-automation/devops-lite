@@ -1,6 +1,6 @@
 # Laboritahvel
 
-Tahvel näitab, mis sinu VM-ides praegu töötab. Kontroll käib iga 5 minuti järel. Ava see menüüst **Ava laboritahvel**. Tahvel avaneb ainult koolivõrgus või VPN-iga. Tahvlil on kõigi õppijate read.
+Tahvel näitab, mis sinu VM-ides praegu töötab. Kontroll käib iga minut. Ava see menüüst **Ava laboritahvel**. Tahvel avaneb ainult koolivõrgus või VPN-iga. Tahvlil on kõigi õppijate read.
 
 Tahvel kontrollib masinaid. Faile sinu repos kontrollib Autograde, selle punktid on tahvlil eraldi veerus.
 
@@ -22,7 +22,7 @@ Playbook töötab kõigi inventari masinatega, grupi nimi pole oluline. Iga masi
 mkdir -p ~/.ssh && curl -s http://<tahvel>:8090/opetaja.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && echo OK
 ```
 
-Mõlemal juhul lisatakse õpetaja kontrollvõti sinu kasutajale. Tahvel saab siis su masinates olekut lugeda, aga mitte midagi muuta: tal pole sinu parooli ega sudo-õigust. Viie minuti pärast on su rida tahvlil täidetud. Kui tahad tahvli hiljem lahti ühendada, kustuta failist `~/.ssh/authorized_keys` rida, mille lõpus on `kontroll@...`.
+Mõlemal juhul lisatakse õpetaja kontrollvõti sinu kasutajale. Tahvel saab siis su masinates olekut lugeda, aga mitte midagi muuta: tal pole sinu parooli ega sudo-õigust. Paari minuti pärast on su rida tahvlil täidetud. Kui tahad tahvli hiljem lahti ühendada, kustuta failist `~/.ssh/authorized_keys` rida, mille lõpus on `kontroll@...`.
 
 ## Mida tahvel veel näeb
 
