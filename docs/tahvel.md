@@ -67,6 +67,10 @@ Kontrollid lisanduvad enne kohtumist.
 | hall rida | VM-id ei vasta: VM seisab või IP muutus |
 | Git | viimase esituse Autograde'i punktid; uuenevad, kui juhendaja tahvli uuendab |
 | vihje | mis masinas mis on valesti ja milline juhendi samm aitab (nt K2 A7) |
+| ⏰ | labor sai Autograde'is 100% enne tähtaega |
+| 🐦 | 100% vähemalt kolm päeva enne tähtaega |
+| 🥇 | esimene rühmas, kes sai selle labori 100% |
+| 🔁 | visa: vähemalt viis esitust, lõpuks 100% |
 
 ## Kui VM ei vasta
 
