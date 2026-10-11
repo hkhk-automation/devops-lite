@@ -720,7 +720,7 @@ Täida repos olev `README.md` mall: asenda nurksulgudes kohad oma tööga ja kus
 
 README järgi peab keegi teine (või sina kolme kuu pärast) saama masinad sama olekusse viia.
 
-Peegeldusküsimustele vasta lühidalt, üks-kaks lauset piisab. Automaatne kontroll K1 kukub, kui README-s on veel täitmata kohti.
+Peegeldusküsimustele vasta lühidalt, üks-kaks lauset piisab. README täitmine on boonus: kontroll BOONUS README läbib, kui täitmata kohti enam pole.
 
 ### Commit ja push
 
@@ -743,7 +743,7 @@ Ava GitHubis oma repo → **Actions** → viimane **Autograde**. Seal on iga kon
 
 | Kontroll | Mida vaatab |
 |---|---|
-| K1 | failid `halb.sh`, `inventory.ini`, `bootstrap.yml`, `logid/teine_jooks.txt` olemas; `README.md` mall täidetud |
+| K1 | failid `halb.sh`, `inventory.ini`, `bootstrap.yml`, `logid/teine_jooks.txt` olemas |
 | K2 | `bootstrap.yml` süntaks |
 | K3 | päris moodulid, `command`/`shell` puudub |
 | K4 | `logid/teine_jooks.txt` sisaldab `changed=0` |
@@ -751,7 +751,7 @@ Ava GitHubis oma repo → **Actions** → viimane **Autograde**. Seal on iga kon
 
 Kui kontroll on punane, ava job ja leia rida, kus on `FAIL` või `PUUDU`. Paranda, commit'i, push'i uuesti.
 
-Kodutöö kontrollid (H1–H6 jne) kukuvad seni, kuni kodutöö on tegemata. Seepärast on kogu Autograde punane. Nii peabki olema: loeb punktisumma, mitte värv.
+Hinne tuleb kontrollidest K1–K5 (45 punkti). Kontrollid nimega BOONUS (README ja kodutöö) punkte ei anna ja kukuvad seni, kuni need on tegemata. Punane rist tähendab siis ainult, et boonus on tegemata.
 
 ## Kodutöö
 

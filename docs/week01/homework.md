@@ -1,18 +1,18 @@
 # K1 · Kodune õpe ja kodutöö
 
-Kodutöö läheb samasse reposse, kuhu klassitöö. Tähtaeg on kirjas Classroom 50-s. Kodutöö on klassitööst raskem: juhiseid on vähem ja parameetrid otsid `ansible-doc`-ist ise. Kui jääd kinni, küsi Discordis või ava oma repos issue **Vajan abi**. Kirjuta sinna käsk ja veateade.
+Kodutöö on vabatahtlik boonus: hinne tuleb klassitöö kontrollidest K1–K5. Kodutöö läheb samasse reposse, kuhu klassitöö. Tähtaeg on kirjas Classroom 50-s. Kodutöö on klassitööst raskem: juhiseid on vähem ja parameetrid otsid `ansible-doc`-ist ise. Kui jääd kinni, küsi Discordis või ava oma repos issue **Vajan abi**. Kirjuta sinna käsk ja veateade.
 
-| Osa | Mida teed | Esitad | Punkte |
+| Osa | Mida teed | Esitad | Hinne |
 |---|---|---|---|
-| [I](#i-lugemine-ja-kusimused) | loed, uurid mooduleid, vastad küsimustele | `markmed.md`, `vastused.md` | 14 |
-| [H1](#h1-loo-kasutajad-ja-ligipaas-10-p) | kasutajad, võtmed, sudo, chrony, motd | `admin.yml` + logi | 10 |
-| [H2](#h2-turva-ssh-10-p) | SSH turvamine | `hardening.yml` + logi | 10 |
-| [H3](#h3-halda-pakette-nimekirjast-7-p) | paketid nimekirjast | `baas.yml` + logi | 7 |
-| [H4](#h4-kogu-masinatest-raport-7-p) | raport faktidest | `raport.yml`, `raportid/` | 7 |
-| [H5–H6](#h5-ajasta-varundus) | cron ja drift | `cron.yml` + logi, `logid/drift_check.txt` | 7 |
+| [I](#i-lugemine-ja-kusimused) | loed, uurid mooduleid, vastad küsimustele | `markmed.md`, `vastused.md` | boonus |
+| [H1](#h1-loo-kasutajad-ja-ligipaas-boonus) | kasutajad, võtmed, sudo, chrony, motd | `admin.yml` + logi | boonus |
+| [H2](#h2-turva-ssh-boonus) | SSH turvamine | `hardening.yml` + logi | boonus |
+| [H3](#h3-halda-pakette-nimekirjast-boonus) | paketid nimekirjast | `baas.yml` + logi | boonus |
+| [H4](#h4-kogu-masinatest-raport-boonus) | raport faktidest | `raport.yml`, `raportid/` | boonus |
+| [H5–H6](#h5-ajasta-varundus) | cron ja drift | `cron.yml` + logi, `logid/drift_check.txt` | boonus |
 | [III](#iii-eneseanaluus) | eneseanalüüs | `vastused.md` lõpus | – |
 
-Tulemust näed pärast iga push'i: **Actions** → **Autograde**. Loeb punktisumma, mitte värv.
+Tulemust näed pärast iga push'i: **Actions** → **Autograde**. Kodutöö kontrollide nimi algab sõnaga BOONUS ja need punkte ei anna: iga läbitud boonuskontroll annab [laboritahvlil](../tahvel.md) tähe ja XP-d. Punane rist Actionsis tähendab ainult, et boonus on tegemata.
 
 ## I · Lugemine ja küsimused
 
@@ -48,7 +48,7 @@ Kõik harjutused käivad grupi `veeb` vastu.
     3. `ansible-playbook <fail>.yml`
     4. teine jooks tõendiks: `ansible-playbook <fail>.yml | tee logid/<fail>_teine_jooks.txt`
 
-### H1 · Loo kasutajad ja ligipääs · 10 p
+### H1 · Loo kasutajad ja ligipääs · boonus
 
 Selle ülesande lõpuks on igas masinas kasutaja `deploy`, kes pääseb võtmega sisse ja saab sudo't ilma paroolita.
 
@@ -79,7 +79,7 @@ Esitad
 
 `admin.yml`, `logid/admin_teine_jooks.txt`
 
-### H2 · Turva SSH · 10 p
+### H2 · Turva SSH · boonus
 
 Selle ülesande lõpuks ei saa masinatesse sisse root'ina ega parooliga, ainult võtmega.
 
@@ -116,7 +116,7 @@ Esitad
 
 `hardening.yml`, `logid/hardening_teine_jooks.txt`
 
-### H3 · Halda pakette nimekirjast · 7 p
+### H3 · Halda pakette nimekirjast · boonus
 
 Selle ülesande lõpuks on vajalikud paketid igas masinas olemas ja keelatud paketid puuduvad.
 
@@ -144,7 +144,7 @@ Esitad
 
 `baas.yml`, `logid/baas_teine_jooks.txt`
 
-### H4 · Kogu masinatest raport · 7 p
+### H4 · Kogu masinatest raport · boonus
 
 Selle ülesande lõpuks on vm1-s iga masina kohta raport, mis on tehtud faktide põhjal.
 

@@ -1269,7 +1269,7 @@ Selle ülesande lõpuks ei ole andmebaasi parool Gitis loetaval kujul, aga `site
 
 ### README
 
-Täida repos olev `README.md` mall: asenda nurksulgudes kohad oma tööga ja kustuta ülemine kast. `ULESANNE.md` jääb muutmata. Peegeldusküsimustele vasta lühidalt, üks-kaks lauset piisab. Automaatne kontroll K1 kukub, kui README-s on veel täitmata kohti.
+Täida repos olev `README.md` mall: asenda nurksulgudes kohad oma tööga ja kustuta ülemine kast. `ULESANNE.md` jääb muutmata. Peegeldusküsimustele vasta lühidalt, üks-kaks lauset piisab. README täitmine on boonus: kontroll BOONUS README läbib, kui täitmata kohti enam pole.
 
 ### Commit ja push
 
@@ -1288,13 +1288,13 @@ Ava GitHubis oma repo → **Actions** → viimane **Autograde**:
 
 | Kontroll | Mida vaatab |
 |---|---|
-| K1 | `inventory.ini`, `site.yml`, `group_vars/all.yml` või `group_vars/all/`, nelja rolli `tasks/main.yml`, `logid/site_teine_jooks.txt` olemas; `README.md` mall täidetud |
+| K1 | `inventory.ini`, `site.yml`, `group_vars/all.yml` või `group_vars/all/`, nelja rolli `tasks/main.yml`, `logid/site_teine_jooks.txt` olemas |
 | K2 | `site.yml` süntaks |
 | K3 | inventaris grupid `lb`, `db`, `app`; `site.yml` kasutab rolle; `db`-rollis `import_tasks`; handlerid `db`-, `app`- ja `lb`-rollis |
 | K4 | `lb`-rolli mallis `hostvars` ja `app_port`; `validate`; `seboolean`; `app`-rollis `firewalld` |
 | K5 | `site_teine_jooks.txt`: kolm masinat, kõigil `changed=0`; `vaheldumine.txt`: nii vm2 kui vm3; `uks_maas.txt`: ei ühtegi `502`-te |
 
-Hinne tuleb kontrollidest K1–K5 (45 punkti). Kontrollid nimega BOONUS on kodutöö: need punkte ei anna ja kukuvad seni, kuni kodutöö on tegemata. Punane rist tähendab siis ainult, et boonus on tegemata.
+Hinne tuleb kontrollidest K1–K5 (45 punkti). Kontrollid nimega BOONUS (README ja kodutöö) punkte ei anna ja kukuvad seni, kuni need on tegemata. Punane rist tähendab siis ainult, et boonus on tegemata.
 
 ## Kodutöö
 
