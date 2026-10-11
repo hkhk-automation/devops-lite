@@ -1,0 +1,34 @@
+# Õpetaja Discussionsi postitused → rühma Google Group.
+# Seadistus: labor/teated/README.md. Nimesid ega aadresse siia ei kirjutata:
+# saladused SMTP_*, LIST_ADDR; muutujad OPETAJA_LOGIN, RYHM_NIMI.
+name: Teade meilile
+
+on:
+  discussion:
+    types: [created]
+  discussion_comment:
+    types: [created]
+
+permissions: {}
+
+jobs:
+  meil:
+    if: github.event.sender.login == vars.OPETAJA_LOGIN
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dawidd6/action-send-mail@4226df7daafa6fc901a43789c49bf7ab309066e7  # v3, SHA pannakse paigaldusel (README samm 5)
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: 465
+          secure: true
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          from: ${{ secrets.SMTP_USER }}
+          to: ${{ secrets.LIST_ADDR }}
+          subject: "[${{ vars.RYHM_NIMI }}] ${{ github.event.discussion.title }}"
+          convert_markdown: true
+          html_body: |
+            ${{ github.event.comment.body || github.event.discussion.body }}
+
+            ---
+            Vasta GitHubis: ${{ github.event.comment.html_url || github.event.discussion.html_url }}
