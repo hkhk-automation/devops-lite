@@ -83,6 +83,7 @@ nav:
     - Loeng: week02/lecture.md
     - Praktikum: week02/lab.md
     - Kodune õpe ja kodutöö: week02/homework.md
+- Küsimused ja teated: https://github.com/hkhk-automation/its25-arutelu/discussions
 
 extra_css:
 - stylesheets/extra.css
@@ -127,3 +128,6 @@ extra:
   social:
   - icon: fontawesome/brands/github
     link: https://github.com/hkhk-automation
+  - icon: octicons/comment-discussion-16
+    link: https://github.com/hkhk-automation/its25-arutelu/discussions
+    name: Küsimused ja teated (ainult ITS-25)
