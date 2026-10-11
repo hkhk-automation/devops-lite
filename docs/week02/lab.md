@@ -1294,7 +1294,7 @@ Ava GitHubis oma repo → **Actions** → viimane **Autograde**:
 | K4 | `lb`-rolli mallis `hostvars` ja `app_port`; `validate`; `seboolean`; `app`-rollis `firewalld` |
 | K5 | `site_teine_jooks.txt`: kolm masinat, kõigil `changed=0`; `vaheldumine.txt`: nii vm2 kui vm3; `uks_maas.txt`: ei ühtegi `502`-te |
 
-Kodutöö kontrollid kukuvad seni, kuni kodutöö on tegemata. Loeb punktisumma, mitte värv.
+Hinne tuleb kontrollidest K1–K5 (45 punkti). Kontrollid nimega BOONUS on kodutöö: need punkte ei anna ja kukuvad seni, kuni kodutöö on tegemata. Punane rist tähendab siis ainult, et boonus on tegemata.
 
 ## Kodutöö
 

@@ -2,7 +2,7 @@
 
 Tahvel näitab, mis sinu VM-ides praegu töötab. Kontroll käib iga minut. Ava see menüüst **Ava laboritahvel**. Tahvel avaneb ainult koolivõrgus või VPN-iga. Tahvlil on kõigi õppijate read.
 
-Tahvel kontrollib masinaid. Faile sinu repos kontrollib Autograde, selle punktid on tahvlil eraldi veerus.
+Tahvel kontrollib masinaid. Faile sinu repos kontrollib Autograde, selle tulemus on tahvlil eraldi veerus protsendina (punktid / maksimum).
 
 ## Ühenda VM-id tahvliga
 
@@ -65,7 +65,7 @@ Kontrollid lisanduvad enne kohtumist.
 | 2/3 | korras kahes masinas kolmest |
 | ✗ | puudu |
 | hall rida | VM-id ei vasta: VM seisab või IP muutus |
-| Git | viimase esituse Autograde'i punktid; uuenevad, kui juhendaja tahvli uuendab |
+| Git | viimase esituse Autograde'i tulemus protsendina; täht ja arv selle järel näitab läbitud boonuskontrolle (kodutöö). Uueneb, kui juhendaja tahvli uuendab |
 | vihje | mis masinas mis on valesti ja milline juhendi samm aitab (nt K2 A7) |
 | ⏰ | labor sai Autograde'is 100% enne tähtaega |
 | 🐦 | 100% vähemalt kolm päeva enne tähtaega |

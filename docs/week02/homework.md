@@ -1,18 +1,18 @@
 # K2 · Kodune õpe ja kodutöö
 
-Kodutöö läheb samasse reposse, kuhu klassitöö. Tähtaeg on kirjas Classroom 50-s. Kodutöös kasutad klassis ehitatud pinu edasi: lisad rakendusserveri, uuendad rakendust nii, et kasutaja seda ei märka, ja pöörad vigase versiooni automaatselt tagasi. Juhiseid on vähem kui klassis. Kui jääd kinni, küsi Discordis või ava oma repos issue **Vajan abi** ja kirjuta sinna käsk ning veateade.
+Kodutöö on vabatahtlik boonus: hinne tuleb klassitöö kontrollidest K1–K5. Kodutöö läheb samasse reposse, kuhu klassitöö. Tähtaeg on kirjas Classroom 50-s. Kodutöös kasutad klassis ehitatud pinu edasi: lisad rakendusserveri, uuendad rakendust nii, et kasutaja seda ei märka, ja pöörad vigase versiooni automaatselt tagasi. Juhiseid on vähem kui klassis. Kui jääd kinni, küsi Discordis või ava oma repos issue **Vajan abi** ja kirjuta sinna käsk ning veateade.
 
-| Osa | Mida teed | Esitad | Punkte |
+| Osa | Mida teed | Esitad | Hinne |
 |---|---|---|---|
-| [I](#i-lugemine-ja-kusimused) | loed, uurid, vastad küsimustele | `markmed.md`, `vastused.md` | 14 |
-| [H1](#h1-lisa-kolmas-rakendusserver-ainult-inventariga-8-p) | kolmas rakendusserver ühe reaga | `logid/kolm_rakendust.txt` | 8 |
-| [H2](#h2-uuenda-rakendust-masinhaaval-12-p) | uuendus `serial`-iga, `delegate_to`, `run_once` | `uuendus.yml` + 2 logi | 12 |
-| [H3](#h3-poora-vigane-versioon-tagasi-10-p) | tagasipööramine `block`/`rescue`-ga | `uuendus.yml`, `logid/tagasi.txt` | 10 |
-| [H4](#h4-pane-soltuvused-kirja-5-p) | `requirements.yml`, README käivitusjuhis | `requirements.yml` | 5 |
-| [H5](#h5-leia-kolleegi-vead-6-p) | neli istutatud viga kaustas `vead/` | `vead.md` | 6 |
+| [I](#i-lugemine-ja-kusimused) | loed, uurid, vastad küsimustele | `markmed.md`, `vastused.md` | boonus |
+| [H1](#h1-lisa-kolmas-rakendusserver-ainult-inventariga-boonus) | kolmas rakendusserver ühe reaga | `logid/kolm_rakendust.txt` | boonus |
+| [H2](#h2-uuenda-rakendust-masinhaaval-boonus) | uuendus `serial`-iga, `delegate_to`, `run_once` | `uuendus.yml` + 2 logi | boonus |
+| [H3](#h3-poora-vigane-versioon-tagasi-boonus) | tagasipööramine `block`/`rescue`-ga | `uuendus.yml`, `logid/tagasi.txt` | boonus |
+| [H4](#h4-pane-soltuvused-kirja-boonus) | `requirements.yml`, README käivitusjuhis | `requirements.yml` | boonus |
+| [H5](#h5-leia-kolleegi-vead-boonus) | neli istutatud viga kaustas `vead/` | `vead.md` | boonus |
 | [III](#iii-eneseanaluus) | eneseanalüüs | `vastused.md` lõpus | – |
 
-Tulemust näed pärast iga push'i: **Actions** → **Autograde**. Loeb punktisumma, mitte värv.
+Tulemust näed pärast iga push'i: **Actions** → **Autograde**. Kodutöö kontrollide nimi algab sõnaga BOONUS ja need punkte ei anna: iga läbitud boonuskontroll annab [laboritahvlil](../tahvel.md) tähe ja XP-d. Punane rist Actionsis tähendab ainult, et boonus on tegemata.
 
 ## I · Lugemine ja küsimused
 
@@ -52,7 +52,7 @@ Kõik harjutused käivad sama pinu peale. Kui klassitöö B-osa on pooleli, tee 
     3. teises terminalis vm1-s käib kontroll: `while true; do curl -s -o /dev/null -w "%{http_code} " http://localhost/; sleep 0.5; done`
     4. päris jooks, siis teine jooks tõendiks
 
-### H1 · Lisa kolmas rakendusserver ainult inventariga · 8 p
+### H1 · Lisa kolmas rakendusserver ainult inventariga · boonus
 
 Selle ülesande lõpuks jagab koormusjaotur päringuid kolme rakendusserveri vahel ja selleks muutsid ühte faili.
 
@@ -82,7 +82,7 @@ Esitad
 for i in $(seq 1 9); do curl -s http://localhost/ | grep Vastas; done | tee logid/kolm_rakendust.txt
 ```
 
-### H2 · Uuenda rakendust masinhaaval · 12 p
+### H2 · Uuenda rakendust masinhaaval · boonus
 
 Selle ülesande lõpuks on playbook `uuendus.yml`, mis viib rakenduse uuele versioonile ühe masina kaupa ja kasutaja ei saa uuenduse ajal ühtegi viga.
 
@@ -116,7 +116,7 @@ Esitad
 
 `uuendus.yml`, `logid/uuendus.txt` (playbooki väljund), `logid/uuendus_curl.txt` (teise terminali väljund uuenduse ajal)
 
-### H3 · Pööra vigane versioon tagasi · 10 p
+### H3 · Pööra vigane versioon tagasi · boonus
 
 Selle ülesande lõpuks pöörab `uuendus.yml` vigase versiooni ise tagasi ja jätab ülejäänud masinad puutumata.
 
@@ -155,7 +155,7 @@ Esitad
 
 `uuendus.yml`, `logid/tagasi.txt`
 
-### H4 · Pane sõltuvused kirja · 5 p
+### H4 · Pane sõltuvused kirja · boonus
 
 Selle ülesande lõpuks saab kolleeg sinu repo kloonida ja ühe käsuga paigaldada kõik, mida playbookid vajavad.
 
@@ -179,7 +179,7 @@ Esitad
 
 `requirements.yml`, `README.md`
 
-### H5 · Leia kolleegi vead · 6 p
+### H5 · Leia kolleegi vead · boonus
 
 Selle ülesande lõpuks oled leidnud neli viga, mille kolleeg jättis kausta `vead/`, ja kirjutanud iga kohta, kuidas sa selle leidsid.
 
