@@ -55,6 +55,7 @@ IT-infrastruktuuri automatiseerimine: käsitsi tööst korratava, versioonihalla
 | **Eeldused** | Linuxi käsurida, SSH, tekstiredaktor, Giti alused, GitHubi konto |
 | **Keskkond** | kooli Proxmoxis kolm AlmaLinux 9 VM-i; ühendus VS Code Remote-SSH või PowerShelli `ssh` kaudu, kodust VPN-iga |
 | **Abi** | kursuse Discord; oma repos issue **Vajan abi** |
+| **Küsimused ja teated** | [github.com/hkhk-automation/its25-arutelu/discussions](https://github.com/hkhk-automation/its25-arutelu/discussions) (ainult ITS-25) |
 
 ## Kohtumised
 
