@@ -83,6 +83,10 @@ nav:
     - Loeng: week02/lecture.md
     - Praktikum: week02/lab.md
     - Kodune õpe ja kodutöö: week02/homework.md
+  - K3 · Konteinerid:
+    - Loeng: week03/lecture.md
+    - Praktikum: week03/lab.md
+    - Kodune õpe ja kodutöö: week03/homework.md
 - Küsimused ja teated: https://github.com/hkhk-automation/its25-arutelu/discussions
 
 extra_css:
