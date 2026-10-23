@@ -43,7 +43,7 @@ Osa A on juhendatud: Podman vm1-s, image, võrk, volume ja pod. Osa B on iseseis
 
 ## Enne alustamist
 
-Selleks peaksid olema K2 praktikumi osa A teinud: `ansible stack -m ping` töötab vm1-s võtmega ja vm3 on sinu inventaris. K2 pinu võib vm-ides käima jääda. Tänased pordid ei lähe sellega kokku: vm1-s kasutad porte 8088–8091, vm3-s porti 80, kus K2-s midagi polnud.
+Selleks peaksid olema K2 praktikumi osa A teinud: `ansible stack -m ping` töötab vm1-s võtmega ja vm3 on sinu inventaris. K2 pinu võib vm-ides käima jääda. vm1-s kasutad porte 8088–8091, need on vabad. vm3 pordil 80 on veel K1 nginx: sellest tuleb juttu B3-s.
 
 Ava juhendaja jagatud Classroom 50 link ja klooni uus repo vm1-sse SSH-ga (**Code** → **SSH**):
 
@@ -133,7 +133,7 @@ podman info --format '{{.Host.Security.Rootless}}'
 
     ```
     Client:       Podman Engine
-    Version:      5.6.0
+    Version:      5.8.2
     ...
     true
     ```
@@ -177,12 +177,12 @@ grep "^$USER:" /etc/subuid
     ```
     USER   HUSER    PID   COMMAND
     root   1000     1     nginx: master process nginx -g daemon off;
-    nginx  100100   ...   nginx: worker process
+    nginx  165636   ...   nginx: worker process
     ...
-    <sinu-kasutaja>:100000:65536
+    <sinu-kasutaja>:165536:65536
     ```
 
-    Konteineri `root` on hostis sinu UID (siin 1000). Konteineri kasutaja `nginx` (UID 101) on hostis `100000 + 101 - 1 = 100100`, sinu vahemikust failis `/etc/subuid`. Kumbki pole hostis root.
+    Konteineri `root` on hostis sinu UID (siin 1000). Konteineri kasutaja `nginx` (UID 101) on hostis `165536 + 101 - 1 = 165636`, sinu vahemikust failis `/etc/subuid`. Kumbki pole hostis root.
 
 Proovi sama pordiga 80:
 
@@ -861,14 +861,14 @@ Viimased kolm task'i teevad käivituse idempotentseks. Kõigepealt käivitatakse
   check_mode: false
 
 - name: Kõik teenused käivad
-  ansible.builtin.command: docker compose up -d --wait # (2)!
+  ansible.builtin.command: docker compose up -d --wait --force-recreate # (2)!
   args:
     chdir: "{{ stack_kaust }}"
   when: stack_kaivad.stdout_lines | length < 3
 ```
 
 1. Sama muster mis K2 andmebaasi kasutajaga: kontroll ei muuda midagi ja jookseb ka `--check` all.
-2. `--wait` ootab, kuni teenused on käivitunud ja terved. Kui mõni jääb haigeks, kukub task ja playbook on punane.
+2. `--wait` ootab, kuni teenused on käivitunud ja terved. Kui mõni jääb haigeks, kukub task ja playbook on punane. `--force-recreate` loob konteinerid uuesti: kui konteiner on katki jäänud (näiteks võrguta, B3), siis lihtne `up -d` seda ei paranda. Andmed on volume'is ja jäävad alles.
 
 Handlerid `roles/stack/handlers/main.yml`. Handlerid jooksevad selles järjekorras, nagu nad failis on, mitte teavitamise järjekorras. Seepärast on pinu käivitus esimene ja proxy seadete laadimine teine: esimesel jooksul peab proxy enne olemas olema.
 
@@ -889,10 +889,54 @@ Teine handler laeb nginx-i seaded konteineris uuesti, ilma konteinerit taaskäiv
         chdir: "{{ stack_kaust }}"
     ```
 
-Lisa roll `site.yml`-i `docker`-rolli järele ja jooksuta. Esimene jooks tõmbab image'id ja ehitab rakenduse, see võtab mõne minuti.
+Lisa roll `site.yml`-i `docker`-rolli järele ja jooksuta. Esimene jooks tõmbab image'id ja ehitab rakenduse, see võtab mõne minuti. Ennusta enne: mis juhtub pordiga 80?
 
 ```bash
 ansible-playbook site.yml --syntax-check
+ansible-playbook site.yml
+```
+
+??? success "Oodatav tulemus"
+
+    ```
+    RUNNING HANDLER [stack : Stack uueneb] ************************
+    fatal: [vm3]: FAILED! => changed=true
+      ...
+      stderr: |-
+        ...
+        Error response from daemon: ... failed to bind host port ... 0.0.0.0:80 ...: address already in use
+    ```
+
+    `db` ja `app` käivitusid, `proxy` mitte.
+
+Kes pordil 80 kuulab?
+
+```bash
+ssh -t vm3 "sudo ss -tlnp | grep ':80 '"
+```
+
+??? success "Oodatav tulemus"
+
+    ```
+    LISTEN 0  511  0.0.0.0:80  0.0.0.0:*  users:(("nginx",pid=872,fd=6),...)
+    ```
+
+    See on K1 nginx, mis paigaldati kõigisse kolme masinasse. vm3-s teeb selle töö nüüd proxy-konteiner, seega hosti nginx peab seisma, ka pärast taaskäivitust.
+
+Lisa `roles/stack/tasks/main.yml`-i kausta task'i järele task, mis peatab teenuse `nginx` ja keelab selle käivitumise buutimisel (moodul `service`, `state`, `enabled`). Kirjuta ise ja jooksuta uuesti.
+
+??? example "Näide, kui ikka kinni"
+    ```yaml
+    - name: K1 nginx ei hoia porti 80 kinni (seda teeb nüüd proxy-konteiner)
+      ansible.builtin.service:
+        name: nginx
+        state: stopped
+        enabled: false
+    ```
+
+    Handlerit uuesti ei teavitata, sest failid ei muutunud. Pinu tõstab üles kontroll-task `Kõik teenused käivad`: see näeb kahte töötavat teenust kolme asemel ja loob konteinerid uuesti. See on oluline: proxy konteiner, mille pordi sidumine ebaõnnestus, jääb võrguta (`docker inspect labor-proxy-1` näitab `Networks` all `{}`) ja `up -d` ilma `--force-recreate`-ta ei paranda seda.
+
+```bash
 ansible-playbook site.yml
 ssh vm3 "cd /opt/labor && docker compose ps"
 ```
@@ -911,7 +955,7 @@ ssh vm3 "cd /opt/labor && docker compose ps"
     labor-proxy-1   docker.io/library/nginx:1.30-alpine    proxy     Up 24 seconds             0.0.0.0:80->80/tcp
     ```
 
-    `db` ja `app` on `healthy`. Avaldatud on ainult proxy port. Kontrolltask `Kõik teenused käivad` on `skipped`, sest handler juba käivitas kõik.
+    `db` ja `app` on `healthy`. Avaldatud on ainult proxy port.
 
 Proovi lehte vm1-st. vm3 aadressi võtad oma SSH seadistusest:
 
@@ -1223,6 +1267,8 @@ Kodune õpe ja kodutöö on eraldi lehel: [K3 · Kodune õpe ja kodutöö](homew
     | `required variable DB_PAROOL is missing` / tühjad väärtused | `.env` puudub või muutuja nimi erineb | `ssh vm3 sudo cat /opt/labor/.env`, võrdle `compose.yaml`-iga |
     | `container labor-app-1 is unhealthy` | rakendus ei saa andmebaasi või healthcheck on vale | `docker compose logs app`, B5 |
     | `password authentication failed` | `.env` parool erineb andmebaasi omast | taasta parool, B5 |
+    | `failed to bind host port ... 0.0.0.0:80 ...: address already in use` | vm3 pordil 80 on K1 nginx | B3, nginx peatatud ja keelatud rollis |
+    | proxy `Restarting`, logis `host not found in upstream "app:8080"` | proxy konteiner jäi katkestatud jooksust võrguta | `docker compose up -d --force-recreate proxy` |
     | `502`, logis `111: Connection refused`, upstream `127.0.0.1` | proxy otsib rakendust iseendast | `server app:8080`, B4 |
     | parandatud `default.conf`, aga ikka 502 | nginx pole seadeid uuesti laadinud | handler `proxy laeb seaded uuesti` |
     | `docker compose stop` võtab 10 s | rakendus PID 1-na ei käsitle `SIGTERM`-i | `init: true` |

@@ -458,7 +458,7 @@ Compose kirjeldab rakenduse. Keegi peab ikka paigaldama Dockeri, looma kausta, p
   check_mode: false
 
 - name: Kõik teenused käivad
-  ansible.builtin.command: docker compose up -d --wait
+  ansible.builtin.command: docker compose up -d --wait --force-recreate
   args:
     chdir: "{{ stack_kaust }}"
   when: stack_kaivad.stdout_lines | length < 3
@@ -471,7 +471,7 @@ Compose kirjeldab rakenduse. Keegi peab ikka paigaldama Dockeri, looma kausta, p
 ```
 
 - kui fail muutus, ehitab ja käivitab handler uuesti;
-- kui keegi peatas konteineri käsitsi (drift), näeb kontroll vähem kui kolme teenust ja käivitab puuduva;
+- kui keegi peatas konteineri käsitsi (drift) või see on katki, näeb kontroll vähem kui kolme teenust ja loob konteinerid uuesti (andmed on volume'is);
 - kui kõik on paigas, on teine jooks `changed=0`.
 
 ### Moodul või `command`
