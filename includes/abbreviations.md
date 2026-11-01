@@ -13,3 +13,5 @@
 *[koormusjaotur]: Teenus, mis võtab päringud vastu ja jagab need mitme rakendusserveri vahel.
 *[upstream]: nginx-i nimekiri serveritest, kuhu päringud edasi saadetakse.
 *[Vault]: Ansible'i tööriist failide ja väärtuste krüptimiseks, et saladused saaks Gitis hoida.
+*[runner]: Masin, kus GitHub Actionsi job käivitub. GitHubi runner on iga jobi jaoks uus virtuaalmasin.
+*[GHCR]: GitHub Container Registry (ghcr.io), GitHubi image'ite register.

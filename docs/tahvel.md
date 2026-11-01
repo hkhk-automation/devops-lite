@@ -47,11 +47,22 @@ Ajalugu salvestub faili tavaliselt alles väljalogimisel. Kui tahvel näitab „
 
 ## K3 · Podman, Docker ja Compose
 
-Kontrollid lisanduvad enne kohtumist.
+- Podman on vm1-s paigaldatud;
+- rakendus vastab vm1-s konteinerist (pod pordil 8091 või Quadlet pordil 8092);
+- Docker käib vm3-s;
+- vm3-s on pinu kaust `/opt/labor`;
+- `/opt/labor/.env` õigused on `600`;
+- leht vastab vm3-st läbi proxy.
 
 ## K4 · CI/CD ja GitHub Actions
 
-Kontrollid lisanduvad enne kohtumist.
+Pipeline'i ennast tahvel ei näe, seda kontrollib Autograde. Tahvel vaatab tarne tulemust vm3-s:
+
+- rakenduse konteiner on käivitatud GHCR-ist (`ghcr.io/...`) tõmmatud image'ist;
+- leht näitab versioonina commit'i räsi;
+- rakenduse konteiner on terve (`healthy`).
+
+Tahvel loeb seda sinu kasutajana `docker ps` käsuga, seega peab sinu kasutaja olema vm3-s grupis `docker` (K3 B1).
 
 ## K5 · OpenTofu ja Kubernetes
 

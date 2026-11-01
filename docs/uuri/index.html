@@ -351,37 +351,63 @@ volumes:
 </script>
 
 <script type="text/plain" id="f-k4/.github/workflows/ci.yml">name: CI
+
 on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - run: pip install ansible-lint yamllint
-      - run: yamllint . && ansible-lint
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Paigalda lint'i tööriistad
+        run: pip install ansible-lint==26.10.1 yamllint==1.38.0
+      - name: yamllint
+        run: yamllint .
+      - name: ansible-lint
+        run: ansible-lint
+      - name: Saladuste otsing (gitleaks)
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz | tar -xz gitleaks
+          ./gitleaks git --redact --verbose .
 
-  image:
+  build:
     needs: lint
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
+      contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
-        with:
-          context: k3
-          push: true
-          tags: ghcr.io/${{ github.repository }}/labori-app:${{ github.sha }}
+      - uses: actions/checkout@v7
+      - name: Image'i nimi ja versioon
+        run: |
+          echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+          echo "VERSIOON=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+      - name: Ehita image
+        run: >
+          docker build -f stack/app/Containerfile
+          --label org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY
+          -t "$IMAGE:$VERSIOON" stack/app
+      - name: Logi GHCR-i sisse
+        if: github.event_name == 'push'
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+      - name: Saada image GHCR-i
+        if: github.event_name == 'push'
+        run: docker push "$IMAGE:$VERSIOON"
 </script>
 
 <script type="text/plain" id="f-k5/main.tf">terraform {
@@ -542,10 +568,10 @@ const META = {
     about:'K2 kolm kihti ühes failis: andmebaas, rakendus ja proxy. Masinate asemel on konteinerid, inventari asemel teenuste nimed.',
     notes:{6:'Parool tuleb `.env` failist, mitte Gitist.',8:'Nimega volume: andmed jäävad alles ka siis, kui konteiner kustutatakse.',15:'`DB_HOST: db`: teenuse nimi on DNS-nimi.',18:'Rakendus käivitub alles siis, kui andmebaas on terve.'},
     cmds:['podman compose up -d','podman ps']},
-  'k4/.github/workflows/ci.yml': {lang:'yaml', title:'Konveier: kontroll ja tarne', k:'K4', preview:true,
-    about:'Iga push käivitab kontrolli. Punane konveier tähendab, et muudatus ei lähe edasi.',
-    notes:{3:'Käivitub iga push\'i peale main harusse ja iga PR-i peale.',13:'Lint leiab vead enne, kui playbook masinasse jõuab.',16:'image ehitatakse alles siis, kui lint on roheline.',26:'Saladus tuleb GitHubist, mitte reposse.'},
-    cmds:['git push']},
+  'k4/.github/workflows/ci.yml': {lang:'yaml', title:'Pipeline: kontroll, ehitus, GHCR', k:'K4',
+    about:'Iga push ja pull request käivitab kontrolli. Image ehitatakse ainult rohelise kontrolli järel ja läheb GHCR-i ainult main harust.',
+    notes:{3:'Käivitub push\'iga main harusse, pull request\'iga ja käsitsi (Run workflow).',10:'Vaikimisi ainult lugemisõigus.',19:'Kogu ajalugu, et gitleaks näeks iga commit\'i.',24:'Tööriistade versioonid on kinni.',32:'Saladused kogu Giti ajaloost.',35:'build käivitub ainult rohelise lint\'i järel.',39:'Ainult see job tohib registrisse kirjutada.',45:'Tag on commit\'i lühiräsi.',54:'Token tuleb GitHubist keskkonnamuutujana.',57:'Pull request ei pane registrisse.'},
+    cmds:['git push', 'ansible-playbook site.yml -J -e app_versioon=$(git rev-parse HEAD | cut -c1-7)']},
   'k5/main.tf': {lang:'hcl', title:'Masinad koodist', k:'K5', preview:true,
     about:'Ansible seadistab olemasolevaid masinaid. OpenTofu loob need: `plan` näitab, mis muutub, `apply` teeb.',
     notes:{12:'`count`: mitu masinat. Muuda numbrit ja `plan` näitab vahet.',18:'Klooni mallist 9000 (AlmaLinux cloud-init).',29:'IP-d tulevad välja, Ansible'+"'"+'i inventar saab need siit.'},

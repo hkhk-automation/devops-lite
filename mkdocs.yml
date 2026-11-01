@@ -87,6 +87,10 @@ nav:
     - Loeng: week03/lecture.md
     - Praktikum: week03/lab.md
     - Kodune õpe ja kodutöö: week03/homework.md
+  - K4 · CI/CD:
+    - Loeng: week04/lecture.md
+    - Praktikum: week04/lab.md
+    - Kodune õpe ja kodutöö: week04/homework.md
 - Küsimused ja teated: https://github.com/hkhk-automation/its25-arutelu/discussions
 
 extra_css:
