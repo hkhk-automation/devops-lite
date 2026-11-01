@@ -428,7 +428,7 @@ curl -s localhost:8090/
 
     Andmebaasita: `Andmebaas: VIGA could not translate host name "db" ...`. Pärast uut konteinerit jätkab loendur sealt, kus pooleli jäi (`=4`), sest andmed on volume'is, mitte konteineris.
 
-Kus volume päriselt on? Rootless režiimis sinu kodukaustas ja failide omanikud on sinu UID-vahemikust:
+Kus volume on? Rootless režiimis sinu kodukaustas ja failide omanikud on sinu UID-vahemikust:
 
 ```bash
 podman volume inspect labor-andmed --format '{{.Mountpoint}}'
@@ -513,7 +513,7 @@ grep -nE 'kind:|image:|containerPort|hostPort|claimName|DB_HOST' logid/labor-pod
 
     `kind: Pod`, kaks konteinerit oma image'itega, `hostPort: 8091`, volume `labor-andmed` kui `persistentVolumeClaim` ja `DB_HOST` väärtusega `127.0.0.1`. Faili alguses on kommentaar Podmani versiooniga.
 
-Pane tähele: failis on ka parool avatud kujul, sest `--env-file` muutujad lähevad konteineri kirjeldusse. Meie labori parool on niikuinii avalik. Päris süsteemis eemaldaksid selle enne commit'i. K5-s on selle jaoks Kubernetes'i `Secret`.
+Pane tähele: failis on ka parool avatud kujul, sest `--env-file` muutujad lähevad konteineri kirjeldusse. Meie labori parool on niikuinii avalik. Tootmissüsteemis eemaldaksid selle enne commit'i. K5-s on selle jaoks Kubernetes'i `Secret`.
 
 Jäta pod käima. Laboritahvel kontrollib, et see vastab. Rootless konteinerid kuuluvad sinu kasutaja systemd sessioonile ja väljalogimisel lõpetab systemd need. Luba sinu kasutaja teenustel käia ka siis, kui sa pole sisse logitud:
 
@@ -687,7 +687,7 @@ ssh vm3 docker compose version
 
 Selle sammu lõpuks on repos `stack/compose.yaml`, mis kirjeldab andmebaasi, rakendust ja proxy't koos tervisekontrollide ja käivitusjärjekorraga.
 
-Vaata enne näidisseadeid: `cat stack/.env.naide`. Need on muutujad, mida Compose-fail kasutab. Päris `.env` tekib vm3-sse Ansible'i mallist B3-s.
+Vaata enne näidisseadeid: `cat stack/.env.naide`. Need on muutujad, mida Compose-fail kasutab. Tegelik `.env` tekib vm3-sse Ansible'i mallist B3-s.
 
 Loo `stack/compose.yaml`. Alusta projekti nime ja andmebaasiga. Kõik on A3-st tuttav, uus on tervisekontroll:
 
@@ -1083,7 +1083,7 @@ ssh vm3 "cd /opt/labor && docker compose logs app | grep -m1 authentication"
 
 `POSTGRES_PASSWORD` kehtib ainult tühja andmekausta korral. Andmekaust on volume'is ja seal on vana parool. Taasta `group_vars/all.yml`-is vana parool ja jooksuta uuesti. Kõik paraneb.
 
-Päris parooli vahetus käib kahes sammus: kõigepealt andmebaasis (`ALTER ROLE labor PASSWORD '...'`), siis `.env`-is. Kodutöös võid selle teha Ansible'i task'iks.
+Parooli vahetus tootmises käib kahes sammus: kõigepealt andmebaasis (`ALTER ROLE labor PASSWORD '...'`), siis `.env`-is. Kodutöös võid selle teha Ansible'i task'iks.
 
 ??? question "Mõtle (vabatahtlik)"
 

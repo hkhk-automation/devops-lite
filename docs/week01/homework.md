@@ -222,7 +222,7 @@ Selle ülesande lõpuks oskad `--check`-iga leida masinad, kus keegi on midagi k
 
 1. Tekita igasse masinasse erinev drift: ühes kustuta kasutaja `monitor`, teises muuda `/etc/motd` sisu, kolmandas peata `chronyd`.
 2. Jooksuta kõik oma playbookid `--check` režiimis ja salvesta väljund faili `logid/drift_check.txt`.
-3. Paranda drift päris jooksuga.
+3. Paranda drift tavalise käivitusega.
 4. Kirjuta `vastused.md`-sse lõik: kas iga drift tuli `--check`-iga välja ja millise playbooki järgi? Kui see kontroll jookseks igal ööl automaatselt, kes peaks teate saama?
 
 Esitad

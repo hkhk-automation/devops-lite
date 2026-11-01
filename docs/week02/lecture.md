@@ -1,6 +1,6 @@
 # K2 · Ansible sügavamalt: kolmekihiline rakendus
 
-Selle loengu jaoks peaksid oskama kirjutada playbooki päris moodulitega, lugema `PLAY RECAP`-i ja jooksutama playbooki kolme masina vastu võtmega (K1 praktikum). Klassis räägime peatükkidest 1, 3, 5, 9 ja 10. Ülejäänu loe kodus läbi, peatükid 12–14 on kodutöö jaoks.
+Selle loengu jaoks peaksid oskama kirjutada playbooki Ansible'i moodulitega, lugema `PLAY RECAP`-i ja jooksutama playbooki kolme masina vastu võtmega (K1 praktikum). Klassis räägime peatükkidest 1, 3, 5, 9 ja 10. Ülejäänu loe kodus läbi, peatükid 12–14 on kodutöö jaoks.
 
 ## Õpiväljundid
 
@@ -16,7 +16,7 @@ Pärast seda loengut oskad:
 
 ## 1. Üks server ei ole rakendus
 
-K1-s oli kolm ühesugust veebiserverit. Üks playbook, üks grupp, iga masin sai sama oleku. Päris rakendus näeb harva nii välja.
+K1-s oli kolm ühesugust veebiserverit. Üks playbook, üks grupp, iga masin sai sama oleku. Tegelik rakendus näeb harva nii välja.
 
 Väike firma tahab sisemist rakendust, mis näitab, mis laboris parasjagu käib. Arendaja kirjutab selle Pythonis ja ütleb: rakendus vajab PostgreSQL-i ja peab olema kahes eksemplaris, et üks võiks uuenduse või rikke ajal maas olla. Kasutajad tulevad ühe aadressi kaudu. Nii tekib kolm kihti:
 
@@ -36,7 +36,7 @@ Kui see kõik on käsitsi tehtud, on sõltuvused ainult administraatori peas. T�
     | vm2 | `app` | `labori-app` (Python) | 8080 |
     | vm3 | `app` | `labori-app` (Python) | 8081 |
 
-    Päris keskkonnas oleks koormusjaotur ja andmebaas eri masinates. Meil on kolm VM-i, seega kannab vm1 kahte rolli. Koodis on need ikkagi eraldi: kui homme tuleb neljas masin, kolib andmebaas sinna ühe inventari reaga.
+    Tootmiskeskkonnas oleks koormusjaotur ja andmebaas eri masinates. Meil on kolm VM-i, seega kannab vm1 kahte rolli. Koodis on need ikkagi eraldi: kui homme tuleb neljas masin, kolib andmebaas sinna ühe inventari reaga.
 
 ??? question "Kordamisküsimus"
 
@@ -737,7 +737,7 @@ Vaikimisi teeb Ansible iga task'i kõigis play masinates korraga. Kui uuendad ra
   delegate_to: "{{ groups['lb'][0] }}"
 ```
 
-`inventory_hostname` on ikkagi vm2 või vm3, aga fail tekib vm1-s. Päris keskkonnas kasutatakse sama võtet, et võtta server koormusjaoturist välja enne uuendust ja panna tagasi pärast.
+`inventory_hostname` on ikkagi vm2 või vm3, aga fail tekib vm1-s. Tootmiskeskkonnas kasutatakse sama võtet, et võtta server koormusjaoturist välja enne uuendust ja panna tagasi pärast.
 
 **`run_once`** jooksutab task'i ainult ühe korra, mitte iga masina jaoks. Näiteks teade uuenduse algusest või andmebaasi migratsioon, mida tohib teha ainult üks kord. `serial`-iga koos jookseb `run_once` task üks kord iga partii kohta.
 
@@ -790,7 +790,7 @@ Kui task kukub, lõpetab Ansible selle masina jaoks töö. Sageli on see õige. 
 
 `block`-il on ka teine kasutus: `when`, `become` või `tags` kogu grupile korraga, ilma iga task'i juurde kirjutamata.
 
-Lihtsamatel juhtudel piisab `ignore_errors: true`-st või `failed_when`-ist (millal task loetakse kukkunuks). Ära kasuta `ignore_errors`-it, et viga peita. See sobib ainult siis, kui viga on päriselt oodatud ja järgmine task kontrollib tulemust.
+Lihtsamatel juhtudel piisab `ignore_errors: true`-st või `failed_when`-ist (millal task loetakse kukkunuks). Ära kasuta `ignore_errors`-it, et viga peita. See sobib ainult siis, kui viga on oodatud ja järgmine task kontrollib tulemust.
 
 ??? question "Kordamisküsimus"
 

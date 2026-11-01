@@ -220,7 +220,7 @@ Konteineri kirjutatav kiht kaob koos konteineriga. `stop` ja `start` jätavad se
 
 Volume elab konteinerist kauem. `docker compose down` kustutab konteinerid ja võrgu, aga mitte volume'eid. `docker compose down -v` kustutab ka volume'id ja koos nendega andmebaasi. Seda `-v`-d ei kirjuta keegi kogemata kaks korda.
 
-Volume tuleb ühendada sinna, kus rakendus andmeid päriselt hoiab. Kui ühendad PostgreSQL-i volume'i vale kausta, töötab kõik, kuni konteiner esimest korda uuesti luuakse. Siis on andmebaas tühi. Õige tee on image'i dokumentatsioonis (ametlikus `postgres:17` image'is `/var/lib/postgresql/data`).
+Volume tuleb ühendada sinna, kus rakendus andmeid hoiab. Kui ühendad PostgreSQL-i volume'i vale kausta, töötab kõik, kuni konteiner esimest korda uuesti luuakse. Siis on andmebaas tühi. Õige tee on image'i dokumentatsioonis (ametlikus `postgres:17` image'is `/var/lib/postgresql/data`).
 
 SELinuxiga hostis peab Podman bind mount'i failile panema õige märgise, muidu keelab SELinux konteineril seda lugeda. Selleks on volume'i lõpus `:Z` (ainult see konteiner) või `:z` (jagatud). Nimega volume'id saavad märgise ise.
 
@@ -387,7 +387,7 @@ Mõned asjad, mis failis kohe silma ei hakka:
 
 `depends_on: [db]` ütleb ainult, et `db` konteiner käivitatakse enne `app`-i. Käivitatud ei tähenda valmis: PostgreSQL vajab esimesel korral mitu sekundit andmekausta loomiseks. Seepärast on `db`-l **healthcheck** (käsk, mida jooksutatakse iga 5 sekundi järel) ja `app` ootab `condition: service_healthy`. Sama muster on `proxy` ja `app` vahel.
 
-`docker compose ps` näitab tervist veerus `STATUS` (`healthy`, `unhealthy`, `starting`). `docker compose up -d --wait` ootab, kuni kõik teenused on käivitunud ja terved, ja kukub, kui mõni jääb haigeks. See on Ansible'i jaoks oluline: punane task tähendab, et rakendus päriselt ei tööta.
+`docker compose ps` näitab tervist veerus `STATUS` (`healthy`, `unhealthy`, `starting`). `docker compose up -d --wait` ootab, kuni kõik teenused on käivitunud ja terved, ja kukub, kui mõni jääb haigeks. See on Ansible'i jaoks oluline: punane task tähendab, et rakendus ei tööta.
 
 Healthcheck käsk jookseb konteineri sees, seega peab vajalik tööriist seal olemas olema. `python:3.13-slim`-is pole `curl`-i, aga Python on, nii et `app` kontrollib ennast Pythoni ühe reaga.
 

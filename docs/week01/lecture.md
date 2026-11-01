@@ -87,7 +87,7 @@ Eelmise loo probleemil on nimi: **konfiguratsiooni triiv** (configuration drift)
 
 Triiv kasvab ajaga. Esimesel päeval on serverid peaaegu identsed. Pool aastat hiljem on igaühel oma ajalugu: erinevad paketiversioonid, käsitsi lisatud cron-read, ajutised failid, mis jäid alles. Sellist serverit kutsutakse inglise keeles **snowflake server**. Igaüks on isemoodi. Keegi ei tea täpselt, mis seal sees on, ja keegi ei julge seda uuesti paigaldada.
 
-Teine võimalus on vaadata servereid kui asendatavaid. Kui serveri olek on koodis kirjas, saad selle igal ajal uuesti ehitada. Katkist masinat ei pea parandama, selle saab välja vahetada. Päriselt tähendab see, et öine intsident lõpeb käsuga "ehita uus", mitte kolmetunnise veaotsinguga.
+Teine võimalus on vaadata servereid kui asendatavaid. Kui serveri olek on koodis kirjas, saad selle igal ajal uuesti ehitada. Katkist masinat ei pea parandama, selle saab välja vahetada. Töökohas tähendab see, et öine intsident lõpeb käsuga "ehita uus", mitte kolmetunnise veaotsinguga.
 
 Triivi ei hoia ära see, et oled käsitsi eriti hoolikas. Inimesed unustavad, telefon heliseb, on kiire. Aitab ainult see, kui masina olek on kirjas kohas, mis ei unusta. Ja seda kirjeldust rakendatakse ikka ja jälle.
 
@@ -126,7 +126,7 @@ Selle mudeliga saad aru ka tööriistast, mida sa veel ei tunne. Sama skeem sobi
     | Ansible | `ansible-playbook` | playbook | faktid + moodulite kontroll | `PLAY RECAP` |
     | Docker Compose | `docker compose up` | `compose.yml` | jooksvad konteinerid | `docker compose ps` |
     | GitHub Actions | `git push` | workflow-fail | repo sisu | roheline/punane job |
-    | Terraform | `terraform apply` | `.tf` failid | state + päris ressursid | `plan` väljund |
+    | Terraform | `terraform apply` | `.tf` failid | state + tegelikud ressursid | `plan` väljund |
     | Kubernetes | pidevalt | manifest | jooksvad Pod'id | `kubectl get` |
 
 Kõige sagedamini ununeb tõend. Kui cron-skript kirjutab vead `/dev/null`-i, on see küll automatiseeritud, aga keegi ei tea, kas see töötab. Ansible annab tõendi igal jooksul. Kursusel esitad selle tõendi ka oma tööga: `changed=0` failis `logid/teine_jooks.txt` näitab, et sinu kirjeldus on idempotentne.
@@ -316,7 +316,7 @@ Hea playbook annab värskes masinas esimesel jooksul mitu `changed`-i. Kui jooks
 
 ### Kui task on igal jooksul `changed`
 
-Kui mõni task on igal jooksul `changed`, siis see ei kirjelda olekut, vaid teeb tegevust. Tavaliselt on põhjus selles, et päris mooduli asemel on kasutatud `command`-i või `shell`-i:
+Kui mõni task on igal jooksul `changed`, siis see ei kirjelda olekut, vaid teeb tegevust. Tavaliselt on põhjus selles, et Ansible'i mooduli asemel on kasutatud `command`-i või `shell`-i:
 
 ```yaml
 - name: Halb: igal jooksul changed
@@ -529,7 +529,7 @@ ansible-playbook bootstrap.yml --limit vm1
 ansible-playbook bootstrap.yml --limit 'veeb:!vm3'
 ```
 
-Päriselt jagatakse inventar tavaliselt keskkondade (`test`, `prod`) ja rollide (`veeb`, `andmebaas`, `koormusjaotur`) järgi. Teisel kohtumisel lisame gruppidele muutujad. Siis seadistab sama playbook test- ja toodangukeskkonna erinevalt.
+Töökohas jagatakse inventar tavaliselt keskkondade (`test`, `prod`) ja rollide (`veeb`, `andmebaas`, `koormusjaotur`) järgi. Teisel kohtumisel lisame gruppidele muutujad. Siis seadistab sama playbook test- ja toodangukeskkonna erinevalt.
 
 ??? info "Loe juurde"
 
@@ -688,7 +688,7 @@ ansible-doc -s ansible.builtin.copy      # lühikokkuvõte, sobib kopeerimiseks
 ansible-doc -l | grep -i cron            # otsi mooduleid nime järgi
 ```
 
-`ansible-doc` väljundi lõpus on alati jaotis `EXAMPLES`. Sealt saad näite, mis töötab. Kõiki parameetreid ei mäleta peast keegi, ja päris töös kasutad `ansible-doc`-i iga päev.
+`ansible-doc` väljundi lõpus on alati jaotis `EXAMPLES`. Sealt saad näite, mis töötab. Kõiki parameetreid ei mäleta peast keegi, ja töökohas kasutad `ansible-doc`-i iga päev.
 
 ??? info "Loe juurde"
 
@@ -1051,7 +1051,7 @@ changed: [vm1]
 
 Dry run ei näe kõike. `command`- ja `shell`-task'id jäetakse vahele, sest Ansible ei tea, mida need teeksid.
 
-Mõni task sõltub sellest, mida eelmine task päriselt tegi. Näiteks teenust saab käivitada alles siis, kui pakett on paigaldatud. Sellisel juhul võib dry run anda vea, mida päris jooksul ei tuleks. Dry run annab hea ülevaate, aga ei garanteeri midagi.
+Mõni task sõltub sellest, mida eelmine task tegi. Näiteks teenust saab käivitada alles siis, kui pakett on paigaldatud. Sellisel juhul võib dry run anda vea, mida tavalisel käivitusel ei tuleks. Dry run annab hea ülevaate, aga ei garanteeri midagi.
 
 ### Mõjuala: `--limit`
 
@@ -1076,7 +1076,7 @@ ansible-playbook bootstrap.yml --check > drift-$(date +%F).log
 grep -q 'changed=[1-9]' drift-$(date +%F).log && echo "Drift leitud"
 ```
 
-Päris keskkonnas käivitab selle CI-konveier või AWX/Ansible Automation Platform ja teade läheb meeskonna kanalisse. Neljandal kohtumisel ehitame konveieri, mis teeb sarnast kontrolli iga push'i peale.
+Tootmiskeskkonnas käivitab selle CI-konveier või AWX/Ansible Automation Platform ja teade läheb meeskonna kanalisse. Neljandal kohtumisel ehitame konveieri, mis teeb sarnast kontrolli iga push'i peale.
 
 ### Ohutuse kontrollnimekiri
 

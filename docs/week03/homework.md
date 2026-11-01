@@ -50,7 +50,7 @@ Kõik harjutused käivad sama pinu peale. Kui klassitöö B-osa on pooleli, tee 
     1. `ansible-playbook <fail>.yml --syntax-check`
     2. `ansible-playbook <fail>.yml --check --diff`
     3. teises terminalis vm1-s käib kontroll: `while true; do curl -s -o /dev/null -w "%{http_code} " http://$VM3/; sleep 0.5; done`
-    4. päris jooks, siis teine jooks tõendiks
+    4. tavaline käivitus, siis teine jooks tõendiks
 
 ### H1 · Kaks rakenduse koopiat proxy taga · boonus
 
@@ -181,7 +181,7 @@ Selle ülesande lõpuks käivitab `stack` roll pinu moodulit `community.docker.d
 
     [docker_compose_v2](https://docs.ansible.com/ansible/latest/collections/community/docker/docker_compose_v2_module.html): `project_src`, `state: present`, `build`, `wait`. Moodul loeb Compose'i väljundit, seega sõltub ta Compose'i versioonist. Kui moodul annab vm3 Compose'i versiooniga parsimise vea, on see samuti tulemus: kirjuta `vastused.md`-sse veateade ja mida see sinu arvates tähendab.
 
-Kirjuta `vastused.md`-sse kaks lauset: kumba lahendust (klassi oma või moodul) kasutaksid päris süsteemis ja miks.
+Kirjuta `vastused.md`-sse kaks lauset: kumba lahendust (klassi oma või moodul) kasutaksid tootmissüsteemis ja miks.
 
 Valmis, kui
 { .silt }
@@ -205,7 +205,7 @@ Selle ülesande lõpuks oled leidnud neli viga, mille kolleeg jättis kausta `ve
 Kaustas `vead/` on neli faili. Igaüks on sinu repo mõne faili koopia, milles on üks viga. Iga faili jaoks:
 
 1. vaata faili ja ennusta, mis juhtub;
-2. kopeeri see õigesse kohta (failis endas on kommentaar, kuhu), jooksuta `site.yml` ja vaata, mis päriselt juhtub;
+2. kopeeri see õigesse kohta (failis endas on kommentaar, kuhu), jooksuta `site.yml` ja vaata, mis tegelikult juhtub;
 3. taasta oma fail: `git checkout -- <fail>` ja jooksuta uuesti, kuni `changed=0`.
 
 !!! warning "Tähelepanu: kolm viga ei anna veateadet"

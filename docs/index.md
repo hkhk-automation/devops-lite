@@ -79,7 +79,7 @@ K5-s kasutame OpenTofut (`tofu`): Terraformi avatud lähtekoodiga haru, sama kee
 |---|---|
 | **Idempotentsus** | sama samm annab teisel käivitusel sama tulemuse: `mkdir -p` → Ansible `changed=0` → OpenTofu `No changes` |
 | **Ennusta, siis kontrolli** | enne olulist käsku kirjuta üles, mida ootad. Kui tulemus erineb, oled leidnud koha, kus õppida |
-| **Viga on samm** | igas praktikumis läheb midagi valesti, kas teadlikult (drift, halb skript) või nii nagu päris serveris (tulemüür, SELinux, 502). Leiad põhjuse ja parandad selle koodiga, mitte käsitsi |
+| **Viga on samm** | igas praktikumis läheb midagi valesti, kas teadlikult (drift, halb skript) või nii nagu tootmisserveris (tulemüür, SELinux, 502). Leiad põhjuse ja parandad selle koodiga, mitte käsitsi |
 
 ## Esitamine
 

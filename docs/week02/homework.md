@@ -50,7 +50,7 @@ Kõik harjutused käivad sama pinu peale. Kui klassitöö B-osa on pooleli, tee 
     1. `ansible-playbook <fail>.yml --syntax-check`
     2. `ansible-playbook <fail>.yml --check --diff`
     3. teises terminalis vm1-s käib kontroll: `while true; do curl -s -o /dev/null -w "%{http_code} " http://localhost/; sleep 0.5; done`
-    4. päris jooks, siis teine jooks tõendiks
+    4. tavaline käivitus, siis teine jooks tõendiks
 
 ### H1 · Lisa kolmas rakendusserver ainult inventariga · boonus
 
@@ -86,7 +86,7 @@ for i in $(seq 1 9); do curl -s http://localhost/ | grep Vastas; done | tee logi
 
 Selle ülesande lõpuks on playbook `uuendus.yml`, mis viib rakenduse uuele versioonile ühe masina kaupa ja kasutaja ei saa uuenduse ajal ühtegi viga.
 
-Versioon on muutuja `app_versioon` (rolli `app` `defaults`-is `"1.0"`), see on näha lehe esimesel real. Uuendus käib nagu päris meeskonnas: kirjutad uue versiooni `group_vars/all.yml`-i (`app_versioon: "1.1"`), commit'id ja jooksutad `ansible-playbook uuendus.yml`. Nii on Gitis alati kirjas, mis versioon peab masinates olema, ja `site.yml` ei vii versiooni tagasi.
+Versioon on muutuja `app_versioon` (rolli `app` `defaults`-is `"1.0"`), see on näha lehe esimesel real. Uuendus käib nagu töökoha meeskonnas: kirjutad uue versiooni `group_vars/all.yml`-i (`app_versioon: "1.1"`), commit'id ja jooksutad `ansible-playbook uuendus.yml`. Nii on Gitis alati kirjas, mis versioon peab masinates olema, ja `site.yml` ei vii versiooni tagasi.
 
 Playbook `uuendus.yml`:
 
@@ -162,7 +162,7 @@ Selle ülesande lõpuks saab kolleeg sinu repo kloonida ja ühe käsuga paigalda
 - `requirements.yml` repo juures loetleb kõik kollektsioonid, mida sinu playbookid kasutavad, kinnitatud versiooniga;
 - README-s on jaotis „Käivitamine“: kloonimine, sõltuvuste paigaldus, `site.yml`, `uuendus.yml` näitega.
 
-Kontrolli, et fail päriselt töötab: `ansible-galaxy collection install -r requirements.yml --force`.
+Kontrolli, et fail töötab: `ansible-galaxy collection install -r requirements.yml --force`.
 
 ??? tip "Vihje: mis kollektsioone kasutad"
 
@@ -186,7 +186,7 @@ Selle ülesande lõpuks oled leidnud neli viga, mille kolleeg jättis kausta `ve
 Kaustas `vead/` on neli faili. Igaüks on sinu repo mõne faili koopia, milles on üks viga. Iga faili jaoks:
 
 1. vaata faili ja ennusta, mis juhtub;
-2. kopeeri see õigesse kohta (failis endas on kommentaar, kuhu), jooksuta `site.yml` ja vaata, mis päriselt juhtub;
+2. kopeeri see õigesse kohta (failis endas on kommentaar, kuhu), jooksuta `site.yml` ja vaata, mis tegelikult juhtub;
 3. taasta oma fail: `git checkout -- <fail>` ja jooksuta uuesti, kuni `changed=0`.
 
 !!! warning "Tähelepanu: üks viga ei anna veateadet"

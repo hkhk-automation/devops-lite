@@ -1,6 +1,6 @@
 # K2 · Praktikum: kolmekihiline rakendus
 
-Tänase lõpuks töötab kolmes masinas päris rakendus. vm1-s on nginx koormusjaoturina ja PostgreSQL andmebaasina, vm2 ja vm3 jooksutavad rakendust „Labori seis“. `curl http://vm1/` vastab vaheldumisi vm2-st ja vm3-st ning leht töötab edasi ka siis, kui üks rakendus on maas. Kõik see on kirjas neljas rollis ja ühes `site.yml`-is ning teine jooks ei muuda midagi.
+Tänase lõpuks töötab kolmes masinas tegelik rakendus. vm1-s on nginx koormusjaoturina ja PostgreSQL andmebaasina, vm2 ja vm3 jooksutavad rakendust „Labori seis“. `curl http://vm1/` vastab vaheldumisi vm2-st ja vm3-st ning leht töötab edasi ka siis, kui üks rakendus on maas. Kõik see on kirjas neljas rollis ja ühes `site.yml`-is ning teine jooks ei muuda midagi.
 
 <figure style="max-width:690px;margin:.8em auto" class="lx" markdown="0">
 <svg viewBox="0 0 690 336" role="img" aria-label="Kolmekihiline pinu: vm1 nginx ja PostgreSQL, vm2 ja vm3 rakendus" xmlns="http://www.w3.org/2000/svg">
@@ -926,7 +926,7 @@ ansible-playbook site.yml --check --diff
 
     `--limit lb` piirab ka faktide kogumist. vm2 ja vm3 fakte ei kogutud, seega mall ei tea nende IP-d. Jooksuta ilma `--limit`-ita.
 
-Jooksuta päriselt ja proovi:
+Käivita ilma `--check`-ita ja proovi:
 
 ```bash
 ansible-playbook site.yml
@@ -1045,7 +1045,7 @@ for i in 1 2 3 4; do curl -s http://localhost/; echo; done
     ...
     ```
 
-    Leht töötab ja loendur kasvab, nii et andmebaas on päriselt kasutusel. Vastab ainult vm2. Selle põhjuse leiad B1-s.
+    Leht töötab ja loendur kasvab, nii et andmebaas on kasutusel. Vastab ainult vm2. Selle põhjuse leiad B1-s.
 
 Kaks kihti, kaks eraldi kontrolli. SELinux otsustab, kas protsess tohib ühendust luua. Tulemüür otsustab, kas pakett pääseb masinasse. Mõlemad annavad kasutajale sama 502. Erinevuse näeb ainult logist: `13: Permission denied` on oma masina SELinux, `113: No route to host` on teise masina tulemüür.
 
@@ -1235,7 +1235,7 @@ A6 näitas, et roheline playbook ja töötav leht pole sama asi. Lisa `site.yml`
                 fail_msg: "Leht vastas, aga mitte rakendus: {{ vastus.content | truncate(200) }}"
         ```
 
-Proovi, et kontroll päriselt kukub: peata mõlemas masinas `labori-app` ja jooksuta ainult viimane play (`--start-at-task "Avaleht vastab"`). Siis jooksuta tervet `site.yml`-i ja vaata, et kõik paraneb ja kontroll läbib.
+Proovi, et kontroll kukub: peata mõlemas masinas `labori-app` ja jooksuta ainult viimane play (`--start-at-task "Avaleht vastab"`). Siis jooksuta tervet `site.yml`-i ja vaata, et kõik paraneb ja kontroll läbib.
 
 Lõpuks salvesta uuesti teise jooksu tõend:
 

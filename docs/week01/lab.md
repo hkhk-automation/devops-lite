@@ -49,7 +49,7 @@ Sinine kast on control node: masin, kus Ansible jookseb. Juhend on kirjutatud va
 
     1. näidata oma masinas, miks toores skript pole idempotentne, ja asendada see playbookiga;
     2. luua inventari ja ansible.cfg-i ning kasutada ad-hoc käske ja fakte;
-    3. kirjutada playbooki päris moodulitega ja tõestada idempotentsust `changed=0`-ga;
+    3. kirjutada playbooki Ansible'i moodulitega ja tõestada idempotentsust `changed=0`-ga;
     4. eelvaadata muudatust `--check --diff`-ga ja parandada drift'i;
     5. seadistada võtmepõhise SSH ja rakendada sama playbooki kolmele masinale;
     6. kasutada muutujaid ja fakte playbookis;
@@ -431,7 +431,7 @@ Jooksuta kaks korda. Esimene `changed`, teine `ok`.
 
 Seejärel eemalda katse-task ja jooksuta veel kord, kuni `PLAY RECAP` on `changed=0`. Salvesta see uuesti `logid/teine_jooks.txt`-sse.
 
-Toores käsk ei tea, milline olek on. Kui moodulit pole, teeb `creates` käsu idempotentseks: kui fail on juba olemas, käsku ei käivitata. Päriselt kasuta moodulit, kui see olemas on (`ansible.builtin.file` + `state: touch` teeks sama).
+Toores käsk ei tea, milline olek on. Kui moodulit pole, teeb `creates` käsu idempotentseks: kui fail on juba olemas, käsku ei käivitata. Võimalusel kasuta moodulit, kui see olemas on (`ansible.builtin.file` + `state: touch` teeks sama).
 
 ??? info "Loe juurde"
 
@@ -467,7 +467,7 @@ curl -s localhost
 
 `changed=1`, aga `curl` näitab vana lehte. Midagi ei muudetud.
 
-Jooksuta päriselt ja kontrolli:
+Käivita ilma `--check`-ita ja kontrolli:
 
 ```bash
 ansible-playbook bootstrap.yml
@@ -514,7 +514,7 @@ curl -s localhost
 
 ??? success "Oodatav tulemus"
 
-    `--check` näitab 3 `changed`-i ilma midagi parandamata. Päris jooks näitab samuti 3 `changed`-i, `nginx on paigaldatud` jääb `ok`. `curl` vastab uuesti.
+    `--check` näitab 3 `changed`-i ilma midagi parandamata. Tavaline käivitus näitab samuti 3 `changed`-i, `nginx on paigaldatud` jääb `ok`. `curl` vastab uuesti.
 
 Playbook parandas ainult selle, mis triivis. Sa ei pidanud talle ütlema, mis katki on. `--check` üksinda sobib drift'i leidmiseks: nii saad öösel kõik masinad üle kontrollida ja midagi ei muutu.
 
@@ -657,7 +657,7 @@ ansible-playbook bootstrap.yml --limit vm1
 ansible-playbook bootstrap.yml --limit veeb
 ```
 
-Värskes masinas (vm2, vm3) kukub `--check` task'is "nginx käib". Kuivjooks ei paigalda nginx'i päriselt, seega teenust veel pole. Nii peabki olema.
+Värskes masinas (vm2, vm3) kukub `--check` task'is "nginx käib". Kuivjooks ei paigalda nginx'i, seega teenust veel pole. Nii peabki olema.
 
 ??? tip "Vihje: masina nimi lehel"
     `content: "<h1>{{ inventory_hostname }}</h1>\n"`. `inventory_hostname` on nimi inventaris (`vm1`), mitte masina enda hostname.
@@ -745,7 +745,7 @@ Ava GitHubis oma repo → **Actions** → viimane **Autograde**. Seal on iga kon
 |---|---|
 | K1 | failid `halb.sh`, `inventory.ini`, `bootstrap.yml`, `logid/teine_jooks.txt` olemas |
 | K2 | `bootstrap.yml` süntaks |
-| K3 | päris moodulid, `command`/`shell` puudub |
+| K3 | Ansible'i moodulid, `command`/`shell` puudub |
 | K4 | `logid/teine_jooks.txt` sisaldab `changed=0` |
 | K5 | `logid/kolm_masinat.txt`: kolm masinat, kõigil `changed=0`, ükski pole `unreachable` |
 
@@ -777,7 +777,7 @@ Kodune õpe ja kodutöö on eraldi lehel: [K1 · Kodune õpe ja kodutöö](homew
     | `Invalid callback for stdout specified: yaml` | `ansible.cfg`-s vana rida `stdout_callback = yaml` | asenda `callback_result_format = yaml` |
     | `Missing sudo password` | `ansible.cfg`-s pole `become_ask_pass = True` | lisa `[privilege_escalation]` plokk (A3) |
     | `couldn't resolve module/action 'ansible.posix.firewalld'` | kollektsioon puudu | `ansible-galaxy collection install ansible.posix:1.5.4` |
-    | `Could not find the requested service nginx` `--check`-iga | värskes masinas pole nginx'i veel päriselt paigaldatud | ootuspärane, jooksuta ilma `--check`-ita |
+    | `Could not find the requested service nginx` `--check`-iga | värskes masinas pole nginx'i veel paigaldatud | ootuspärane, jooksuta ilma `--check`-ita |
     | `sudo: a terminal is required` | `ssh vm2 "sudo ..."` ilma terminalita | `ssh -t vm2 "sudo ..."` |
     | `Waiting for process ... dnf` | taustal käib teine dnf | oota |
     | `mapping values are not allowed` | YAML: koolon väärtuses | jutumärgid |
@@ -786,6 +786,6 @@ Kodune õpe ja kodutöö on eraldi lehel: [K1 · Kodune õpe ja kodutöö](homew
     | task on igal jooksul `changed` | `command`/`shell` mooduli asemel | vaheta moodul |
     | `curl` näitab nginx vaikelehte | fail läks vale kausta | `dest` peab olema `/usr/share/nginx/html/index.html` |
     | `curl` väljast ei vasta, masinas vastab | tulemüür | B5 |
-    | käsk töötab PowerShellis, aga mitte vm1-s (või vastupidi) | oled vales aknas | `hostname` — kõik käsud käivad vm1-s |
+    | käsk töötab PowerShellis, aga mitte vm1-s (või vastupidi) | oled vales aknas | `hostname`: kõik käsud käivad vm1-s |
     | `git push` küsib parooli | repo on kloonitud HTTPS-iga | `git remote set-url origin git@github.com:...` |
     | `Permission denied (publickey)` GitHubist | võti pole GitHubis | [Töökeskkond](../keskkond.md) |
