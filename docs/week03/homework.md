@@ -237,6 +237,6 @@ Esitad
 
     Parooli vahetus: kirjuta `stack` rolli task'id, mis vahetavad andmebaasi parooli enne `.env`-i (`docker compose exec db psql -U labor -c "ALTER ROLE ..."`), nii et B5 katse lõpeb roheliselt. Mida teed, et parool ei satuks Ansible'i väljundisse?
 
-    Skaneerimine: paigalda vm3-sse [Trivy](https://trivy.dev/latest/getting-started/installation/) ja käivita `trivy image localhost/labori-app:1.1`. Mitu kõrge raskusega haavatavust leidis? Mitu neist on sinu koodis ja mitu alusimage'is?
+    Skaneerimine: paigalda vm3-sse [Trivy](https://trivy.dev/docs/latest/getting-started/installation/) ja käivita `trivy image localhost/labori-app:1.1`. Mitu kõrge raskusega haavatavust leidis? Mitu neist on sinu koodis ja mitu alusimage'is?
 
     Väiksem image: ehita sama rakendus `python:3.13-alpine` alusel ja võrdle `docker images` suurusi. Mis läks lihtsamaks, mis keerulisemaks?

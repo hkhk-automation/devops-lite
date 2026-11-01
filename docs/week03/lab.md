@@ -515,7 +515,20 @@ grep -nE 'kind:|image:|containerPort|hostPort|claimName|DB_HOST' logid/labor-pod
 
 Pane tähele: failis on ka parool avatud kujul, sest `--env-file` muutujad lähevad konteineri kirjeldusse. Meie labori parool on niikuinii avalik. Päris süsteemis eemaldaksid selle enne commit'i. K5-s on selle jaoks Kubernetes'i `Secret`.
 
-Jäta pod käima. Laboritahvel kontrollib, et see vastab.
+Jäta pod käima. Laboritahvel kontrollib, et see vastab. Rootless konteinerid kuuluvad sinu kasutaja systemd sessioonile ja väljalogimisel lõpetab systemd need. Luba sinu kasutaja teenustel käia ka siis, kui sa pole sisse logitud:
+
+```bash
+sudo loginctl enable-linger $USER
+loginctl show-user $USER --property=Linger
+```
+
+??? success "Oodatav tulemus"
+
+    ```
+    Linger=yes
+    ```
+
+    Nüüd jääb pod käima ka pärast väljalogimist. vm1 taaskäivitusel pod ise üles ei tule: selleks on kodutöö H2 Quadlet.
 
 ??? question "Mõtle (vabatahtlik)"
 
