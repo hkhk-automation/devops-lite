@@ -8,7 +8,7 @@ Tahvel kontrollib masinaid. Faile sinu repos kontrollib Autograde, selle tulemus
 
 Tee seda üks kord. Tahvli aadressi näed brauseri aadressiribal, kui avad menüüst **Ava laboritahvel** (kujul `http://192.168.x.x:8090/`). Allpool on see `<tahvel>`.
 
-**Ansible'iga.** Jooksuta vm1-s oma repo kaustas (seal, kus on `ansible.cfg` ja inventar):
+**Ansible'iga.** Käivita vm1-s oma repo kaustas (seal, kus on `ansible.cfg` ja inventar):
 
 ```bash
 curl -sO http://<tahvel>:8090/opetaja.yml && ansible-playbook opetaja.yml
@@ -16,7 +16,7 @@ curl -sO http://<tahvel>:8090/opetaja.yml && ansible-playbook opetaja.yml
 
 Playbook töötab kõigi inventari masinatega, grupi nimi pole oluline. Iga masina juures peab olema `changed` või `ok`.
 
-**Käsitsi.** Kui Ansible ei tööta, jooksuta see käsk **igas VM-is eraldi** (vm1, vm2, vm3):
+**Käsitsi.** Kui Ansible ei tööta, käivita see käsk **igas VM-is eraldi** (vm1, vm2, vm3):
 
 ```bash
 mkdir -p ~/.ssh && curl -s http://<tahvel>:8090/opetaja.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && echo OK
@@ -56,7 +56,15 @@ Ajalugu salvestub faili tavaliselt alles väljalogimisel. Kui tahvel näitab „
 
 ## K4 · CI/CD ja GitHub Actions
 
-Pipeline'i ennast tahvel ei näe, seda kontrollib Autograde. Tahvel vaatab tarne tulemust vm3-s:
+Tahvel ei näe, kas pipeline GitHubis on roheline. See loeb vm1-s sinu repositooriumi faili `.github/workflows/ci.yml`:
+
+- failis on `ansible-lint` (A2);
+- failis on `gitleaks` (A4);
+- jobil `build` on `needs: lint` (A5).
+
+Tahvel näeb ainult seda, mis on vm1 kloonis. Kui muutsid faili GitHubi veebis, tee vm1-s `git pull`.
+
+Tarne tulemust vaatab tahvel vm3-s:
 
 - rakenduse konteiner on käivitatud GHCR-ist (`ghcr.io/...`) tõmmatud image'ist;
 - leht näitab versioonina commit'i räsi;
