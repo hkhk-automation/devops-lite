@@ -53,7 +53,7 @@ Vasta lühidalt oma sõnadega, üks-kaks lauset igale.
 
 ### H1 · Suitsutest enne registrit · boonus
 
-Selle ülesande lõpuks käivitab `build` job ehitatud image'i koos PostgreSQL-iga ja `docker push` toimub ainult siis, kui rakendus vastab `/health` päringule.
+Selle ülesande lõpuks käivitab `build` job ehitatud image'i koos PostgreSQL-iga ja `docker push` käivitub ainult siis, kui rakendus vastab `/health` päringule.
 
 Lint kontrollib faile, aga mitte seda, kas image käivitub. Suitsutest on lühike kontroll, et rakendus üldse töötab.
 
@@ -160,7 +160,7 @@ Esitad
 
 ### H5 · Leia kolleegi vead · boonus
 
-Selle ülesande lõpuks oled leidnud neli viga, mille kolleeg jättis kausta `vead/`, ja kirjutanud iga kohta, kuidas sa selle leidsid.
+Selle ülesande lõpuks oled leidnud neli viga, mis on kaustas `vead/`, ja kirjutanud iga kohta, kuidas sa selle leidsid.
 
 Kaustas `vead/` on neli workflow faili. Igaüks on töötava `ci.yml`-i koopia, milles on üks viga. Iga faili jaoks:
 

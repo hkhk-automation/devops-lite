@@ -301,7 +301,7 @@ git push
 
 ??? question "Mõtle (vabatahtlik)"
 
-    Kolleeg pakub, et lisame `.ansible-lint`-i `skip_list: [no-changed-when]` ja pipeline on roheline. Mis sellest kaotame? Millal oleks `# noqa` põhjendatud?
+    Kui lisada `.ansible-lint`-i `skip_list: [no-changed-when]`, on pipeline roheline. Mis sellest kaotame? Millal oleks `# noqa` põhjendatud?
 
 ??? info "Loe juurde"
 
@@ -717,7 +717,7 @@ git push
 
     Siis pole kaitse veel sees. Ütle juhendajale ja ära tee järgmist osa enne, kui push lükatakse tagasi. Ilma kaitseta saab punase PR-i kogemata liita ja võlts-token jõuab main harusse, kust seda enam ei kustuta.
 
-**Saladus pull request'is.** Kolleegid jätavad vahel tokeni skripti sisse. Tee seda harus ja vaata, mida pipeline teeb. Token on võlts: see on juhuslik string, millel on GitHubi tokeni kuju.
+**Saladus pull request'is.** Token jääb vahel kogemata skripti sisse. Tee seda harus ja vaata, mida pipeline teeb. Token on võlts: see on juhuslik string, millel on GitHubi tokeni kuju.
 
 ```bash
 git switch -c kolleegi-skript
@@ -808,13 +808,15 @@ Töö on esitatud, kui kõik muudatused on main harus, Actionsis on viimane **CI
 
 Ava GitHubis oma repositoorium → **Actions** → viimane **Autograde**:
 
-| Kontroll | Mida vaatab |
-|---|---|
-| K1 | `ci.yml`, lint'i reeglid, `vault.yml`, `compose.yaml`, rollid, `logid/tarne.txt`, `logid/tarne_kontroll.txt` olemas |
-| K2 | `ci.yml`: trigger'id `push` ja `pull_request`, jobid `lint` ja `build`, `build` vajab `lint`-i, `packages: write`, saladuste otsing, push GHCR-i ainult push'i korral |
-| K3 | `yamllint` ja `ansible-lint` on rohelised, `gitleaks` ei leia failidest saladusi |
-| K4 | `site.yml` süntaks; Compose'is `app` ilma `build`-ita ja image'iga `${APP_IMAGE}`; rollis GHCR-i sisselogimine `no_log`-iga; handlerite nimed klapivad `notify`-ga; `vault.yml` on krüptitud; `.env` pole Gitis |
-| K5 | `tarne.txt`: vm3 `changed=0`, `failed=0`; `tarne_kontroll.txt`: image `ghcr.io`-st, leht näitab räsi ja loendurit |
+??? note "Mida Autograde kontrollib"
+
+    | Kontroll | Mida vaatab |
+    |---|---|
+    | K1 | `ci.yml`, lint'i reeglid, `vault.yml`, `compose.yaml`, rollid, `logid/tarne.txt`, `logid/tarne_kontroll.txt` olemas |
+    | K2 | `ci.yml`: trigger'id `push` ja `pull_request`, jobid `lint` ja `build`, `build` vajab `lint`-i, `packages: write`, saladuste otsing, push GHCR-i ainult push'i korral |
+    | K3 | `yamllint` ja `ansible-lint` on rohelised, `gitleaks` ei leia failidest saladusi |
+    | K4 | `site.yml` süntaks; Compose'is `app` ilma `build`-ita ja image'iga `${APP_IMAGE}`; rollis GHCR-i sisselogimine `no_log`-iga; handlerite nimed klapivad `notify`-ga; `vault.yml` on krüptitud; `.env` pole Gitis |
+    | K5 | `tarne.txt`: vm3 `changed=0`, `failed=0`; `tarne_kontroll.txt`: image `ghcr.io`-st, leht näitab räsi ja loendurit |
 
 Hinne tuleb kontrollidest K1–K5 (45 punkti). Kontrollid nimega BOONUS (README ja kodutöö) punkte ei anna ja kukuvad seni, kuni need on tegemata.
 

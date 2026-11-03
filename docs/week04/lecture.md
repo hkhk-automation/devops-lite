@@ -52,11 +52,13 @@ K3 lõpus paigaldas `site.yml` vm3-sse kogu pinu. Kõik töötas, sest sina käi
 
 Kolm mõistet, mida segatakse sageli:
 
-| Mõiste | Mis on automaatne | Meie kursusel |
-|---|---|---|
-| **CI** (continuous integration, pidev integreerimine) | iga push'i järel kontroll ja ehitus | lint, saladuste otsing, image'i ehitus |
-| **pidev tarne** (continuous delivery) | iga roheline muudatus on valmis paigaldamiseks, paigalduse käivitab inimene | image on GHCR-is, `site.yml` tarnib selle vm3-sse |
-| **pidev paigaldus** (continuous deployment) | iga roheline muudatus paigaldatakse ise | kodutöö lisa: self-hosted runner |
+??? note "CI, pidev tarne ja pidev paigaldus"
+
+    | Mõiste | Mis on automaatne | Meie kursusel |
+    |---|---|---|
+    | **CI** (continuous integration, pidev integreerimine) | iga push'i järel kontroll ja ehitus | lint, saladuste otsing, image'i ehitus |
+    | **pidev tarne** (continuous delivery) | iga roheline muudatus on valmis paigaldamiseks, paigalduse käivitab inimene | image on GHCR-is, `site.yml` tarnib selle vm3-sse |
+    | **pidev paigaldus** (continuous deployment) | iga roheline muudatus paigaldatakse ise | kodutöö lisa: self-hosted runner |
 
 Täna jõuame pideva tarneni. Pipeline teeb kõik kuni registrini, paigalduse käivitad sina vm1-st. Peatükis 7 on põhjus.
 
@@ -110,12 +112,14 @@ Samal põhjusel kinnitad tööriistade versioonid: `pip install ansible-lint==26
 
 Workflow'l on kaht liiki muutujaid. `${{ github.sha }}` on **kontekst**: GitHub asendab selle enne, kui step käivitub. `$GITHUB_SHA` on keskkonnamuutuja, mille shell loeb käivitamise ajal. Sisu on sama. Shelli käskudes eelista keskkonnamuutujat, sest konteksti väärtus läheb käsu teksti ja võõra sisendiga (näiteks PR-i pealkiri) saab nii käsku muuta.
 
-| Muutuja | Mida sisaldab |
-|---|---|
-| `GITHUB_SHA` | commit, mille peal workflow töötab |
-| `GITHUB_REPOSITORY` | `org/repo`, näiteks `hkhk-automation/its25-...` |
-| `GITHUB_ACTOR` | kasutaja, kes sündmuse tekitas |
-| `GITHUB_ENV` | fail; mis sinna kirjutad (`NIMI=väärtus`), on järgmistes step'ides keskkonnamuutuja |
+??? note "Muutujad"
+
+    | Muutuja | Mida sisaldab |
+    |---|---|
+    | `GITHUB_SHA` | commit, mille peal workflow töötab |
+    | `GITHUB_REPOSITORY` | `org/repo`, näiteks `hkhk-automation/its25-...` |
+    | `GITHUB_ACTOR` | kasutaja, kes sündmuse tekitas |
+    | `GITHUB_ENV` | fail; mis sinna kirjutad (`NIMI=väärtus`), on järgmistes step'ides keskkonnamuutuja |
 
 ??? question "Kordamisküsimus"
 
@@ -131,11 +135,13 @@ Workflow'l on kaht liiki muutujaid. `${{ github.sha }}` on **kontekst**: GitHub 
 
 Esimene job kontrollib koodi enne, kui midagi ehitatakse. Täna on selles kolm tööriista.
 
-| Tööriist | Mida kontrollib | Mida ei näe |
-|---|---|---|
-| `yamllint` | YAML-i kuju: taane, dubleeritud võtmed, tühikud rea lõpus, rea pikkus | kas playbook on õige |
-| `ansible-lint` | Ansible'i head tavad: FQCN moodulite nimed, `command` ilma `changed_when`-ita, rolli muutujate eesliide, nimede kuju; käivitab ka `--syntax-check`-i | kas masinas tuleb soovitud olek |
-| `gitleaks` | saladused failides ja **kogu Giti ajaloos**: tokenid, võtmed, suure entroopiaga stringid | saladust, mis ei sarnane ühelegi mustrile |
+??? note "Tööriistad esimeses jobis"
+
+    | Tööriist | Mida kontrollib | Mida ei näe |
+    |---|---|---|
+    | `yamllint` | YAML-i kuju: taane, dubleeritud võtmed, tühikud rea lõpus, rea pikkus | kas playbook on õige |
+    | `ansible-lint` | Ansible'i head tavad: FQCN moodulite nimed, `command` ilma `changed_when`-ita, rolli muutujate eesliide, nimede kuju; käivitab ka `--syntax-check`-i | kas masinas tuleb soovitud olek |
+    | `gitleaks` | saladused failides ja **kogu Giti ajaloos**: tokenid, võtmed, suure entroopiaga stringid | saladust, mis ei sarnane ühelegi mustrile |
 
 ### Reeglid on failis
 
@@ -147,7 +153,7 @@ Täna leiab `ansible-lint` K3 rollist viis viga. Rakendus töötas, seega ei ole
 
 ### Lint ei asenda käivitust
 
-`ansible-lint` loeb faile, ta ei käivita neid. Kui nimetad handleri ümber ja unustad `notify` rea, on lint roheline ja viga tuleb välja alles siis, kui task teavitab handlerit. Lint vähendab vigu, aga tõend on ikka see, mis masinas toimub.
+`ansible-lint` loeb faile, aga ei käivita neid. Kui nimetad handleri ümber ja unustad `notify` rea, on lint roheline ja viga tuleb välja alles siis, kui task teavitab handlerit. Lint vähendab vigu, aga tõend on ikka masina olek.
 
 ### Saladuste otsing
 
@@ -159,7 +165,7 @@ Seepärast on saladuse lekke järel esimene samm **tühistada saladus** (uus tok
 
 ??? question "Kordamisküsimus"
 
-    Kolleeg commit'is kogemata faili `.env` ja kustutas selle viie minuti pärast järgmise commit'iga. Pipeline on punane, sest `gitleaks` leidis saladuse. Kolleeg tahab lisada faili `.gitleaksignore`, et pipeline roheliseks saada. Mis peab enne seda juhtuma?
+    Fail `.env` läks kogemata commit'i ja kustutati viis minutit hiljem järgmise commit'iga. Pipeline on punane, sest `gitleaks` leidis saladuse. Leiu saaks lisada faili `.gitleaksignore`, et pipeline roheliseks saada. Mis peab enne seda juhtuma?
 
 ??? info "Loe juurde"
 
@@ -173,14 +179,16 @@ Punane rist Actionsis ütleb ainult, et midagi kukkus. Viga leiad kolme klõpsug
 
 Loe logi ülevalt alla ja otsi **esimest** viga. Järgmised on sageli esimese tagajärjed. Kui `pip install` kukkus, kukuvad ka kõik järgmised step'id, aga nende veateated ei ütle midagi.
 
-| Kus kukkus | Mida tavaliselt tähendab |
-|---|---|
-| `actions/checkout` või `setup-python` | võrguviga või vale action'i nimi; proovi **Re-run jobs** |
-| `pip install` | vale versiooninumber, tööriista versioon ei toeta Pythoni versiooni |
-| lint'i step | koodis on viga, mille lint leidis: failinimi ja rida on väljundis |
-| `docker build` | Containerfile'i viga või fail puudub ehituskontekstist |
-| `docker push`, sõna `denied` | workflow'l pole õigust registrisse kirjutada (§5) |
-| job on hall, *skipped* | eelmine job (`needs`) kukkus või `if:` tingimus ei kehtinud |
+??? note "Kus kukkus ja mida see tähendab"
+
+    | Kus kukkus | Mida tavaliselt tähendab |
+    |---|---|
+    | `actions/checkout` või `setup-python` | võrguviga või vale action'i nimi; proovi **Re-run jobs** |
+    | `pip install` | vale versiooninumber, tööriista versioon ei toeta Pythoni versiooni |
+    | lint'i step | koodis on viga, mille lint leidis: failinimi ja rida on väljundis |
+    | `docker build` | Containerfile'i viga või fail puudub ehituskontekstist |
+    | `docker push`, sõna `denied` | workflow'l pole õigust registrisse kirjutada (§5) |
+    | job on hall, *skipped* | eelmine job (`needs`) kukkus või `if:` tingimus ei kehtinud |
 
 Lint'i viga paranda koodis, mitte workflow's. Kui ei saa aru, mida reegel tahab, on reegli nimi (`no-changed-when`) lingiga logis ja dokumentatsioonis on näide nii valest kui ka õigest koodist.
 
@@ -243,10 +251,12 @@ Pull request'i ajal on kood veel üle vaatamata. Ehitus käib, et näha, kas ima
 
 Tänases pipeline'is on kaks saladust kahes kohas:
 
-| Saladus | Kus hoitakse | Kes kasutab | Õigus |
-|---|---|---|---|
-| `GITHUB_TOKEN` | GitHub loob iga käivituse jaoks | `build` job, `docker push` | kirjutada selle repositooriumi paketti |
-| GHCR-i lugemistoken | Ansible Vault, `group_vars/docker/vault.yml` | Ansible vm3-s, `docker login` | ainult lugeda pakette (`read:packages`) |
+??? note "Saladused tänases pipeline'is"
+
+    | Saladus | Kus hoitakse | Kes kasutab | Õigus |
+    |---|---|---|---|
+    | `GITHUB_TOKEN` | GitHub loob iga käivituse jaoks | `build` job, `docker push` | kirjutada selle repositooriumi paketti |
+    | GHCR-i lugemistoken | Ansible Vault, `group_vars/docker/vault.yml` | Ansible vm3-s, `docker login` | ainult lugeda pakette (`read:packages`) |
 
 Kumbki ei ole failis avatud kujul ega workflow logis.
 
@@ -279,12 +289,14 @@ GitHubi runner on GitHubi andmekeskuses. Sinu VM-id on kooli võrgus aadressidel
 
 Lahendusi on neli:
 
-| Viis | Kuidas | Plussid | Miinused |
-|---|---|---|---|
-| runner ühendub serverisse (push) | GitHubi runner teeb SSH-ga `ansible-playbook` | lihtne, kõik ühes workflow's | server peab olema internetist kättesaadav |
-| self-hosted runner võrgu sees | runneri programm vm1-s küsib GitHubilt töid, ühendus läheb ainult väljapoole | täisautomaatne, tulemüüris pole vaja auku | runner on sinu masin: hooldus, turvalisus, ligipääs kõigile serveritele |
-| server tõmbab ise (pull, GitOps) | serveris või klastris olev agent jälgib registrit või Giti ja paigaldab muudatuse | serverisse ei ühendu keegi | vaja agenti (Argo CD, Flux); K5 Kubernetes'is |
-| inimene käivitab tarne | `ansible-playbook` control node'ist pärast rohelist pipeline'i | inimene otsustab, millal; sama `site.yml` mis enne | paigaldus pole automaatne |
+??? note "Neli viisi tarneks VPN-i taha"
+
+    | Viis | Kuidas | Plussid | Miinused |
+    |---|---|---|---|
+    | runner ühendub serverisse (push) | GitHubi runner teeb SSH-ga `ansible-playbook` | lihtne, kõik ühes workflow's | server peab olema internetist kättesaadav |
+    | self-hosted runner võrgu sees | runneri programm vm1-s küsib GitHubilt töid, ühendus läheb ainult väljapoole | täisautomaatne, tulemüüris pole vaja auku | runner on sinu masin: hooldus, turvalisus, ligipääs kõigile serveritele |
+    | server tõmbab ise (pull, GitOps) | serveris või klastris olev agent jälgib registrit või Giti ja paigaldab muudatuse | serverisse ei ühendu keegi | vaja agenti (Argo CD, Flux); K5 Kubernetes'is |
+    | inimene käivitab tarne | `ansible-playbook` control node'ist pärast rohelist pipeline'i | inimene otsustab, millal; sama `site.yml` mis enne | paigaldus pole automaatne |
 
 Täna kasutad viimast: pipeline paneb image'i registrisse ja sina käivitad vm1-st `site.yml`-i koos versiooniga. Kõik, mis vm3 vajab, on väljaminev HTTPS-ühendus `ghcr.io`-sse. Ansible'i roll `stack` muutub vähe: Compose-failis on `image:` registri aadressiga ja `build:` kaob, sest vm3 enam ei ehita.
 
