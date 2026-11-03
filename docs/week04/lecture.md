@@ -12,6 +12,7 @@ Pärast seda loengut oskad:
 - leida punasest pipeline'ist esimene viga ja selle põhjus;
 - ehitada image pipeline'is, panna see GHCR-i ja anda workflow'le selleks täpselt vajalikud õigused;
 - selgitada, kuidas image jõuab VPN-i taga olevasse masinasse ja miks main haru peab olema kaitstud.
+- võrrelda GitHub Actionsit, GitLab CI-d ja Jenkinsit ning selgitada, mis on GitOps ja Argo CD.
 
 ## 1. Muudatus, mida keegi ei kontrolli
 
@@ -61,7 +62,7 @@ Täna jõuame pideva tarneni. Pipeline teeb kõik kuni registrini, paigalduse k�
 
 ??? question "Kordamisküsimus"
 
-    Kolleeg ütleb: „Meil on CI, sest meil on GitHub Actions.“ Mida peaks workflow tegema, et see väide oleks tõsi?
+    Keegi ütleb: „Meil on CI, sest meil on GitHub Actions.“ Mida peaks workflow tegema, et see väide oleks tõsi?
 
 ## 2. GitHub Actions
 
@@ -326,14 +327,62 @@ Kaitstud haruga muutub töökäik: muudatus läheb eraldi harusse, sealt PR main
     - [Rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets)
     - [Nõutud kontrollid](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/troubleshooting-required-status-checks)
 
-## 9. Kokkuvõte
+## 9. CI/CD tööriistad ja GitOps
+
+GitHub Actions on üks paljudest CI/CD tööriistadest. Mõisted on kõigis samad: sündmus käivitab pipeline'i, sammud tehakse järjest, saladused hoitakse eraldi ja tulemus on roheline või punane. Erineb see, kus pipeline töötab ja kes seda haldab.
+
+??? note "CI/CD tööriistad"
+
+    | Tööriist | Mis see on | Kus töötab | Fail |
+    |---|---|---|---|
+    | [GitHub Actions](https://docs.github.com/en/actions) | GitHubi teenus | GitHubi runner või oma runner | `.github/workflows/*.yml` |
+    | [GitLab CI](https://docs.gitlab.com/ci/) | GitLabi osa: Git, CI/CD ja register koos | gitlab.com või oma GitLabi server | `.gitlab-ci.yml` |
+    | [Jenkins](https://www.jenkins.io/doc/book/pipeline/) | vanim, avatud lähtekoodiga, võimalused plugin'itest | alati oma server | `Jenkinsfile` |
+    | [Argo CD](https://argo-cd.readthedocs.io/), [Flux](https://fluxcd.io/) | ainult tarne (CD), GitOps | Kubernetese klastris | Kubernetese manifestid Gitis |
+
+Esimesed kolm teevad CI-d ja võivad ka tarnida: runner ühendub serverisse ja paigaldab (push). **GitOps** pöörab selle ümber. Gitis on kirjas, mis peab klastris töötama, ja klastris olev agent (Argo CD või Flux) võrdleb seda klastriga ning parandab erinevuse. Sama mõte on Ansible'i soovitud olekul, ainult agent töötab pidevalt.
+
+Tavaline koostöö on selline: GitHub Actions kontrollib koodi, ehitab image'i ja kirjutab uue tag'i Giti. Argo CD näeb muudatust Gitis ja uuendab klastrit. Klastrisse ei ühendu väljast keegi, nii et VPN-i probleemi (peatükk 7) ei teki. Kubernetese klastri teed K5-s.
+
+<figure style="max-width:690px;margin:.8em auto" class="lx" markdown="0">
+<svg viewBox="0 0 690 250" role="img" aria-label="GitOps: arendaja teeb push, CI ehitab image ja paneb GHCR-i ning kirjutab uue tag Giti manifesti. Kubernetese klastris olev Argo CD tõmbab Giti ja uuendab rakenduse, rakendus tõmbab image GHCR-ist. Klastrisse ei ühendu väljast keegi" xmlns="http://www.w3.org/2000/svg">
+<style>.lx svg{width:100%;height:auto;font-family:var(--md-text-font-family,sans-serif)}.lx .box{fill:var(--md-code-bg-color);stroke:var(--md-default-fg-color--lighter);stroke-width:1.2}.lx .hi{fill:var(--md-primary-fg-color);fill-opacity:.16;stroke:var(--md-primary-fg-color);stroke-width:1.5}.lx .ok{fill:#2e7d32;fill-opacity:.14;stroke:#2e7d32;stroke-width:1.3}.lx .bad{fill:#c62828;fill-opacity:.12;stroke:#c62828;stroke-width:1.3}.lx .t{fill:var(--md-default-fg-color);font-size:15px;font-weight:700}.lx .b{fill:var(--md-default-fg-color);font-size:14.5px;font-weight:600}.lx .s{fill:var(--md-default-fg-color--light);font-size:13px}.lx .c{fill:var(--md-default-fg-color);font-size:12.5px;font-family:var(--md-code-font-family,monospace)}.lx .w{fill:var(--md-accent-fg-color);font-size:13.5px;font-weight:700}.lx .a{stroke:var(--md-default-fg-color--light);stroke-width:1.5;fill:none}.lx .d{stroke-dasharray:4 3}.lx .h{fill:var(--md-default-fg-color--light)}</style>
+<defs><marker id="lxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="h" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="box" x="10" y="30" width="120" height="54" rx="6"/><text class="b" x="70.0" y="54.0" text-anchor="middle">git push</text><text class="s" x="70.0" y="70.0" text-anchor="middle">arendaja</text>
+<line class="a" x1="130" y1="57" x2="168" y2="57" marker-end="url(#lxa)"/>
+<rect class="hi" x="170" y="30" width="150" height="54" rx="6"/><text class="b" x="245.0" y="54.0" text-anchor="middle">CI</text><text class="s" x="245.0" y="70.0" text-anchor="middle">GitHub Actions</text>
+<line class="a" x1="320" y1="57" x2="368" y2="57" marker-end="url(#lxa)"/><text class="s" x="344.0" y="51.0" text-anchor="middle">image</text>
+<rect class="ok" x="370" y="30" width="140" height="54" rx="6"/><text class="b" x="440.0" y="54.0" text-anchor="middle">GHCR</text><text class="c" x="440.0" y="70.0" text-anchor="middle">:3f2a9c1</text>
+<line class="a" x1="245" y1="84" x2="245" y2="128" marker-end="url(#lxa)"/><text class="s" x="254" y="112" text-anchor="start">uus tag Giti</text>
+<rect class="box" x="170" y="130" width="150" height="54" rx="6"/><text class="b" x="245.0" y="154.0" text-anchor="middle">Git</text><text class="s" x="245.0" y="170.0" text-anchor="middle">manifestid</text>
+<rect class="box d" x="420" y="130" width="250" height="110" rx="6"/><text class="b" x="545.0" y="190.0" text-anchor="middle"></text>
+<text class="s" x="432" y="150" text-anchor="start">Kubernetese klaster</text>
+<rect class="hi" x="440" y="160" width="100" height="54" rx="6"/><text class="b" x="490.0" y="184.0" text-anchor="middle">Argo CD</text><text class="s" x="490.0" y="200.0" text-anchor="middle">agent</text>
+<rect class="ok" x="556" y="160" width="100" height="54" rx="6"/><text class="b" x="606.0" y="192.0" text-anchor="middle">rakendus</text>
+<line class="a d" x1="440" y1="175" x2="322" y2="160" marker-end="url(#lxa)"/><text class="s" x="381.0" y="161.5" text-anchor="middle">tõmbab Giti</text>
+<line class="a" x1="540" y1="187" x2="554" y2="187" marker-end="url(#lxa)"/>
+<line class="a d" x1="606" y1="160" x2="470" y2="86" marker-end="url(#lxa)"/><text class="s" x="538.0" y="117.0" text-anchor="middle">tõmbab image</text>
+</svg>
+</figure>
+
+??? question "Kordamisküsimus"
+
+    Argo CD töötab klastris ja tõmbab muudatused ise. Miks ei pea selle jaoks tulemüüris porti avama? Mis juhtub, kui keegi muudab klastris midagi käsitsi?
+
+??? info "Loe juurde"
+
+    - [Argo CD: mis see on](https://argo-cd.readthedocs.io/en/stable/)
+    - [GitOps põhimõtted (OpenGitOps)](https://opengitops.dev/)
+    - [GitLab CI kiirjuhend](https://docs.gitlab.com/ci/quick_start/)
+
+## 10. Kokkuvõte
 
 ??? note "Põhimõtted ühes tabelis"
 
     | Põhimõte | Mida see tähendab |
     |---|---|
     | pipeline on kood | `.github/workflows/ci.yml` on repositooriumis ja läbib sama lint'i |
-    | trigger, job, step, runner | `on:` mis käivitab; job ühes masinas; step üks käsk või action; runner on iga kord tühi |
+    | trigger, job, step, runner | `on:` mis käivitab; job ühes masinas; step üks käsk või action; runner on iga kord värske |
     | `needs` | järjekord ja tingimus: ehitus ainult rohelise kontrolli järel |
     | versioonid kinni | `ansible-lint==26.10.1`, `actions/checkout@v7`; homme sama tulemus |
     | lint ei asenda käivitust | lint loeb faile; tõend on ikka masinas |
@@ -344,5 +393,6 @@ Kaitstud haruga muutub töökäik: muudatus läheb eraldi harusse, sealt PR main
     | vähim õigus | `permissions: packages: write` ainult `build` jobil; vm3 token ainult `read:packages` |
     | tarne VPN-i taha | runner ei näe kooli võrku; tarne käivitub vm1-st, vm3 tõmbab image'i ise |
     | kaitstud main | PR ja rohelised kontrollid enne liitmist |
+    | GitOps | Gitis on soovitud olek, klastris olev agent (Argo CD) tõmbab ja rakendab selle |
 
 *Järgmine: [praktikum](lab.md). Juhendatud osas kirjutad workflow, mis kontrollib K3 pinu ja leiab sealt vead. Iseseisvas osas paneb pipeline image'i GHCR-i, Ansible tarnib selle vm3-sse ja main haru saab kaitse. Seejärel [kodune õpe ja kodutöö](homework.md).*
