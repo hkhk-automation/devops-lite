@@ -1,6 +1,6 @@
 # K4 · Praktikum: pipeline K3 pinule
 
-Tänase lõpuks kontrollib GitHub Actions iga push'i järel sinu Ansible'i koodi ja otsib saladusi, ehitab rakenduse image'i ja paneb selle GHCR-i. vm3 ei ehita enam ise: Ansible tarnib vm1-st registris oleva image'i, leht näitab commit'i räsi ja main haru saab muuta ainult rohelise pull request'iga. Pinu on sama mis K3-s, juurde tuleb pipeline ([loengu §1 joonis](lecture.md#1-muudatus-mida-keegi-ei-kontrolli)).
+Tänase lõpuks kontrollib GitHub Actions iga push'i järel sinu Ansible'i koodi ja otsib saladusi, ehitab rakenduse image'i ja paneb selle GHCR-i. vm3 ei ehita enam ise: Ansible tarnib vm1-st registris oleva image'i, leht näitab commit'i räsi ja main haru saab muuta ainult rohelise pull request'iga. Pinu on sama mis K3-s, juurde tuleb pipeline ([loengu §1 joonis](lecture.md#k3-tookaigu-norgad-kohad)).
 
 Osa A on juhendatud: workflow, lint, punase pipeline'i lugemine, saladuste otsing ja ehitus. Osa B on iseseisvam: GHCR, tarne vm3-sse Vaulti tokeniga ja kaitstud main haru. Kus on **Ennusta**, mõtle enne käsku läbi, mis juhtub, ja ütle see naabrile. Oodatav tulemus ja vihjed on kinnistes plokkides. Edenemist näed [laboritahvlil](../tahvel.md).
 
@@ -504,7 +504,7 @@ git rev-parse HEAD | cut -c1-7
 
 Selle sammu lõpuks on roll `stack` valmis paigaldama vm3-sse registris oleva image'i ja vm3 saab GHCR-ist privaatset image'it tõmmata.
 
-GitHubi runner ei pääse kooli võrku, seega jääb tarne käivitamine vm1-le. vm3 ühendub ise `ghcr.io`-ga ([loeng §7](lecture.md#7-tarne-vpn-i-taha)).
+GitHubi runner ei pääse kooli võrku, seega jääb tarne käivitamine vm1-le. vm3 ühendub ise `ghcr.io`-ga ([loeng §7](lecture.md#7-kuidas-muudatus-serverisse-jouab)).
 
 **Lugemistoken.** Pakett on privaatne. vm3 vajab tokenit, millega saab ainult lugeda. Tee see GitHubis: profiilipilt → **Settings** → **Developer settings** → **Personal access tokens** → **Tokens (classic)** → **Generate new token (classic)**. Nimi `vm3 GHCR`, aegumine 30 päeva, õigus ainult `read:packages`. Kopeeri token, seda näidatakse ainult üks kord.
 
@@ -624,7 +624,7 @@ V=$(git rev-parse HEAD | cut -c1-7); echo $V
 ansible-playbook site.yml -J -e app_versioon=$V
 ```
 
-`-J` küsib Vaulti parooli. `-e` annab `app_versioon`-ile väärtuse, mis on tähtsam kui `group_vars/all.yml`-is olev `1.0` ([loeng §7](lecture.md#7-tarne-vpn-i-taha)).
+`-J` küsib Vaulti parooli. `-e` annab `app_versioon`-ile väärtuse, mis on tähtsam kui `group_vars/all.yml`-is olev `1.0` ([loeng §7](lecture.md#7-kuidas-muudatus-serverisse-jouab)).
 
 ??? success "Oodatav tulemus"
 

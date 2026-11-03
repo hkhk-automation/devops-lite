@@ -1,11 +1,12 @@
 # K4 · CI/CD: automaatne kontroll, ehitus ja tarne
 
-Selle loengu jaoks peaksid tundma K3 pinu: vm3-s töötavad Compose'iga proxy, rakendus ja PostgreSQL ning roll `stack` paigaldab need idempotentselt. Täna paned selle pinu ümber pipeline'i: iga push kontrollib koodi, ehitab image'i üks kord ja paneb selle registrisse, kust vm3 selle tõmbab. Klassis räägime peatükkidest 1, 2, 4, 5 ja 7. Ülejäänu loe kodus läbi.
+Selle loengu jaoks peaksid tundma K3 pinu: vm3-s töötavad Compose'iga proxy, rakendus ja PostgreSQL ning roll `stack` paigaldab need idempotentselt. Täna paned selle pinu ümber pipeline'i: iga push kontrollib koodi, ehitab image'i üks kord ja paneb selle registrisse, kust vm3 selle tõmbab. Klassis räägime peatükkidest 1, 2, 4, 5, 7 ja 9. Ülejäänu loe kodus läbi.
 
 ## Õpiväljundid
 
 Pärast seda loengut oskad:
 
+- selgitada, mis on CI/CD, miks seda kasutatakse ja kuidas see aitab infrastruktuuri hallata;
 - selgitada, mida tähendavad CI, pidev tarne ja pidev paigaldus ning mis neist on meie kursusel automaatne;
 - lugeda ja kirjutada GitHub Actionsi workflow'd: trigger, job, step, runner, `needs`;
 - valida, mida kontrollivad `yamllint`, `ansible-lint` ja saladuste otsing ning mida need ei näe;
@@ -14,7 +15,35 @@ Pärast seda loengut oskad:
 - selgitada, kuidas image jõuab VPN-i taga olevasse masinasse ja miks main haru peab olema kaitstud.
 - võrrelda GitHub Actionsit, GitLab CI-d ja Jenkinsit ning selgitada, mis on GitOps ja Argo CD.
 
-## 1. Muudatus, mida keegi ei kontrolli
+## 1. Mis on CI/CD
+
+Varem koguti muudatusi nädalaid ja paigaldati need korraga ühe suure väljalaskena. Kui pärast seda midagi katki läks, oli raske leida, milline kümnetest muudatustest vea tekitas. CI/CD tähendab, et iga väike muudatus läbib kohe sama automaatse kontrolli ja jõuab kiiresti serverisse. Vead tulevad välja siis, kui muudatus on veel värske ja väike.
+
+**Pipeline** on sammude ahel, mis käivitub iga muudatusega automaatselt. Sammud on koodina repositooriumis, samamoodi nagu playbook. Enamik pipeline'e on üles ehitatud samas järjekorras:
+
+1. **kontroll:** lint, testid, saladuste ja turvaaukude otsing;
+2. **ehitus:** kood pannakse kokku paketiks või image'iks;
+3. **register:** valmis pakett või image salvestatakse koos versiooniga;
+4. **paigaldus:** kõigepealt testkeskkonda, siis tootmisse.
+
+Kui mõni samm on punane, järgmisi samme ei tehta. Tänapäeval kasutavad CI/CD-d peaaegu kõik tarkvara arendavad ettevõtted, sest see võimaldab paigaldada mitu korda päevas ilma, et iga paigaldus oleks risk.
+
+### CI/CD infrastruktuuri haldamisel
+
+Pipeline ei ole ainult arendajate tööriist. Playbook, OpenTofu fail ja nginx'i konfiguratsioonifail on samuti kood ning nende muudatusi saab kontrollida ja rakendada sama moodi. Süsteemiadministraator kasutab CI/CD-d näiteks nii:
+
+??? note "CI/CD süsteemiadministraatori töös"
+
+    | Kasutus | Kuidas | Kursusel |
+    |---|---|---|
+    | muudatuse eelvaade pull request'is | pipeline käivitab `ansible-playbook --check --diff` või `tofu plan` ja näitab, mida serverites muudetaks | `--check` K1-s, `tofu plan` K5-s |
+    | konfiguratsiooni kontroll enne rakendamist | `nginx -t`, mooduli `template` parameeter `validate:`; vigane fail ei jõua teenuseni | |
+    | ajastatud kontroll | `on: schedule` käivitab pipeline'i iga öö: `--check` näitab **triivi** (serverit on käsitsi muudetud ja see erineb koodist), aeguvaid sertifikaate või puuduvaid varukoopiaid | |
+    | keskkonnad ja kinnitus | muudatus läheb enne testserverisse; tootmisse paigaldamise kinnitab inimene (GitHub Environments); Ansible'i `serial` uuendab servereid järjest | |
+    | tagasipööramine | `git revert` või eelmise versiooni uuesti paigaldamine; pipeline teeb ülejäänu | tag = commit, §5 |
+    | rollide testimine | [Molecule](https://ansible.readthedocs.io/projects/molecule/) käivitab rolli konteineris enne, kui see jõuab serverisse | |
+
+### K3 töökäigu nõrgad kohad
 
 K3 lõpus paigaldas `site.yml` vm3-sse kogu pinu. Kõik töötas, sest sina käivitasid playbooki, vaatasid väljundit ja kontrollisid lehte. Selles töökäigus on kolm nõrka kohta:
 
@@ -22,7 +51,7 @@ K3 lõpus paigaldas `site.yml` vm3-sse kogu pinu. Kõik töötas, sest sina käi
 - **image ehitatakse serveris.** vm3 ehitas image'i ise (`docker compose up --build`). Kahes serveris tähendab see kahte ehitust ja kahte võimalikult erinevat image'it: alusimage võis vahepeal uueneda;
 - **versioon pole seotud koodiga.** `labori-app:1.0` ei ütle, millisest commit'ist see tehti.
 
-**Pipeline** on sammude ahel, mis käivitub iga muudatusega automaatselt: kontroll, ehitus, tarne. Sammud on koodina repositooriumis, samamoodi nagu playbook.
+Tänane pipeline lahendab need kolm probleemi:
 
 <figure style="max-width:690px;margin:.8em auto" class="lx" markdown="0">
 <svg viewBox="0 0 690 252" role="img" aria-label="Pipeline: push käivitab lint ja build, image läheb GHCR-i; vm1 Ansible tarnib vm3-sse, vm3 tõmbab image GHCR-ist" xmlns="http://www.w3.org/2000/svg">
@@ -65,6 +94,13 @@ Täna jõuame pideva tarneni. Pipeline teeb kõik kuni registrini, paigalduse k�
 ??? question "Kordamisküsimus"
 
     Keegi ütleb: „Meil on CI, sest meil on GitHub Actions.“ Mida peaks workflow tegema, et see väide oleks tõsi?
+
+??? info "Loe juurde"
+
+    - [Red Hat: mis on CI/CD](https://www.redhat.com/en/topics/devops/what-is-ci-cd)
+    - [GitLab: CI/CD ülevaade](https://about.gitlab.com/topics/ci-cd/)
+    - [GitHub: CI/CD selgitus](https://github.com/resources/articles/ci-cd)
+    - [DORA: kuidas tarne kiirust ja töökindlust mõõdetakse](https://dora.dev/guides/dora-metrics/)
 
 ## 2. GitHub Actions
 
@@ -283,11 +319,11 @@ Serveri poolel on saladused Ansible Vaultis nagu K2-s. vm3 vajab tokenit, mis lu
     - [Turvalisus Actionsis: skriptide süstimine](https://docs.github.com/en/actions/reference/security/secure-use)
     - [Isiklikud tokenid](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
 
-## 7. Tarne VPN-i taha
+## 7. Kuidas muudatus serverisse jõuab
 
-GitHubi runner on GitHubi andmekeskuses. Sinu VM-id on kooli võrgus aadressidel `192.168.x.x` ja neile pääseb ainult VPN-iga. Runner ei saa vm3-ga SSH-ühendust luua ja see on õige: tootmisserverid ei peagi internetist ligipääsetavad olema.
+Pipeline on pannud image'i registrisse. Järgmine samm on paigaldus serverisse. Selleks on kaks põhimõtteliselt erinevat viisi. **Push** tähendab, et pipeline ühendub serverisse ja paigaldab. **Pull** tähendab, et serveris olev programm küsib ise uut versiooni.
 
-Lahendusi on neli:
+Push eeldab, et pipeline pääseb serverisse. Enamasti see nii ei ole: tootmisserverid on sisevõrgus ja internetist neile ei pääse. Meie VM-id on kooli võrgus VPN-i taga ja GitHubi runner neid ei näe.
 
 ??? note "Neli viisi tarneks VPN-i taha"
 
@@ -306,8 +342,6 @@ ansible-playbook site.yml -J -e app_versioon=$(git rev-parse HEAD | cut -c1-7)
 ```
 
 Versioon on main haru viimase commit'i lühiräsi, sama, mille pipeline image'i tag'iks pani. `-e` annab muutujale väärtuse, mis on kõige kõrgema eelistusega (K2 §3). Leht näitab pärast tarnet sama räsi: `Labori seis 3f2a9c1`.
-
-Self-hosted runneri lisamiseks peab olema repositooriumi administraator. Kodutöö lisas on see kirjeldatud, aga klassis seda ei tee.
 
 ??? question "Kordamisküsimus"
 
@@ -351,6 +385,9 @@ GitHub Actions on üks paljudest CI/CD tööriistadest. Mõisted on kõigis sama
     | [GitLab CI](https://docs.gitlab.com/ci/) | GitLabi osa: Git, CI/CD ja register koos | gitlab.com või oma GitLabi server | `.gitlab-ci.yml` |
     | [Jenkins](https://www.jenkins.io/doc/book/pipeline/) | vanim, avatud lähtekoodiga, võimalused plugin'itest | alati oma server | `Jenkinsfile` |
     | [Argo CD](https://argo-cd.readthedocs.io/), [Flux](https://fluxcd.io/) | ainult tarne (CD), GitOps | Kubernetese klastris | Kubernetese manifestid Gitis |
+    | [AWX](https://ansible.readthedocs.io/projects/awx/en/latest/), [Semaphore](https://semaphoreui.com/) | Ansible'i käivitamise platvorm: playbook'id, inventar, ajastus ja õigused veebiliideses | oma server | playbook'id Gitis |
+
+Lisaks neile on levinud pilveteenuste omad tööriistad, näiteks Azure Pipelines ja AWS CodePipeline, ning CircleCI. Tööriista valik sõltub sellest, kus kood on ja kuhu paigaldatakse. Mõisted jäävad samaks.
 
 Esimesed kolm teevad CI-d ja võivad ka tarnida: runner ühendub serverisse ja paigaldab (push). **GitOps** pöörab selle ümber. Gitis on kirjas, mis peab klastris töötama, ja klastris olev agent (Argo CD või Flux) võrdleb seda klastriga ning parandab erinevuse. Sama mõte on Ansible'i soovitud olekul, ainult agent töötab pidevalt.
 
@@ -386,6 +423,7 @@ Tavaline koostöö on selline: GitHub Actions kontrollib koodi, ehitab image'i j
     - [Argo CD: mis see on](https://argo-cd.readthedocs.io/en/stable/)
     - [GitOps põhimõtted (OpenGitOps)](https://opengitops.dev/)
     - [GitLab CI kiirjuhend](https://docs.gitlab.com/ci/quick_start/)
+    - [CI/CD tööriistade ülevaade (dev.to)](https://dev.to/ronika_kashyap/a-comprehensive-guide-to-cicd-cicd-tools-cfa)
 
 ## 10. Kokkuvõte
 
@@ -403,7 +441,8 @@ Tavaline koostöö on selline: GitHub Actions kontrollib koodi, ehitab image'i j
     | ehita üks kord | image pipeline'is, server ainult tõmbab |
     | tag = commit | `ghcr.io/...:3f2a9c1`; tagasipööramine on eelmine räsi |
     | vähim õigus | `permissions: packages: write` ainult `build` jobil; vm3 token ainult `read:packages` |
-    | tarne VPN-i taha | runner ei näe kooli võrku; tarne käivitub vm1-st, vm3 tõmbab image'i ise |
+    | push ja pull | push: pipeline ühendub serverisse; pull: server küsib ise; meil käivitub tarne vm1-st, vm3 tõmbab image'i |
+    | CI/CD infrastruktuuris | eelvaade PR-is (`--check --diff`), ajastatud triivi kontroll, kinnitus enne tootmist |
     | kaitstud main | PR ja rohelised kontrollid enne liitmist |
     | GitOps | Gitis on soovitud olek, klastris olev agent (Argo CD) tõmbab ja rakendab selle |
 
