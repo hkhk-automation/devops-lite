@@ -814,7 +814,7 @@ Ava GitHubis oma repositoorium → **Actions** → viimane **Autograde**:
     |---|---|
     | K1 · 10 p | `ci.yml` on korrektne YAML, selles on kaks tööd (lint ja build) ja image läheb `ghcr.io`-sse |
     | K2 · 10 p | `yamllint` ja `ansible-lint` on rohelised, `gitleaks` ei leia failidest saladusi |
-    | K3 · 15 p | `site.yml` süntaks on korras, `vault.yml` on krüptitud, `.env` pole Gitis, Compose võtab rakenduse image'i registrist |
+    | K3 · 15 p | `site.yml` süntaks on korras, `vault.yml` on krüptitud, `.env` pole Gitis, rollis on GHCR-i sisselogimine, Compose võtab rakenduse image'i registrist ilma `build`-ita |
     | K4 · 10 p | kaustas `logid/` on teise tarne väljund, kus vm3 real on `changed=0` ja `failed=0` |
 
 Hinne tuleb kontrollidest K1–K4 (45 punkti). Seda, kas rakendus vm3-s töötab GHCR-i image'iga, kontrollib laboritahvel. Kontrollid nimega BOONUS (README ja kodutöö) punkte ei anna ja kukuvad seni, kuni need on tegemata.
