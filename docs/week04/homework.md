@@ -1,6 +1,6 @@
 # K4 · Kodune õpe ja kodutöö
 
-Kodutöö on vabatahtlik boonus: hinne tuleb klassitöö kontrollidest K1–K5. Kodutöö läheb samasse repositooriumisse, kuhu klassitöö. Tähtaeg on kirjas Classroom 50-s. Kodutöös viid pipeline'i edasi: image'i suitsutest enne registrit, turvaaukude skaneerimine, tagasipööramine eelmisele versioonile ja action'ite versioonid kinni. Juhiseid on vähem kui klassis. Kui jääd kinni, küsi Discordis või ava oma repositooriumis issue **Vajan abi** ja kirjuta sinna käsk ning veateade.
+Kodutöö on vabatahtlik boonus: hinne tuleb klassitöö kontrollidest K1–K4. Kodutöö läheb samasse repositooriumisse, kuhu klassitöö. Tähtaeg on kirjas Classroom 50-s. Kodutöös viid pipeline'i edasi: image'i suitsutest enne registrit, turvaaukude skaneerimine, tagasipööramine eelmisele versioonile ja action'ite versioonid kinni. Juhiseid on vähem kui klassis. Kui jääd kinni, küsi Discordis või ava oma repositooriumis issue **Vajan abi** ja kirjuta sinna käsk ning veateade.
 
 Main haru on kaitstud, seega läheb iga muudatus harusse ja pull request'iga main harusse ([praktikum B4](lab.md#b4-toota-kaitstud-main-haruga)). Autograde hindab main haru.
 
